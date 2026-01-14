@@ -13,5 +13,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config: ProxyConfig = {
-  matcher: ["/complete-registration", "/dashboard-old"],
+  matcher: ["/complete-registration", "/dashboard"],
 };
