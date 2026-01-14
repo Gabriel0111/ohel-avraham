@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import { cn } from "@/lib/utils";
-import { MenuIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon, UserIcon } from "lucide-react";
 import { navigationData } from "@/lib/navigation-data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -24,9 +24,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import AvatarDropdown from "@/components/ui/avatar-dropdown";
+import { useAuth } from "@/app/ConvexClientProvider";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => {
@@ -82,11 +86,28 @@ const Navbar = () => {
         </NavigationMenu>
 
         {/* Login Button */}
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <AnimatedThemeToggler />
 
           <Authenticated>
-            <Button onClick={onSignOut}>Logout</Button>
+            <AvatarDropdown
+              name={user?.name}
+              email={user?.email}
+              items={[
+                {
+                  icon: <UserIcon />,
+                  label: "Profile",
+                  onClick: () => console.log("Chalom"),
+                },
+                {
+                  icon: <LogOutIcon />,
+                  label: "Sign Out",
+                  onClick: onSignOut,
+                },
+              ]}
+            />
+
+            {/*<Button onClick={onSignOut}>Logout</Button>*/}
           </Authenticated>
 
           <Unauthenticated>

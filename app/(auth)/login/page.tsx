@@ -1,8 +1,8 @@
 "use client";
+
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { AtSignIcon, ChevronLeftIcon } from "lucide-react";
-import { Logo } from "@/components/icons/logo";
+import { AtSignIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
-import { Field, FieldError, FieldGroup } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 
@@ -20,6 +25,10 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import BackHomeButton from "@/app/(auth)/_components/back-home-button";
+import AuthHeader from "@/app/(auth)/_components/auth-header";
+import OrDivider from "@/app/(auth)/_components/or-divider";
+import GoogleIcon from "@/components/icons/google";
 
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -30,6 +39,23 @@ const LoginPage = () => {
     resolver: zodResolver(signInSchema),
     defaultValues: signUpSchemaDV,
   });
+
+  async function signInWithGoogle() {
+    startRegistering(async () => {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/complete-registration",
+        fetchOptions: {
+          onSuccess: async () => {
+            toast.success("Signed in with Google, you will be redirected...");
+          },
+          onError: () => {
+            toast.error("Internal Server Error");
+          },
+        },
+      });
+    });
+  }
 
   const handleSubmit = ({ email, password }: SignInSchema) => {
     startRegistering(async () => {
@@ -51,24 +77,13 @@ const LoginPage = () => {
 
   return (
     <div className="relative flex flex-col py-10 px-4 min-h-screen justify-center overflow-y-auto">
-      <Link
-        href="/"
-        className={buttonVariants({
-          variant: "ghost",
-          className: "absolute top-7 left-5",
-        })}
-      >
-        <ChevronLeftIcon />
-        Home
-      </Link>
+      <BackHomeButton />
+
       <div className="mx-auto space-y-5 sm:w-sm mt-10">
-        <Logo className="h-5 lg:hidden pb-10" />
-        <div className="flex flex-col space-y-1">
-          <h1 className="font-bold text-2xl">Login</h1>
-          <p className="text-base text-muted-foreground">
-            Log in to your Account to start your sharing experience
-          </p>
-        </div>
+        <AuthHeader
+          title="Login"
+          description="Log in to your Account to start your sharing experience"
+        />
 
         {/*<div className="mx-auto space-y-5 sm:w-sm">*/}
         {/*  <Logo className="h-5 lg:hidden" />*/}
@@ -90,29 +105,43 @@ const LoginPage = () => {
         {/*    </Button>*/}
         {/*  </div>*/}
 
-        {/*  <OrDivider />*/}
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isRegistering}
+          onClick={signInWithGoogle}
+        >
+          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
 
-        <form className="space-y-2" onSubmit={form.handleSubmit(handleSubmit)}>
+        <OrDivider />
+
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
           <FieldGroup>
-            <div className="flex flex-col gap-3 justify-between">
+            <div className="flex flex-col space-y-5 justify-between">
               <Controller
                 name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <InputGroup>
-                    <InputGroupInput
-                      placeholder="avraham.avinu@gmail.com"
-                      type="email"
-                      {...field}
-                    />
-                    <InputGroupAddon>
-                      <AtSignIcon />
-                    </InputGroupAddon>
+                  <>
+                    <FieldLabel>Email</FieldLabel>
+
+                    <InputGroup>
+                      <InputGroupInput
+                        placeholder="avraham.avinu@gmail.com"
+                        type="email"
+                        {...field}
+                      />
+                      <InputGroupAddon>
+                        <AtSignIcon />
+                      </InputGroupAddon>
+                    </InputGroup>
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
-                  </InputGroup>
+                  </>
                 )}
               />
 
@@ -121,6 +150,8 @@ const LoginPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
+                    <FieldLabel>Password</FieldLabel>
+
                     <Input type="password" placeholder="Password" {...field} />
 
                     {fieldState.invalid && (

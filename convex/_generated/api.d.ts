@@ -9,8 +9,14 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as enums from "../enums.js";
+import type * as guests from "../guests.js";
+import type * as helpers_canModifyRole from "../helpers/canModifyRole.js";
+import type * as hosts from "../hosts.js";
 import type * as http from "../http.js";
-import type * as task from "../task.js";
+import type * as users from "../users.js";
+import type * as validators_guest from "../validators/guest.js";
+import type * as validators_host from "../validators/host.js";
 
 import type {
   ApiFromModules,
@@ -20,8 +26,14 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  enums: typeof enums;
+  guests: typeof guests;
+  "helpers/canModifyRole": typeof helpers_canModifyRole;
+  hosts: typeof hosts;
   http: typeof http;
-  task: typeof task;
+  users: typeof users;
+  "validators/guest": typeof validators_guest;
+  "validators/host": typeof validators_host;
 }>;
 
 /**
@@ -960,6 +972,7 @@ export declare const components: {
         "query",
         "internal",
         {
+          join?: any;
           limit?: number;
           model:
             | "user"
@@ -1013,6 +1026,7 @@ export declare const components: {
         "query",
         "internal",
         {
+          join?: any;
           model:
             | "user"
             | "session"
@@ -2022,14 +2036,8 @@ export declare const components: {
       >;
     };
     adapterTest: {
-      count: FunctionReference<"query", "internal", any, any>;
-      create: FunctionReference<"mutation", "internal", any, any>;
-      delete: FunctionReference<"mutation", "internal", any, any>;
-      deleteMany: FunctionReference<"mutation", "internal", any, any>;
-      findMany: FunctionReference<"query", "internal", any, any>;
-      findOne: FunctionReference<"query", "internal", any, any>;
-      update: FunctionReference<"mutation", "internal", any, any>;
-      updateMany: FunctionReference<"mutation", "internal", any, any>;
+      runCustomTests: FunctionReference<"action", "internal", any, any>;
+      runTests: FunctionReference<"action", "internal", any, any>;
     };
   };
 };

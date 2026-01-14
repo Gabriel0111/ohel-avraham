@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { AtSignIcon, ChevronLeftIcon } from "lucide-react";
-import { Logo } from "@/components/icons/logo";
+import { AtSignIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -24,15 +23,47 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { useTransition } from "react";
-import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import BackHomeButton from "@/app/(auth)/_components/back-home-button";
+import AuthHeader from "@/app/(auth)/_components/auth-header";
+import { useAuth } from "@/app/ConvexClientProvider";
+import OrDivider from "@/app/(auth)/_components/or-divider";
+import GoogleIcon from "@/components/icons/google";
+import { authClient } from "@/lib/auth-client";
 
 const SignUpPage = () => {
   const [isRegistering, startRegistering] = useTransition();
 
   const router = useRouter();
+
+  const createNewUser = useMutation(api.users.createUser);
+
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    redirect("/");
+  }
+
+  async function signInWithGoogle() {
+    startRegistering(async () => {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/complete-registration",
+        fetchOptions: {
+          onSuccess: async () => {
+            toast.success("Signed in with Google, you will be redirected...");
+          },
+          onError: () => {
+            toast.error("Internal Server Error");
+          },
+        },
+      });
+    });
+  }
 
   const form = useForm({
     resolver: zodResolver(signUpSchema),
@@ -41,45 +72,50 @@ const SignUpPage = () => {
 
   const onSubmit = ({ firstName, lastName, email, password }: SignUpSchema) => {
     startRegistering(async () => {
-      // try {
-      await authClient.signUp.email({
+      const signup = await authClient.signUp.email({
         email,
         name: `${firstName} ${lastName}`,
         password,
-        fetchOptions: {
-          onSuccess: () => {
-            router.push("/");
-            toast.success("Signed up successfully.");
-          },
-          onError: (error) => {
-            toast.error(error.error.message);
-          },
-        },
+        image: `https://avatar.vercel.sh/${email}`,
       });
+
+      if (signup.error) {
+        toast.error(signup.error.message);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const signIn = await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      if (signIn.error) {
+        toast.error(signIn.error.message);
+        return;
+      }
+
+      const result = await createNewUser();
+
+      if (result) {
+        router.push("/complete-registration");
+        toast.success("Signed up successfully.");
+      } else {
+        toast.error("Error creating new user");
+      }
     });
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center py-10 px-4">
-      <Link
-        href="/"
-        className={buttonVariants({
-          variant: "ghost",
-          className: "absolute top-7 left-5",
-        })}
-      >
-        <ChevronLeftIcon />
-        Home
-      </Link>
+      <BackHomeButton />
 
       <div className="mx-auto space-y-5 sm:w-sm mt-10">
-        <Logo className="h-5 lg:hidden pb-10" />
-        <div className="flex flex-col space-y-1">
-          <h1 className="font-bold text-2xl">Sign up</h1>
-          <p className="text-base text-muted-foreground">
-            Create your Account to start your sharing experience
-          </p>
-        </div>
+        <AuthHeader
+          title="Sign up"
+          description="Create your Account to start your sharing experience"
+        />
 
         {/*<div className="space-y-2">*/}
         {/*  <Button className="w-full" size="lg" type="button">*/}
@@ -94,9 +130,9 @@ const SignUpPage = () => {
 
         {/*<OrDivider />*/}
 
-        <form className="space-y-2" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <div className="flex gap-3 justify-between">
+            <div className="flex flex-col md:flex-row gap-5 justify-between">
               <Controller
                 name="firstName"
                 control={form.control}
@@ -153,7 +189,7 @@ const SignUpPage = () => {
               )}
             />
 
-            <div className="flex gap-3 justify-between">
+            <div className="flex flex-col md:flex-row gap-5 justify-between">
               <Controller
                 name="password"
                 control={form.control}
@@ -211,7 +247,7 @@ const SignUpPage = () => {
         {/*  .*/}
         {/*</p>*/}
 
-        <p className="flex justify-center items-center mt-8 text-muted-foreground text-sm">
+        <p className="flex justify-center items-center mt-2 text-muted-foreground text-sm">
           <span>Already have an account?</span>
           <Link
             href="/login"
@@ -223,6 +259,18 @@ const SignUpPage = () => {
             Click here to login
           </Link>
         </p>
+
+        <OrDivider />
+
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isRegistering}
+          onClick={signInWithGoogle}
+        >
+          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
       </div>
     </div>
   );
