@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-const BackHomeButton = () => {
+const SuspenseBackHomeButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -14,7 +15,7 @@ const BackHomeButton = () => {
     const params = new URLSearchParams(searchParams.toString());
     const isRegistering = params.has("userType");
 
-    let url = "";
+    let url: string;
 
     if (isRegistering) {
       params.delete("userType");
@@ -58,5 +59,11 @@ const BackHomeButton = () => {
     </Button>
   );
 };
+
+const BackHomeButton = () => (
+  <Suspense fallback="Loading BackHomeButton...">
+    <SuspenseBackHomeButton />
+  </Suspense>
+);
 
 export default BackHomeButton;

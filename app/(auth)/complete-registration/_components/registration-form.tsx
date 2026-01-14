@@ -3,11 +3,11 @@
 import { Button } from "@/components/ui/button";
 import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import RadioSelect, { RadioGroupItem } from "@/components/ui/radio-select";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HostForm from "@/app/(auth)/_components/host-form";
 import GuestForm from "@/app/(auth)/_components/guest-form";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { authClient } from "@/lib/auth-client";
@@ -122,7 +122,9 @@ const RegistrationForm = () => {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <HostForm />
+              <Suspense fallback="Loading HostForm...">
+                <HostForm />
+              </Suspense>
             </motion.div>
           )}
 
@@ -134,7 +136,9 @@ const RegistrationForm = () => {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <GuestForm />
+              <Suspense fallback="Loading HostForm...">
+                <GuestForm />
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>
