@@ -29,9 +29,11 @@ export const autocomplete = async (input: string) => {
     const response = await res.json();
 
     return (
-      response.suggestions.map((item: unknown) => {
-        return item.placePrediction.text.text;
-      }) || []
+      response.suggestions.map(
+        (item: { placePrediction: { text: { text: string } } }) => {
+          return item.placePrediction.text.text;
+        },
+      ) || []
     );
   } catch (error) {
     console.log(JSON.stringify(error));
