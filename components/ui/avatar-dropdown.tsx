@@ -32,10 +32,7 @@ const AvatarDropdown = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="cursor-pointer">
         <Avatar className="size-8 shrink-0">
-          <AvatarImage
-            src={imageSrc ?? `https://avatar.vercel.sh/${email}`}
-            alt={email}
-          />
+          <AvatarImage src={imageSrc} alt={email} />
           <AvatarFallback>{email?.slice(0, 1)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

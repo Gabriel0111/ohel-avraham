@@ -43,10 +43,10 @@ export const createUser = mutation({
     return await ctx.db.insert("users", {
       authUserId,
       role: "user",
-      isVerified: false,
+      isVerified: authUser.emailVerified,
       email: authUser.email,
       name: authUser.name ?? "",
-      image: authUser.image ?? "",
+      image: authUser.image ?? `https://avatar.vercel.sh/${authUser.email}`,
     });
   },
 });

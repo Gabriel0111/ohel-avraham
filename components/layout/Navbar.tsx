@@ -93,6 +93,7 @@ const Navbar = () => {
             <AvatarDropdown
               name={user?.name}
               email={user?.email}
+              imageSrc={user?.image}
               items={[
                 {
                   icon: <UserIcon />,
