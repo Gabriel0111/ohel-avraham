@@ -130,6 +130,18 @@ const SignUpPage = () => {
 
         {/*<OrDivider />*/}
 
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isRegistering}
+          onClick={signInWithGoogle}
+        >
+          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
+
+        <OrDivider />
+
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <div className="flex flex-col md:flex-row gap-5 justify-between">
@@ -259,18 +271,6 @@ const SignUpPage = () => {
             Click here to login
           </Link>
         </p>
-
-        <OrDivider />
-
-        <Button
-          className="w-full"
-          type="submit"
-          disabled={isRegistering}
-          onClick={signInWithGoogle}
-        >
-          {isRegistering ? <Spinner /> : <GoogleIcon />}
-          Continue with Google
-        </Button>
       </div>
     </div>
   );

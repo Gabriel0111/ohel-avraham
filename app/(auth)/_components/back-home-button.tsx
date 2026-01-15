@@ -37,7 +37,7 @@ const SuspenseBackHomeButton = () => {
         href="/"
         className={buttonVariants({
           variant: "ghost",
-          className: "absolute top-7 left-5",
+          className: "absolute top-7 left-12",
         })}
       >
         <ChevronLeftIcon />

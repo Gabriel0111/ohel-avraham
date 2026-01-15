@@ -44,7 +44,7 @@ const LoginPage = () => {
     startRegistering(async () => {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/complete-registration",
+        callbackURL: "/",
         fetchOptions: {
           onSuccess: async () => {
             toast.success("Signed in with Google, you will be redirected...");

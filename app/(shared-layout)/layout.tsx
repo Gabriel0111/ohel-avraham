@@ -1,11 +1,13 @@
 import { PropsWithChildren } from "react";
-import Navbar from "@/components/layout/Navbar";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 const SharedLayout = ({ children }: PropsWithChildren) => {
   return (
     <>
-      <Navbar />
-      <div className="pt-20">{children}</div>
+      <Header />
+      <>{children}</>
+      <Footer />
     </>
   );
 };

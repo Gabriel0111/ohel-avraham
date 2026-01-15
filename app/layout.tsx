@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import {
+  Geist,
+  Geist_Mono,
+  EB_Garamond,
+  Frank_Ruhl_Libre,
+  Lato,
+} from "next/font/google";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +21,27 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["100", "300", "400", "700", "900"],
+  variable: "--font-lato",
+  display: "swap",
+});
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-eb-garamond",
+  display: "swap",
+});
+
+const frankRuhl = Frank_Ruhl_Libre({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-frank-ruhl",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -28,17 +56,27 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn(
+        lato.variable,
+        ebGaramond.variable,
+        frankRuhl.variable,
+        geistSans.variable,
+        geistMono.variable,
+        "antialiased select-none min-h-dvh overflow-y-auto",
+      )}
+    >
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <main className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">
+          {/*<main className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">*/}
+          <main>
             <ConvexClientProvider>
               {children}
               <Toaster richColors />
