@@ -39,6 +39,33 @@ export const autocomplete = async (input: string) => {
   }
 };
 
+export const geocodeAddress = async (
+  address: string,
+): Promise<{ lat: number; lng: number } | null> => {
+  if (!address) return null;
+
+  try {
+    const response = await client.geocode({
+      params: {
+        address,
+        key: env.GOOGLE_MAPS_API_KEY,
+        region: "il",
+      },
+    });
+
+    const result = response.data.results[0];
+    if (!result) return null;
+
+    return {
+      lat: result.geometry.location.lat,
+      lng: result.geometry.location.lng,
+    };
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    return null;
+  }
+};
+
 export const getPlaceDetails = async (placeId: string) => {
   try {
     const response = await client.placeDetails({

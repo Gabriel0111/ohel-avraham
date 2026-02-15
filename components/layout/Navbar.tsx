@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sheet";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import { useAuth } from "@/app/ConvexClientProvider";
+import { SearchTriggerButton } from "@/components/search/search-trigger";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -87,6 +88,7 @@ const Navbar = () => {
 
         {/* Login Button */}
         <div className="flex gap-4 items-center">
+          <SearchTriggerButton />
           <AnimatedThemeToggler />
 
           <Authenticated>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { FloatingPaths } from "@/app/(auth)/_components/floating-paths";
+import { SearchBarTrigger } from "@/components/search/search-trigger";
 
 export function HeroSection() {
   return (
@@ -77,6 +78,15 @@ export function HeroSection() {
           >
             Learn More
           </Link>
+        </motion.div>
+
+        <motion.div
+          className="w-full"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+        >
+          <SearchBarTrigger />
         </motion.div>
       </div>
     </section>

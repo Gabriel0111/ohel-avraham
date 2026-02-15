@@ -80,6 +80,48 @@ export const upsertHost = mutation({
   },
 });
 
+export const getPublicHosts = query({
+  args: {},
+  handler: async (ctx) => {
+    const hosts = await ctx.db.query("hosts").collect();
+
+    return await Promise.all(
+      hosts.map(async (host) => {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_authUserId", (q) =>
+            q.eq("authUserId", host.authUserId),
+          )
+          .first();
+
+        return {
+          _id: host._id,
+          name: user?.name ?? "Host",
+          image: user?.image,
+          address: host.address,
+          sector: host.sector,
+          ethnicity: host.ethnicity,
+          kashrout: host.kashrout,
+          hasDisabilityAccess: host.hasDisabilityAccess,
+        };
+      }),
+    );
+  },
+});
+
+export const getMyHost = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    return await ctx.db
+      .query("hosts")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+  },
+});
+
 export const deleteHost = mutation({
   args: {},
   handler: async (ctx) => {
