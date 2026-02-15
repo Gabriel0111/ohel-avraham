@@ -111,15 +111,15 @@ const Navbar = () => {
           </Authenticated>
 
           <Unauthenticated>
-            <Link href="/sign-up" className={buttonVariants()}>
-              Sign up
-            </Link>
-
             <Link
               href="/login"
               className={buttonVariants({ variant: "ghost" })}
             >
               Login
+            </Link>
+
+            <Link href="/sign-up" className={buttonVariants()}>
+              Sign up
             </Link>
           </Unauthenticated>
 
