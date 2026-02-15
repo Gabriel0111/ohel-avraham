@@ -111,24 +111,23 @@ const SignUpPage = () => {
     <div className="relative min-h-screen flex items-center justify-center py-10 px-4">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-5 sm:w-sm mt-10">
+      <div className="mx-auto space-y-8 sm:w-sm mt-10">
         <AuthHeader
           title="Sign up"
           description="Create your Account to start your sharing experience"
         />
 
-        {/*<div className="space-y-2">*/}
-        {/*  <Button className="w-full" size="lg" type="button">*/}
-        {/*    <GoogleIcon />*/}
-        {/*    Continue with Google*/}
-        {/*  </Button>*/}
-        {/*  <Button className="w-full" size="lg" type="button">*/}
-        {/*    <AppleIcon />*/}
-        {/*    Continue with Apple*/}
-        {/*  </Button>*/}
-        {/*</div>*/}
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isRegistering}
+          onClick={signInWithGoogle}
+        >
+          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
 
-        {/*<OrDivider />*/}
+        <OrDivider />
 
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
@@ -259,18 +258,6 @@ const SignUpPage = () => {
             Click here to login
           </Link>
         </p>
-
-        <OrDivider />
-
-        <Button
-          className="w-full"
-          type="submit"
-          disabled={isRegistering}
-          onClick={signInWithGoogle}
-        >
-          {isRegistering ? <Spinner /> : <GoogleIcon />}
-          Continue with Google
-        </Button>
       </div>
     </div>
   );

@@ -79,31 +79,11 @@ const LoginPage = () => {
     <div className="relative flex flex-col py-10 px-4 min-h-screen justify-center overflow-y-auto">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-5 sm:w-sm mt-10">
+      <div className="mx-auto space-y-8 sm:w-sm mt-10">
         <AuthHeader
           title="Login"
           description="Log in to your Account to start your sharing experience"
         />
-
-        {/*<div className="mx-auto space-y-5 sm:w-sm">*/}
-        {/*  <Logo className="h-5 lg:hidden" />*/}
-        {/*  <div className="flex flex-col space-y-1">*/}
-        {/*    <h1 className="font-bold text-2xl">Login</h1>*/}
-        {/*    <p className="text-base text-muted-foreground">*/}
-        {/*      Connect to your Account to start your sharing experience*/}
-        {/*    </p>*/}
-        {/*  </div>*/}
-
-        {/*  <div className="space-y-2">*/}
-        {/*    <Button className="w-full" size="lg" type="button">*/}
-        {/*      <GoogleIcon />*/}
-        {/*      Continue with Google*/}
-        {/*    </Button>*/}
-        {/*    <Button className="w-full" size="lg" type="button">*/}
-        {/*      <AppleIcon />*/}
-        {/*      Continue with Apple*/}
-        {/*    </Button>*/}
-        {/*  </div>*/}
 
         <Button
           className="w-full"
