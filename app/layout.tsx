@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -8,6 +8,11 @@ import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--inter-sans",
   subsets: ["latin"],
 });
 
@@ -30,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
+        className={`${inter.variable}  ${geistSans.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
       >
         <ThemeProvider
           attribute="class"

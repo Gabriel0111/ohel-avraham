@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
         hostname: "cdn.shadcnstudio.com", // The domain name
         port: "", // Optional, leave empty if not using a specific port
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "avatar.vercel.sh",
+        port: "",
+      },
     ],
   },
 };

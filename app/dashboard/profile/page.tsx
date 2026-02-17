@@ -9,6 +9,8 @@ import { HostProfileCard } from "./_components/host-profile-card";
 import { GuestProfileCard } from "./_components/guest-profile-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -40,7 +42,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col gap-6 p-4 lg:p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Profile
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -50,13 +52,15 @@ export default function ProfilePage() {
 
       {/* User info card */}
       <Card>
-        <CardContent className="flex items-center gap-4 p-6">
-          <div className="size-14 rounded-full bg-primary/10 flex items-center justify-center">
+        <CardContent className="flex items-center gap-4">
+          <div className="flex items-center justify-center">
             {currentUser.image ? (
-              <img
+              <Image
                 src={currentUser.image}
                 alt={currentUser.name || "User"}
-                className="size-14 rounded-full object-cover"
+                className="rounded-full"
+                width={46}
+                height={46}
               />
             ) : (
               <span className="text-xl font-bold text-primary">
@@ -68,9 +72,12 @@ export default function ProfilePage() {
             <p className="text-lg font-semibold text-foreground">
               {currentUser.name || "User"}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <Link
+              href={`mailto:${currentUser.email}`}
+              className="text-sm text-muted-foreground"
+            >
               {currentUser.email}
-            </p>
+            </Link>
           </div>
           <Badge variant="secondary" className="capitalize">
             {role}
@@ -114,9 +121,7 @@ export default function ProfilePage() {
       ) : (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
-            <p>
-              Complete your registration to set up your profile.
-            </p>
+            <p>Complete your registration to set up your profile.</p>
           </CardContent>
         </Card>
       )}

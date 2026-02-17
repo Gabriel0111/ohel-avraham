@@ -3,18 +3,17 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 import {
-  User,
-  Users,
-  Home,
-  Shield,
+  AlertCircle,
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
+  Home,
+  Shield,
+  User,
+  Users,
 } from "lucide-react";
 
 function getRoleBadgeVariant(role: string) {
@@ -78,17 +77,10 @@ export default function DashboardPage() {
       {/* Welcome header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Welcome back, {currentUser.name || "User"}
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Dashboard
           </h1>
-          <Badge variant={getRoleBadgeVariant(role)}>
-            {getRoleIcon(role)}
-            {role}
-          </Badge>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {currentUser.email || "Manage your Ohel Avraham account"}
-        </p>
       </div>
 
       {/* Quick stats */}

@@ -7,7 +7,6 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -26,16 +25,16 @@ import {
 } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  MapPin,
-  Phone,
-  Pencil,
-  X,
-  Calendar,
-  Building,
   Accessibility,
-  Utensils,
-  Users,
+  Building,
+  Calendar,
   Globe,
+  MapPin,
+  Pencil,
+  Phone,
+  Users,
+  Utensils,
+  X,
 } from "lucide-react";
 import { hostSchema, HostType } from "@/app/schemas/host";
 import { SECTORS } from "@/app/enums/sector";
@@ -49,19 +48,17 @@ import {
   FlagComponent,
   PhoneInput,
 } from "@/app/(auth)/_components/phone-number-comps";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { IconFolderCode } from "@tabler/icons-react";
 
 interface HostProfileCardProps {
-  hostData: {
-    dob: number;
-    phoneNumber: string;
-    address: string;
-    floor: number;
-    hasDisabilityAccess: boolean;
-    kashrout: string;
-    sector: string;
-    ethnicity: string;
-    notes?: string;
-  } | null | undefined;
+  hostData: HostType | null | undefined;
 }
 
 export function HostProfileCard({ hostData }: HostProfileCardProps) {
@@ -72,17 +69,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
   const form = useForm({
     resolver: zodResolver(hostSchema),
     defaultValues: hostData
-      ? {
-          dob: new Date(hostData.dob),
-          phoneNumber: hostData.phoneNumber,
-          address: hostData.address,
-          floor: hostData.floor,
-          hasDisabilityAccess: hostData.hasDisabilityAccess,
-          kashrout: hostData.kashrout as HostType["kashrout"],
-          sector: hostData.sector as HostType["sector"],
-          ethnicity: hostData.ethnicity as HostType["ethnicity"],
-          notes: hostData.notes || "",
-        }
+      ? { ...hostData, dob: new Date(hostData?.dob) }
       : undefined,
   });
 
@@ -90,7 +77,17 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
-          No host profile data found.
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <IconFolderCode />
+              </EmptyMedia>
+              <EmptyTitle>No Host Profile Found</EmptyTitle>
+              <EmptyDescription>
+                We haven&apos;t find your profile. Contact the administrator.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </CardContent>
       </Card>
     );
@@ -122,7 +119,9 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             variant="ghost"
             size="icon"
             onClick={() => setIsEditing(false)}
+            disabled={isSaving}
           >
+            {isSaving && <Spinner />}
             <X className="size-4" />
           </Button>
         </CardHeader>
@@ -318,10 +317,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                   render={({ field }) => (
                     <Field>
                       <FieldLabel>Notes</FieldLabel>
-                      <Textarea
-                        placeholder="Additional notes..."
-                        {...field}
-                      />
+                      <Textarea placeholder="Additional notes..." {...field} />
                     </Field>
                   )}
                 />
@@ -358,12 +354,13 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
           <ProfileField
             icon={<Calendar className="size-4" />}
             label="Date of Birth"
-            value={new Date(hostData.dob).toLocaleDateString()}
+            value={new Date(hostData.dob).toLocaleDateString("en-GB")}
           />
           <ProfileField
             icon={<Phone className="size-4" />}
             label="Phone Number"
             value={hostData.phoneNumber}
+            type="phone"
           />
           <ProfileField
             icon={<MapPin className="size-4" />}
@@ -414,11 +411,16 @@ function ProfileField({
   icon,
   label,
   value,
+  type = "text",
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  type?: "text" | "phone";
 }) {
+  const newValue =
+    type === "phone" ? RPNInput.formatPhoneNumberIntl(value) : value;
+
   return (
     <div className="flex items-start gap-3">
       <div className="size-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0">
@@ -426,7 +428,7 @@ function ProfileField({
       </div>
       <div>
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-foreground">{value}</p>
+        <p className="text-sm font-medium text-foreground">{newValue}</p>
       </div>
     </div>
   );

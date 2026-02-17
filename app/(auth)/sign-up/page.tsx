@@ -34,6 +34,7 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 const SignUpPage = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -111,7 +112,7 @@ const SignUpPage = () => {
     <div className="relative min-h-screen flex items-center justify-center py-10 px-4">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-8 sm:w-sm mt-10">
+      <div className="mx-auto space-y-8 md:w-sm w-sm mt-10">
         <AuthHeader
           title="Sign up"
           description="Create your Account to start your sharing experience"
@@ -138,7 +139,12 @@ const SignUpPage = () => {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel>First Name</FieldLabel>
-                    <Input placeholder="Avraham" {...field} />
+                    <Input
+                      placeholder="Avraham"
+                      aria-invalid={fieldState.invalid}
+                      className={cn(fieldState.invalid && "text-destructive")}
+                      {...field}
+                    />
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -153,7 +159,12 @@ const SignUpPage = () => {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel>Last Name</FieldLabel>
-                    <Input placeholder="Avinu" {...field} />
+                    <Input
+                      placeholder="Avinu"
+                      aria-invalid={fieldState.invalid}
+                      className={cn(fieldState.invalid && "text-destructive")}
+                      {...field}
+                    />
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -174,10 +185,14 @@ const SignUpPage = () => {
                     <InputGroupInput
                       placeholder="avraham.avinu@gmail.com"
                       type="email"
+                      aria-invalid={fieldState.invalid}
+                      className={cn(fieldState.invalid && "text-destructive")}
                       {...field}
                     />
                     <InputGroupAddon>
-                      <AtSignIcon />
+                      <AtSignIcon
+                        className={cn(fieldState.invalid && "text-destructive")}
+                      />
                     </InputGroupAddon>
                   </InputGroup>
 
@@ -196,7 +211,12 @@ const SignUpPage = () => {
                   <Field>
                     <FieldLabel>Password</FieldLabel>
 
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      aria-invalid={fieldState.invalid}
+                      className={cn(fieldState.invalid && "text-destructive")}
+                      {...field}
+                    />
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -212,7 +232,12 @@ const SignUpPage = () => {
                   <Field>
                     <FieldLabel>Confirm Password</FieldLabel>
 
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      aria-invalid={fieldState.invalid}
+                      className={cn(fieldState.invalid && "text-destructive")}
+                      {...field}
+                    />
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

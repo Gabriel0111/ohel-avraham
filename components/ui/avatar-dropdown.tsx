@@ -8,11 +8,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface DropdownItems {
   icon: ReactNode;
   label: string;
   onClick: () => void;
+  variant?: "default" | "destructive";
 }
 
 interface AvatarDropdownProps {
@@ -48,9 +50,20 @@ const AvatarDropdown = ({
         </DropdownMenuLabel>
         <DropdownMenuGroup>
           {items.map((item, index) => (
-            <DropdownMenuItem key={index} onClick={item.onClick}>
+            <DropdownMenuItem
+              key={index}
+              onClick={item.onClick}
+              variant={item?.variant ?? "default"}
+            >
               {item.icon}
-              <span className="text-popover-foreground">{item.label}</span>
+              <span
+                className={cn(
+                  "text-popover-foreground",
+                  item.variant === "destructive" && "text-destructive",
+                )}
+              >
+                {item.label}
+              </span>
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>

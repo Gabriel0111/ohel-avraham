@@ -12,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -23,9 +22,29 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Doc } from "@/convex/_generated/dataModel";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 export function NavUser({ user }: { user: Doc<"users"> | null }) {
   const { isMobile } = useSidebar();
+
+  const router = useRouter();
+
+  function onSignOut() {
+    authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Logout successfully.");
+          router.push("/");
+        },
+        onError: (error) => {
+          toast.error(error.error.message);
+        },
+      },
+    });
+  }
 
   if (!user) {
     // TODO: Return Skeleton
@@ -39,9 +58,9 @@ export function NavUser({ user }: { user: Doc<"users"> | null }) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
+              <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.image} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
@@ -56,32 +75,24 @@ export function NavUser({ user }: { user: Doc<"users"> | null }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? "bottom" : "top"}
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.image} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
+                <AnimatedThemeToggler
+                  className="p-0! h-5! m-0! text-accent-foreground flex justify-start w-full rounded-none!"
+                  label="Toggle"
+                />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push("/account")}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={onSignOut}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

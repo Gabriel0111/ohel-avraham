@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { AtSignIcon } from "lucide-react";
+import { AtSignIcon, KeyRoundIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,14 +10,8 @@ import {
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 
 import { SignInSchema, signInSchema } from "@/app/schemas/sign-in-schema";
 import { useTransition } from "react";
@@ -29,6 +23,7 @@ import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
+import { cn } from "@/lib/utils";
 
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -107,14 +102,20 @@ const LoginPage = () => {
                   <>
                     <FieldLabel>Email</FieldLabel>
 
-                    <InputGroup>
+                    <InputGroup aria-invalid={fieldState.invalid}>
                       <InputGroupInput
                         placeholder="avraham.avinu@gmail.com"
                         type="email"
+                        aria-invalid={fieldState.invalid}
+                        className={cn(fieldState.invalid && "text-destructive")}
                         {...field}
                       />
                       <InputGroupAddon>
-                        <AtSignIcon />
+                        <AtSignIcon
+                          className={cn(
+                            fieldState.invalid && "text-destructive",
+                          )}
+                        />
                       </InputGroupAddon>
                     </InputGroup>
 
@@ -129,15 +130,31 @@ const LoginPage = () => {
                 name="password"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field>
+                  <>
                     <FieldLabel>Password</FieldLabel>
 
-                    <Input type="password" placeholder="Password" {...field} />
+                    <InputGroup aria-invalid={fieldState.invalid}>
+                      <InputGroupAddon>
+                        <InputGroupInput
+                          type="password"
+                          aria-invalid={fieldState.invalid}
+                          className={cn(
+                            fieldState.invalid && "text-destructive",
+                          )}
+                          {...field}
+                        />
+                        <KeyRoundIcon
+                          className={cn(
+                            fieldState.invalid && "text-destructive",
+                          )}
+                        />
+                      </InputGroupAddon>
+                    </InputGroup>
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
-                  </Field>
+                  </>
                 )}
               />
 

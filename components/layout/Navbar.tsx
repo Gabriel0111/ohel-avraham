@@ -27,9 +27,12 @@ import {
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { SearchTriggerButton } from "@/components/search/search-trigger";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+
+  const router = useRouter();
 
   const { user } = useAuth();
 
@@ -99,12 +102,13 @@ const Navbar = () => {
                 {
                   icon: <UserIcon />,
                   label: "Profile",
-                  onClick: () => console.log("Chalom"),
+                  onClick: () => router.push("/account"),
                 },
                 {
                   icon: <LogOutIcon />,
                   label: "Sign Out",
                   onClick: onSignOut,
+                  variant: "destructive",
                 },
               ]}
             />
@@ -113,16 +117,18 @@ const Navbar = () => {
           </Authenticated>
 
           <Unauthenticated>
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "ghost" })}
-            >
-              Login
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "ghost" })}
+              >
+                Login
+              </Link>
 
-            <Link href="/sign-up" className={buttonVariants()}>
-              Sign up
-            </Link>
+              <Link href="/sign-up" className={buttonVariants()}>
+                Sign up
+              </Link>
+            </>
           </Unauthenticated>
 
           <AuthLoading>

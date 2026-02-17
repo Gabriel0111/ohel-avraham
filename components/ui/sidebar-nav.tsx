@@ -31,7 +31,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 
   return (
     <>
-      <div className="p-1 md:hidden">
+      <div className="md:hidden">
         <Select value={val} onValueChange={handleSelect}>
           <SelectTrigger className="h-12 sm:w-48">
             <SelectValue placeholder="Theme" />
@@ -65,14 +65,14 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
               key={item.url}
               href={item.url}
               className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
+                buttonVariants({ variant: "ghost" }),
                 pathname === item.url
-                  ? "bg-primary hover:bg-accent"
-                  : "hover:bg-accent hover:underline hover:underline-offset-2",
-                "justify-start items-center",
+                  ? "bg-gray-400/20 hover:bg-gray-400/20"
+                  : "hover:bg-gray-400/50",
+                "justify-start rounded-xl",
               )}
             >
-              <span className="me-2 scale-110">
+              <span className="me-1 scale-110">
                 {item.icon && <item.icon />}
               </span>
               <span> {item.title}</span>
