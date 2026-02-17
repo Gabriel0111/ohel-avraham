@@ -1,6 +1,10 @@
 "use client";
 
-import { IconDashboard, IconUserCircle } from "@tabler/icons-react";
+import {
+  IconDashboard,
+  IconUserCircle,
+  IconUsers,
+} from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -29,6 +33,11 @@ const data = {
       title: "Account",
       url: `${hostname}/profile`,
       icon: IconUserCircle,
+    },
+    {
+      title: "People",
+      url: `${hostname}/people`,
+      icon: IconUsers,
     },
   ],
 };

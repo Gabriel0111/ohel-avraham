@@ -59,7 +59,7 @@ export function HostListCard({ host, isSelected, onSelect }: HostListCardProps) 
           <div className="flex flex-wrap gap-1.5 mt-2">
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
               <Utensils className="size-2.5" />
-              {host.kashrut}
+              {host.kashrout}
             </Badge>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
               <Users className="size-2.5" />

@@ -94,7 +94,7 @@ export function HostMap({
             <br/>
             <span style="font-size: 11px; color: #666;">${host.address}</span>
             <br/>
-            <span style="font-size: 11px; color: #888;">${host.kashrut} | ${host.sector}</span>
+            <span style="font-size: 11px; color: #888;">${host.kashrout} | ${host.sector}</span>
           </div>`,
         );
 

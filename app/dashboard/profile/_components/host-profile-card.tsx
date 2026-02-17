@@ -58,7 +58,10 @@ import {
 import { IconFolderCode } from "@tabler/icons-react";
 
 interface HostProfileCardProps {
-  hostData: HostType | null | undefined;
+  hostData:
+    | (Omit<HostType, "dob"> & { dob: number; _id?: string })
+    | null
+    | undefined;
 }
 
 export function HostProfileCard({ hostData }: HostProfileCardProps) {
