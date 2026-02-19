@@ -1,6 +1,6 @@
 "use client";
 
-import { IconDashboard, IconListDetails } from "@tabler/icons-react";
+import { IconDashboard, IconUserCircle, IconUsers } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -27,8 +27,14 @@ const data = {
     },
     {
       title: "Account",
-      url: `${hostname}/account`,
-      icon: IconListDetails,
+      url: `${hostname}/profile`,
+      icon: IconUserCircle,
+    },
+    {
+      title: "People",
+      url: `${hostname}/people`,
+      icon: IconUsers,
+      minRole: "admin",
     },
   ],
 };
@@ -40,7 +46,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem className="px-6">
+          <SidebarMenuItem className="px-6 pt-2">
             <Link href="/">
               <Logo />
             </Link>

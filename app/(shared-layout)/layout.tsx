@@ -5,7 +5,7 @@ const SharedLayout = ({ children }: PropsWithChildren) => {
   return (
     <>
       <Navbar />
-      <div className="pt-20">{children}</div>
+      <div className="max-w-7xl w-full mx-auto pt-16">{children}</div>
     </>
   );
 };

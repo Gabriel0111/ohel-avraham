@@ -1,7 +1,46 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { GuestFields } from "./validators/guest";
 import { api } from "./_generated/api";
+
+export const getAllGuests = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const guests = await ctx.db.query("guests").collect();
+
+    return await Promise.all(
+      guests.map(async (guest) => {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_authUserId", (q) =>
+            q.eq("authUserId", guest.authUserId),
+          )
+          .first();
+
+        return {
+          ...user!,
+          ...guest,
+        };
+      }),
+    );
+  },
+});
+
+export const getMyGuest = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    return await ctx.db
+      .query("guests")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+  },
+});
 
 export const createGuest = mutation({
   args: {

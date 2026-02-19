@@ -13,6 +13,7 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import { authClient } from "@/lib/auth-client";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 const CompleteRegistration = () => {
   const [selectedUserType, setSelectedUserType] = useState<string>();
@@ -80,6 +81,7 @@ const CompleteRegistration = () => {
   return (
     <div className="relative flex flex-col py-10 px-4 min-h-screen overflow-y-auto">
       <BackHomeButton />
+      <AnimatedThemeToggler />
 
       <div className="mx-auto space-y-5 sm:w-sm mt-10">
         <AnimatePresence mode="wait">

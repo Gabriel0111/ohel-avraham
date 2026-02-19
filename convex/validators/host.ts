@@ -1,7 +1,7 @@
-import { v } from "convex/values";
 import { SECTORS } from "../../app/enums/sector";
 import { ETHNICITIES } from "../../app/enums/ethnicity";
 import { KASHROUT } from "../../app/enums/kashrout";
+import { v } from "convex/values";
 
 const literalUnion = <T extends readonly string[]>(arr: T) =>
   v.union(...arr.map((x) => v.literal(x)));
@@ -15,7 +15,8 @@ export const HostFields = {
 
   phoneNumber: v.string(),
   address: v.string(),
-  floor: v.number(),
+  entrance: v.string(),
+  floor: v.string(),
 
   hasDisabilityAccess: v.boolean(),
 

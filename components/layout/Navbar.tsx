@@ -26,9 +26,13 @@ import {
 } from "@/components/ui/sheet";
 import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import { useAuth } from "@/app/ConvexClientProvider";
+import { SearchTriggerButton } from "@/components/search/search-trigger";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+
+  const router = useRouter();
 
   const { user } = useAuth();
 
@@ -87,40 +91,43 @@ const Navbar = () => {
 
         {/* Login Button */}
         <div className="flex gap-4 items-center">
+          <SearchTriggerButton />
           <AnimatedThemeToggler />
 
           <Authenticated>
             <AvatarDropdown
               name={user?.name}
               email={user?.email}
+              imageSrc={user?.image}
               items={[
                 {
                   icon: <UserIcon />,
                   label: "Profile",
-                  onClick: () => console.log("Chalom"),
+                  onClick: () => router.push("/dashboard/profile"),
                 },
                 {
                   icon: <LogOutIcon />,
                   label: "Sign Out",
                   onClick: onSignOut,
+                  variant: "destructive",
                 },
               ]}
             />
-
-            {/*<Button onClick={onSignOut}>Logout</Button>*/}
           </Authenticated>
 
           <Unauthenticated>
-            <Link href="/sign-up" className={buttonVariants()}>
-              Sign up
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "ghost" })}
+              >
+                Login
+              </Link>
 
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "ghost" })}
-            >
-              Login
-            </Link>
+              <Link href="/sign-up" className={buttonVariants()}>
+                Sign up
+              </Link>
+            </>
           </Unauthenticated>
 
           <AuthLoading>

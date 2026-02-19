@@ -9,9 +9,10 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as dashboard from "../dashboard.js";
 import type * as enums from "../enums.js";
 import type * as guests from "../guests.js";
-import type * as helpers_canModifyRole from "../helpers/canModifyRole.js";
+import type * as helpers_canAccessRole from "../helpers/canAccessRole.js";
 import type * as hosts from "../hosts.js";
 import type * as http from "../http.js";
 import type * as users from "../users.js";
@@ -26,9 +27,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  dashboard: typeof dashboard;
   enums: typeof enums;
   guests: typeof guests;
-  "helpers/canModifyRole": typeof helpers_canModifyRole;
+  "helpers/canAccessRole": typeof helpers_canAccessRole;
   hosts: typeof hosts;
   http: typeof http;
   users: typeof users;

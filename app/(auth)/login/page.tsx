@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { AtSignIcon } from "lucide-react";
+import { AtSignIcon, KeyRoundIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,14 +10,8 @@ import {
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
 
 import { SignInSchema, signInSchema } from "@/app/schemas/sign-in-schema";
 import { useTransition } from "react";
@@ -29,6 +23,7 @@ import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
+import { cn } from "@/lib/utils";
 
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -79,31 +74,11 @@ const LoginPage = () => {
     <div className="relative flex flex-col py-10 px-4 min-h-screen justify-center overflow-y-auto">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-5 sm:w-sm mt-10">
+      <div className="mx-auto space-y-8 sm:w-sm mt-10">
         <AuthHeader
           title="Login"
           description="Log in to your Account to start your sharing experience"
         />
-
-        {/*<div className="mx-auto space-y-5 sm:w-sm">*/}
-        {/*  <Logo className="h-5 lg:hidden" />*/}
-        {/*  <div className="flex flex-col space-y-1">*/}
-        {/*    <h1 className="font-bold text-2xl">Login</h1>*/}
-        {/*    <p className="text-base text-muted-foreground">*/}
-        {/*      Connect to your Account to start your sharing experience*/}
-        {/*    </p>*/}
-        {/*  </div>*/}
-
-        {/*  <div className="space-y-2">*/}
-        {/*    <Button className="w-full" size="lg" type="button">*/}
-        {/*      <GoogleIcon />*/}
-        {/*      Continue with Google*/}
-        {/*    </Button>*/}
-        {/*    <Button className="w-full" size="lg" type="button">*/}
-        {/*      <AppleIcon />*/}
-        {/*      Continue with Apple*/}
-        {/*    </Button>*/}
-        {/*  </div>*/}
 
         <Button
           className="w-full"
@@ -127,14 +102,20 @@ const LoginPage = () => {
                   <>
                     <FieldLabel>Email</FieldLabel>
 
-                    <InputGroup>
+                    <InputGroup aria-invalid={fieldState.invalid}>
                       <InputGroupInput
                         placeholder="avraham.avinu@gmail.com"
                         type="email"
+                        aria-invalid={fieldState.invalid}
+                        className={cn(fieldState.invalid && "text-destructive")}
                         {...field}
                       />
                       <InputGroupAddon>
-                        <AtSignIcon />
+                        <AtSignIcon
+                          className={cn(
+                            fieldState.invalid && "text-destructive",
+                          )}
+                        />
                       </InputGroupAddon>
                     </InputGroup>
 
@@ -149,15 +130,29 @@ const LoginPage = () => {
                 name="password"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field>
+                  <>
                     <FieldLabel>Password</FieldLabel>
 
-                    <Input type="password" placeholder="Password" {...field} />
+                    <InputGroup aria-invalid={fieldState.invalid}>
+                      <InputGroupAddon>
+                        <KeyRoundIcon
+                          className={cn(
+                            fieldState.invalid && "text-destructive",
+                          )}
+                        />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        type="password"
+                        aria-invalid={fieldState.invalid}
+                        className={cn(fieldState.invalid && "text-destructive")}
+                        {...field}
+                      />
+                    </InputGroup>
 
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
-                  </Field>
+                  </>
                 )}
               />
 

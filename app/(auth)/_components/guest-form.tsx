@@ -82,7 +82,7 @@ const GuestForm = () => {
                     type="date"
                     {...field}
                     value={(field.value as string) || ""}
-                    className="bg-transparent! border-transparent!"
+                    className="bg-transparent! border-transparent! shadow-none!"
                   />
 
                   {fieldState.invalid && (
