@@ -98,11 +98,12 @@ const Navbar = () => {
             <AvatarDropdown
               name={user?.name}
               email={user?.email}
+              imageSrc={user?.image}
               items={[
                 {
                   icon: <UserIcon />,
                   label: "Profile",
-                  onClick: () => router.push("/account"),
+                  onClick: () => router.push("/dashboard/profile"),
                 },
                 {
                   icon: <LogOutIcon />,
@@ -112,8 +113,6 @@ const Navbar = () => {
                 },
               ]}
             />
-
-            {/*<Button onClick={onSignOut}>Logout</Button>*/}
           </Authenticated>
 
           <Unauthenticated>

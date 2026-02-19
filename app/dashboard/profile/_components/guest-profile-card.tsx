@@ -5,9 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -16,71 +14,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { Pencil, X, Calendar, MapPin, Users, Globe, User2 } from "lucide-react";
+import { MapPin, User2 } from "lucide-react";
 import { guestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { GENDERS } from "@/app/enums/gender";
 import Autocomplete from "@/components/layout/autocomplete-adress";
 import { toast } from "sonner";
+import { SettingsRow } from "../../_components/profile-ui/settings-row";
+import { ViewValue } from "../../_components/profile-ui/view-value";
+import { Badge } from "@/components/ui/badge";
+import { FieldLabel } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Doc } from "@/convex/_generated/dataModel";
 
-interface GuestProfileCardProps {
-  guestData: {
-    dob: number;
-    region: string;
-    gender: string;
-    sector: string;
-    ethnicity: string;
-    notes?: string;
-  } | null | undefined;
-}
-
-export function GuestProfileCard({ guestData }: GuestProfileCardProps) {
+export function GuestProfileCard({
+  guestData,
+}: {
+  guestData: Doc<"guests"> | null;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const upsertGuest = useMutation(api.guests.upsertGuest);
 
   const form = useForm({
     resolver: zodResolver(guestSchema),
-    defaultValues: guestData
-      ? {
-          dob: new Date(guestData.dob),
-          region: guestData.region,
-          gender: guestData.gender as GuestType["gender"],
-          sector: guestData.sector as GuestType["sector"],
-          ethnicity: guestData.ethnicity as GuestType["ethnicity"],
-          notes: guestData.notes || "",
-        }
-      : undefined,
+    defaultValues: guestData ?? undefined,
   });
-
-  if (!guestData) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center text-muted-foreground">
-          No guest profile data found.
-        </CardContent>
-      </Card>
-    );
-  }
 
   const handleSave = (values: GuestType) => {
     startSaving(async () => {
       try {
-        await upsertGuest({
-          data: {
-            ...values,
-            dob: values.dob.getTime(),
-          },
-        });
-        toast.success("Profile updated successfully");
+        await upsertGuest({ data: { ...values, dob: values.dob.getTime() } });
+        toast.success("Guest profile updated");
         setIsEditing(false);
       } catch {
         toast.error("Failed to update profile");
@@ -88,247 +55,203 @@ export function GuestProfileCard({ guestData }: GuestProfileCardProps) {
     });
   };
 
-  if (isEditing) {
+  if (!guestData)
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Edit Guest Profile</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsEditing(false)}
-          >
-            <X className="size-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(handleSave)}>
-            <FieldGroup>
-              <div className="flex flex-col gap-5">
-                <Controller
-                  name="dob"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Date of Birth</FieldLabel>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={
-                          field.value instanceof Date
-                            ? field.value.toISOString().split("T")[0]
-                            : (field.value as string) || ""
-                        }
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="gender"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Gender</FieldLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {GENDERS.map((g) => (
-                            <SelectItem value={g} key={g}>
-                              {g}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="region"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Region</FieldLabel>
-                      <Autocomplete
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Controller
-                    name="sector"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field>
-                        <FieldLabel>Sector</FieldLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Sector" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SECTORS.map((s) => (
-                              <SelectItem value={s} key={s}>
-                                {s}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                  <Controller
-                    name="ethnicity"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field>
-                        <FieldLabel>Ethnicity</FieldLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Ethnicity" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ETHNICITIES.map((e) => (
-                              <SelectItem value={e} key={e}>
-                                {e}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                </div>
-
-                <Controller
-                  name="notes"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>Notes</FieldLabel>
-                      <Textarea
-                        placeholder="Additional notes..."
-                        {...field}
-                      />
-                    </Field>
-                  )}
-                />
-
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving && <Spinner />}
-                  Save Changes
-                </Button>
-              </div>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+      <div className="p-8 text-center text-muted-foreground border border-dashed rounded-xl">
+        No guest profile found.
+      </div>
     );
-  }
 
-  // View mode
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Guest Profile</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditing(true)}
-          className="gap-1.5"
+    <div className="relative">
+      {/* Action Header Flottant */}
+      <div className="absolute -top-12 right-0">
+        {!isEditing ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="h-8 rounded-md shadow-xs bg-background"
+          >
+            Edit
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={form.handleSubmit(handleSave)}
+              disabled={isSaving}
+              className="h-8 rounded-md px-4 bg-foreground text-background hover:bg-foreground/90"
+            >
+              {isSaving && <Spinner className="mr-2 border-background/30" />}
+              Save changes
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="divide-y divide-border/20">
+        {/* LIGNE : REGION */}
+        <SettingsRow
+          label="Preferred Region"
+          description="The area where you are looking for a host."
         >
-          <Pencil className="size-3.5" />
-          Edit
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <ProfileField
-            icon={<Calendar className="size-4" />}
-            label="Date of Birth"
-            value={new Date(guestData.dob).toLocaleDateString()}
-          />
-          <ProfileField
-            icon={<User2 className="size-4" />}
-            label="Gender"
-            value={guestData.gender}
-          />
-          <ProfileField
-            icon={<MapPin className="size-4" />}
-            label="Region"
-            value={guestData.region}
-          />
-          <ProfileField
-            icon={<Users className="size-4" />}
-            label="Sector"
-            value={guestData.sector}
-          />
-          <ProfileField
-            icon={<Globe className="size-4" />}
-            label="Ethnicity"
-            value={guestData.ethnicity}
-          />
-          {guestData.notes && (
-            <div className="sm:col-span-2">
-              <ProfileField
-                icon={<Pencil className="size-4" />}
-                label="Notes"
-                value={guestData.notes}
+          {isEditing ? (
+            <Controller
+              name="region"
+              control={form.control}
+              render={({ field }) => (
+                <Autocomplete
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  // className="w-full border-none p-0 focus-visible:ring-0 bg-transparent"
+                />
+              )}
+            />
+          ) : (
+            <ViewValue
+              value={guestData.region}
+              icon={<MapPin className="size-4" />}
+            />
+          )}
+        </SettingsRow>
+
+        {/* LIGNE : GENDER */}
+        <SettingsRow
+          label="Gender"
+          description="Helps hosts coordinate sleeping arrangements."
+        >
+          {isEditing ? (
+            <Controller
+              name="gender"
+              control={form.control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="h-9 w-full max-w-50 bg-muted/30 border-none shadow-none">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GENDERS.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          ) : (
+            <ViewValue
+              value={guestData.gender}
+              icon={<User2 className="size-4" />}
+            />
+          )}
+        </SettingsRow>
+
+        {/* LIGNE : SECTOR & ETHNICITY */}
+        <SettingsRow
+          label="Community details"
+          description="Sector and cultural background."
+        >
+          {isEditing ? (
+            <div className="grid gap-4 w-full">
+              <Controller
+                name="sector"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Sector</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sector" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SECTORS.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
+              <Controller
+                name="ethnicity"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Ethnicity</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ethnicity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ETHNICITIES.map((e) => (
+                          <SelectItem key={e} value={e}>
+                            {e}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               />
             </div>
+          ) : (
+            <div className="flex flex-col gap-6 w-full">
+              <div className="flex items-center justify-between">
+                <Label>Sector</Label>
+                <Badge variant="secondary">{guestData.sector}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Ethnicity</Label>
+                <Badge variant="secondary">{guestData.ethnicity}</Badge>
+              </div>
+            </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+        </SettingsRow>
 
-function ProfileField({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="size-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-foreground">{value}</p>
+        {/* LIGNE : NOTES */}
+        <SettingsRow
+          label="Bio & Notes"
+          description="Share a bit about yourself or special needs."
+        >
+          {isEditing ? (
+            <Controller
+              name="notes"
+              control={form.control}
+              render={({ field }) => (
+                <Textarea
+                  {...field}
+                  className="min-h-25 bg-muted/20 border-border/40 focus-visible:ring-1"
+                  placeholder="Ex: I follow specific dietary rules..."
+                />
+              )}
+            />
+          ) : (
+            <ViewValue
+              value={guestData.notes ?? "No specific notes provided."}
+            />
+          )}
+        </SettingsRow>
       </div>
     </div>
   );

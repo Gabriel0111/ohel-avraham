@@ -15,7 +15,8 @@ export const HostFields = {
 
   phoneNumber: v.string(),
   address: v.string(),
-  floor: v.number(),
+  entrance: v.string(),
+  floor: v.string(),
 
   hasDisabilityAccess: v.boolean(),
 

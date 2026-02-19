@@ -15,7 +15,6 @@ export default defineSchema({
   }).index("by_authUserId", ["authUserId"]),
 
   hosts: defineTable({
-    // Link to your auth/user document (adapt to your setup)
     authUserId: v.string(),
     ...HostFields,
   })

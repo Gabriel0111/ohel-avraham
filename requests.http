@@ -1,0 +1,23 @@
+### Configuration des variables
+@baseUrl = https://data.gov.il/api/3/action/datastore_search
+@resourceId = b7cf8f14-64a2-4b33-8d4b-edb286fdbd37
+
+### Récupérer les rues et quartiers pour une ville spécifique
+# Note : 'q' permet de filtrer. On demande 1000 résultats.
+# Les champs retournés seront : 
+# שם_ישוב (Ville), שם_רחוב (Rue), שם_שכונה (Quartier)
+
+GET {{baseUrl}}?resource_id={{resourceId}}&q=ירושלים&limit=1000
+Content-Type: application/json
+
+### Recherche précise par Ville et Rue pour trouver le quartier
+# On utilise ici le paramètre 'filters' pour plus de précision
+# Remplacez les valeurs en hébreu selon vos besoins
+
+GET {{baseUrl}}
+    ?resource_id={{resourceId}}
+    &filters={"בית וגן 12":"בית וגן"}
+    &limit=1
+
+### Help
+GET https://data.gov.il/api/3/action/help_show?name=datastore_search

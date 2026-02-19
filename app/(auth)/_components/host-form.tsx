@@ -225,12 +225,7 @@ const HostForm = () => {
                 <Field>
                   <FieldLabel>Floor</FieldLabel>
 
-                  <Input
-                    type="number"
-                    placeholder="1"
-                    {...field}
-                    value={(field.value as number) || ""}
-                  />
+                  <Input type="string" {...field} />
 
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />

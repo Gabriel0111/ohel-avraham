@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   creator: "Gabriel Elbaz",
   applicationName: "Ohel Avraham",
   authors: [{ name: "Gabriel Elbaz", url: "https://linkedin.com/in/gelbaz" }],
-  keywords: "Shabbat, Kosher",
+  keywords: "Shabbat, Kosher, Hosts, Guests",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <main className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">
+          <main className="mx-auto w-full">
             <ConvexClientProvider>
               {children}
               <Toaster richColors />

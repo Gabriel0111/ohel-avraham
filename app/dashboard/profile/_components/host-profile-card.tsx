@@ -5,11 +5,10 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -17,29 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Accessibility,
-  Building,
-  Calendar,
-  Globe,
-  MapPin,
-  Pencil,
-  Phone,
-  Users,
-  Utensils,
-  X,
-} from "lucide-react";
+import { Accessibility, MapPin, Phone, X } from "lucide-react";
 import { hostSchema, HostType } from "@/app/schemas/host";
-import { SECTORS } from "@/app/enums/sector";
-import { ETHNICITIES } from "@/app/enums/ethnicity";
-import { KASHROUT } from "@/app/enums/kashrout";
 import Autocomplete from "@/components/layout/autocomplete-adress";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
@@ -48,20 +27,19 @@ import {
   FlagComponent,
   PhoneInput,
 } from "@/app/(auth)/_components/phone-number-comps";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { IconFolderCode } from "@tabler/icons-react";
+import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
+import { SettingsRow } from "../../_components/profile-ui/settings-row";
+import { ViewValue } from "@/app/dashboard/_components/profile-ui/view-value";
+import { SECTORS } from "@/app/enums/sector";
+import { ETHNICITIES } from "@/app/enums/ethnicity";
+import { FieldError, FieldLabel } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { KASHROUT } from "@/app/enums/kashrout";
+import { Doc } from "@/convex/_generated/dataModel";
+import { Input } from "@/components/ui/input";
 
 interface HostProfileCardProps {
-  hostData:
-    | (Omit<HostType, "dob"> & { dob: number; _id?: string })
-    | null
-    | undefined;
+  hostData: Doc<"hosts"> | null | undefined;
 }
 
 export function HostProfileCard({ hostData }: HostProfileCardProps) {
@@ -71,367 +49,310 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
   const form = useForm({
     resolver: zodResolver(hostSchema),
-    defaultValues: hostData
-      ? { ...hostData, dob: new Date(hostData?.dob) }
-      : undefined,
+    defaultValues: hostData ?? undefined,
   });
 
-  if (!hostData) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center text-muted-foreground">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <IconFolderCode />
-              </EmptyMedia>
-              <EmptyTitle>No Host Profile Found</EmptyTitle>
-              <EmptyDescription>
-                We haven&apos;t find your profile. Contact the administrator.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </CardContent>
-      </Card>
-    );
-  }
+  if (!hostData) return <EmptyProfile />;
 
   const handleSave = (values: HostType) => {
     startSaving(async () => {
       try {
-        await upsertHost({
-          data: {
-            ...values,
-            dob: values.dob.getTime(),
-          },
-        });
-        toast.success("Profile updated successfully");
+        await upsertHost({ data: { ...values, dob: values.dob.getTime() } });
+        toast.success("Changes saved");
         setIsEditing(false);
       } catch {
-        toast.error("Failed to update profile");
+        toast.error("Failed to save");
       }
     });
   };
 
-  if (isEditing) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Edit Host Profile</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsEditing(false)}
-            disabled={isSaving}
-          >
-            {isSaving && <Spinner />}
-            <X className="size-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(handleSave)}>
-            <FieldGroup>
-              <div className="flex flex-col gap-5">
-                <Controller
-                  name="dob"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Date of Birth</FieldLabel>
-                      <Input
-                        type="date"
-                        {...field}
-                        value={
-                          field.value instanceof Date
-                            ? field.value.toISOString().split("T")[0]
-                            : (field.value as string) || ""
-                        }
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="phoneNumber"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Phone Number</FieldLabel>
-                      <RPNInput.default
-                        defaultCountry="IL"
-                        className="flex rounded-md shadow-xs"
-                        international
-                        flagComponent={FlagComponent}
-                        countrySelectComponent={CountrySelect}
-                        inputComponent={PhoneInput}
-                        placeholder="+972 58-1234567"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="address"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Address</FieldLabel>
-                      <Autocomplete
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Controller
-                    name="sector"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field>
-                        <FieldLabel>Sector</FieldLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Sector" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SECTORS.map((s) => (
-                              <SelectItem value={s} key={s}>
-                                {s}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                  <Controller
-                    name="ethnicity"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field>
-                        <FieldLabel>Ethnicity</FieldLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Ethnicity" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ETHNICITIES.map((e) => (
-                              <SelectItem value={e} key={e}>
-                                {e}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Controller
-                    name="floor"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field>
-                        <FieldLabel>Floor</FieldLabel>
-                        <Input
-                          type="number"
-                          placeholder="1"
-                          {...field}
-                          value={(field.value as number) || ""}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                  <Controller
-                    name="hasDisabilityAccess"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Field>
-                        <FieldLabel>Disability Access</FieldLabel>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </Field>
-                    )}
-                  />
-                </div>
-
-                <Controller
-                  name="kashrout"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field>
-                      <FieldLabel>Kashrout</FieldLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Kashrout" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {KASHROUT.map((k) => (
-                            <SelectItem value={k} key={k}>
-                              {k}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="notes"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>Notes</FieldLabel>
-                      <Textarea placeholder="Additional notes..." {...field} />
-                    </Field>
-                  )}
-                />
-
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving && <Spinner />}
-                  Save Changes
-                </Button>
-              </div>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // View mode
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Host Profile</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditing(true)}
-          className="gap-1.5"
+    <div className="space-y-2">
+      {/* Action Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-border">
+        <h3 className="text-base font-semibold">Host Settings</h3>
+        {!isEditing ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="h-8 rounded-md shadow-xs bg-background"
+          >
+            Edit
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={form.handleSubmit(handleSave)}
+              disabled={isSaving}
+            >
+              {isSaving && <Spinner className="mr-2 border-background/30" />}
+              Save changes
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="divide-y divide-border/40">
+        {/* --- LIGNE : ADRESSE --- */}
+        <SettingsRow
+          label="Address"
+          description="The location where you will host meals."
         >
-          <Pencil className="size-3.5" />
-          Edit
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <ProfileField
-            icon={<Calendar className="size-4" />}
-            label="Date of Birth"
-            value={new Date(hostData.dob).toLocaleDateString("en-GB")}
-          />
-          <ProfileField
-            icon={<Phone className="size-4" />}
-            label="Phone Number"
-            value={hostData.phoneNumber}
-            type="phone"
-          />
-          <ProfileField
-            icon={<MapPin className="size-4" />}
-            label="Address"
-            value={hostData.address}
-          />
-          <ProfileField
-            icon={<Building className="size-4" />}
-            label="Floor"
-            value={String(hostData.floor)}
-          />
-          <ProfileField
-            icon={<Accessibility className="size-4" />}
-            label="Disability Access"
-            value={hostData.hasDisabilityAccess ? "Yes" : "No"}
-          />
-          <ProfileField
-            icon={<Utensils className="size-4" />}
-            label="Kashrout"
-            value={hostData.kashrout}
-          />
-          <ProfileField
-            icon={<Users className="size-4" />}
-            label="Sector"
-            value={hostData.sector}
-          />
-          <ProfileField
-            icon={<Globe className="size-4" />}
-            label="Ethnicity"
-            value={hostData.ethnicity}
-          />
-          {hostData.notes && (
-            <div className="sm:col-span-2">
-              <ProfileField
-                icon={<Pencil className="size-4" />}
-                label="Notes"
-                value={hostData.notes}
+          {isEditing ? (
+            <div className="grid gap-4 w-full">
+              <Controller
+                name="address"
+                control={form.control}
+                render={({ field }) => (
+                  <Autocomplete
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    // className="w-full bg-transparent border-none p-0 focus-visible:ring-0"
+                  />
+                )}
+              />
+
+              <Controller
+                name="entrance"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Entrance</FieldLabel>
+                    <Input {...field} className="w-fit" />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </div>
+                )}
+              />
+
+              <Controller
+                name="floor"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Floor</FieldLabel>
+                    <Input {...field} className="w-fit" />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </div>
+                )}
               />
             </div>
+          ) : (
+            <div className="flex flex-col gap-6 w-full">
+              <ViewValue
+                value={hostData.address}
+                icon={<MapPin className="size-4" />}
+              />
+
+              <ViewValue value={hostData.entrance} title="Entrance" />
+
+              <ViewValue value={hostData.floor} title="Floor" />
+            </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+        </SettingsRow>
 
-function ProfileField({
-  icon,
-  label,
-  value,
-  type = "text",
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  type?: "text" | "phone";
-}) {
-  const newValue =
-    type === "phone" ? RPNInput.formatPhoneNumberIntl(value) : value;
+        {/* --- LIGNE : TELEPHONE --- */}
+        <SettingsRow
+          label="Phone Number"
+          description="Used for urgent coordination with guests."
+        >
+          {isEditing ? (
+            <Controller
+              name="phoneNumber"
+              control={form.control}
+              render={({ field }) => (
+                <div className="w-full">
+                  <RPNInput.default
+                    defaultCountry="IL"
+                    className="flex rounded-md border-none"
+                    international
+                    flagComponent={FlagComponent}
+                    countrySelectComponent={CountrySelect}
+                    inputComponent={PhoneInput}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                </div>
+              )}
+            />
+          ) : (
+            <ViewValue
+              value={RPNInput.formatPhoneNumberIntl(hostData.phoneNumber)}
+              icon={<Phone className="size-4" />}
+            />
+          )}
+        </SettingsRow>
 
-  return (
-    <div className="flex items-start gap-3">
-      <div className="size-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground shrink-0">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-sm font-medium text-foreground">{newValue}</p>
+        {/* --- LIGNE : KASHROUT --- */}
+        <SettingsRow
+          label="Community details"
+          description="Sector and cultural background."
+        >
+          {isEditing ? (
+            <div className="grid gap-4 w-full">
+              <Controller
+                name="kashrout"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Kashrout</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kashrout" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {KASHROUT.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
+              <Controller
+                name="sector"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Sector</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sector" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SECTORS.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
+              <Controller
+                name="ethnicity"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <FieldLabel>Ethnicity</FieldLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ethnicity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ETHNICITIES.map((e) => (
+                          <SelectItem key={e} value={e}>
+                            {e}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6 w-full">
+              <div className="flex items-center justify-between">
+                <Label>Kashrout</Label>
+                <Badge variant="secondary">{hostData.kashrout}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Sector</Label>
+                <Badge variant="secondary">{hostData.sector}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Ethnicity</Label>
+                <Badge variant="secondary">{hostData.ethnicity}</Badge>
+              </div>
+            </div>
+          )}
+        </SettingsRow>
+
+        {/* --- LIGNE : ACCESSIBILITÉ --- */}
+        <SettingsRow
+          label="Accessibility"
+          description="Does your home have step-free access for wheelchairs?"
+        >
+          {isEditing ? (
+            <Controller
+              name="hasDisabilityAccess"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {field.value ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              )}
+            />
+          ) : (
+            <ViewValue
+              value={
+                hostData.hasDisabilityAccess
+                  ? "Step-free access"
+                  : "No specialized access"
+              }
+              icon={
+                hostData.hasDisabilityAccess ? (
+                  <Accessibility className="size-4 text-emerald-500" />
+                ) : (
+                  <X className="size-4 text-destructive" />
+                )
+              }
+            />
+          )}
+        </SettingsRow>
+
+        {/* --- LIGNE : NOTES --- */}
+        <SettingsRow
+          label="Notes"
+          description="Any specific details your guests should know beforehand."
+        >
+          {isEditing ? (
+            <Controller
+              name="notes"
+              control={form.control}
+              render={({ field }) => (
+                <Textarea
+                  {...field}
+                  className="min-h-25 text-sm bg-muted/20 border-border/50 focus-visible:ring-1"
+                />
+              )}
+            />
+          ) : (
+            <ViewValue value={hostData.notes || "No additional notes."} />
+          )}
+        </SettingsRow>
       </div>
     </div>
   );

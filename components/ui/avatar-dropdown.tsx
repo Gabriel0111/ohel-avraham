@@ -32,7 +32,7 @@ const AvatarDropdown = ({
 }: AvatarDropdownProps) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="cursor-pointer">
+      <DropdownMenuTrigger asChild className="cursor-pointer shadow-sm">
         <Avatar className="size-8 shrink-0">
           <AvatarImage
             src={imageSrc ?? `https://avatar.vercel.sh/${email}`}

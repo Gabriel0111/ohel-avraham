@@ -8,12 +8,14 @@ import {
 } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/ui/sidebar-nav";
 import { JSX } from "react";
+import { RoleType } from "@/convex/enums";
 
 interface Props {
   items: {
     title: string;
     url: string;
     icon?: Icon;
+    minRole?: RoleType | undefined;
   }[];
 }
 

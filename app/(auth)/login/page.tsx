@@ -135,20 +135,18 @@ const LoginPage = () => {
 
                     <InputGroup aria-invalid={fieldState.invalid}>
                       <InputGroupAddon>
-                        <InputGroupInput
-                          type="password"
-                          aria-invalid={fieldState.invalid}
-                          className={cn(
-                            fieldState.invalid && "text-destructive",
-                          )}
-                          {...field}
-                        />
                         <KeyRoundIcon
                           className={cn(
                             fieldState.invalid && "text-destructive",
                           )}
                         />
                       </InputGroupAddon>
+                      <InputGroupInput
+                        type="password"
+                        aria-invalid={fieldState.invalid}
+                        className={cn(fieldState.invalid && "text-destructive")}
+                        {...field}
+                      />
                     </InputGroup>
 
                     {fieldState.invalid && (
