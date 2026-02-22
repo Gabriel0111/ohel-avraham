@@ -49,7 +49,18 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
   const form = useForm({
     resolver: zodResolver(hostSchema),
-    defaultValues: hostData ?? undefined,
+    defaultValues: hostData
+      ? {
+          ...hostData,
+          dob: new Date(hostData.dob),
+          // On "rassure" TypeScript ici :
+          kashrout: hostData.kashrout as HostType["kashrout"],
+          sector: hostData.sector as HostType["sector"],
+          ethnicity: hostData.ethnicity as HostType["ethnicity"],
+          notes: hostData.notes || "",
+          entrance: hostData.entrance || "",
+        }
+      : undefined,
   });
 
   if (!hostData) return <EmptyProfile />;

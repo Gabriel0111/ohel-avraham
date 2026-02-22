@@ -3,6 +3,15 @@
 import { Client } from "@googlemaps/google-maps-services-js";
 import { env } from "@/lib/env";
 
+interface AutocompleteSuggestion {
+  placePrediction: {
+    placeId: string;
+    text: {
+      text: string;
+    };
+  };
+}
+
 const client = new Client();
 
 export const autocomplete = async (input: string) => {
@@ -29,7 +38,7 @@ export const autocomplete = async (input: string) => {
     const response = await res.json();
 
     return (
-      response.suggestions.map((item: unknown) => {
+      response.suggestions.map((item: AutocompleteSuggestion) => {
         return item.placePrediction.text.text;
       }) || []
     );

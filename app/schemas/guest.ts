@@ -7,9 +7,9 @@ export const guestSchema = z.object({
   dob: z.coerce.date({ message: "Date of birth must be a valid date" }),
 
   region: z.string({ message: "Region must be defined" }).min(3),
-  gender: z.enum(GENDERS, { message: "Gender must be defined" }),
-  sector: z.enum(SECTORS, { message: "Sector must be a defined" }),
-  ethnicity: z.enum(ETHNICITIES, {
+  gender: z.literal(GENDERS, { message: "Gender must be defined" }),
+  sector: z.literal(SECTORS, { message: "Sector must be a defined" }),
+  ethnicity: z.literal(ETHNICITIES, {
     message: "Ethnicity must be a defined",
   }),
   notes: z.string().max(1000, "Notes can contains up to 1000 chars").optional(),
