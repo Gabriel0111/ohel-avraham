@@ -2,10 +2,11 @@ import { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 
 type ViewValueProps = {
-  value: any;
+  value: ReactNode;
 } & (
   | { icon: ReactNode; title?: never } // Si icon est présent, title doit être absent
   | { title: string; icon?: never } // Si title est présent, icon doit être absent
+  | { title?: never; icon?: never } // Si title est présent, icon doit être absent
 );
 
 export const ViewValue = ({ value, icon, title }: ViewValueProps) => {

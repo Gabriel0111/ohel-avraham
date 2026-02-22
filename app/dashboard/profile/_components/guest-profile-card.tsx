@@ -40,7 +40,17 @@ export function GuestProfileCard({
 
   const form = useForm({
     resolver: zodResolver(guestSchema),
-    defaultValues: guestData ?? undefined,
+    defaultValues: guestData
+      ? {
+          ...guestData,
+          dob: new Date(guestData.dob),
+          // On cast les strings de Convex vers les types attendus par Zod
+          gender: guestData.gender as GuestType["gender"],
+          sector: guestData.sector as GuestType["sector"],
+          ethnicity: guestData.ethnicity as GuestType["ethnicity"],
+          notes: guestData.notes || "",
+        }
+      : undefined,
   });
 
   const handleSave = (values: GuestType) => {

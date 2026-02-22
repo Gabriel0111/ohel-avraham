@@ -1,7 +1,7 @@
 "use client";
 
 import { Logo } from "@/components/icons/logo";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, Suspense } from "react";
 import { FloatingPaths } from "@/app/(auth)/_components/floating-paths";
 import Link from "next/link";
 
@@ -44,7 +44,17 @@ export function AuthPage({ children }: PropsWithChildren) {
         </div>
       </div>
 
-      {children}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-sm text-muted-foreground">
+              Loading registration...
+            </p>
+          </div>
+        }
+      >
+        {children}
+      </Suspense>
     </main>
   );
 }
