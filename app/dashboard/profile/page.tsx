@@ -49,6 +49,7 @@ export default function ProfilePage() {
                     alt={user.name || ""}
                     fill
                     className="object-cover"
+                    draggable={false}
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-3xl font-medium">

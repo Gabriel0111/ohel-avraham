@@ -61,11 +61,7 @@ export default function DashboardPage() {
         title="Account Overview"
         description="Manage your profile status and community permissions."
         action={
-          <Button
-            variant="outline"
-            className="rounded-xl shadow-sm bg-background"
-            asChild
-          >
+          <Button variant="outline" asChild>
             <Link href="/dashboard/profile">Edit Profile</Link>
           </Button>
         }
@@ -85,7 +81,7 @@ export default function DashboardPage() {
         title="Community"
         description="Connect with other members of the community."
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="">
           <ActionCard
             title="Browse People"
             subtitle={

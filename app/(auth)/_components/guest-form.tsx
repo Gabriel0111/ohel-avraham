@@ -28,7 +28,7 @@ import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
-import Autocomplete from "@/components/layout/autocomplete-adress";
+import AutocompleteAddress from "@/components/layout/autocomplete-address";
 
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -130,7 +130,7 @@ const GuestForm = () => {
               <Field>
                 <FieldLabel>Region</FieldLabel>
 
-                <Autocomplete
+                <AutocompleteAddress
                   onValueChange={(e) => {
                     console.log("e", e);
                     field.onChange(e);

@@ -7,7 +7,7 @@ export const DashboardSection = ({
   description,
   action,
   children,
-}: any) => (
+}: never) => (
   <section className="flex flex-col border-b border-border py-8 md:flex-row md:gap-12">
     <div className="flex w-full justify-between md:block md:w-1/3 lg:w-1/2">
       <div className="space-y-1">
@@ -24,7 +24,7 @@ export const DashboardSection = ({
   </section>
 );
 
-export const InfoRow = ({ icon, label, value, isLast, capitalize }: any) => (
+export const InfoRow = ({ icon, label, value, isLast, capitalize }: never) => (
   <div
     className={`flex items-center py-4 ${!isLast ? "border-b border-border/50" : ""}`}
   >
@@ -38,10 +38,10 @@ export const InfoRow = ({ icon, label, value, isLast, capitalize }: any) => (
   </div>
 );
 
-export const ActionCard = ({ title, subtitle, href, icon }: any) => (
+export const ActionCard = ({ title, subtitle, href, icon }: never) => (
   <Link
     href={href}
-    className="group block p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-all shadow-sm"
+    className="group block p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-all"
   >
     <div className="flex items-center gap-4">
       <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">

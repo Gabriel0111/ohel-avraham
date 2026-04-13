@@ -36,7 +36,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import Autocomplete from "@/components/layout/autocomplete-adress";
+import AutocompleteAddress from "@/components/layout/autocomplete-address";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -143,7 +143,7 @@ const HostForm = () => {
               // </Field>
               <Field>
                 <FieldLabel>Address</FieldLabel>
-                <Autocomplete
+                <AutocompleteAddress
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 />

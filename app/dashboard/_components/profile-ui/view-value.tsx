@@ -18,11 +18,13 @@ export const ViewValue = ({ value, icon, title }: ViewValueProps) => {
       </div>
     );
 
-  if (title) {
+  if (title || value) {
     return (
       <div className="flex items-center justify-between">
-        <Label>{title}</Label>
-        <span className="text-muted-foreground text-sm">{value}</span>
+        {title && <Label>{title}</Label>}
+        {value && (
+          <span className="text-muted-foreground text-sm">{value}</span>
+        )}
       </div>
     );
   }

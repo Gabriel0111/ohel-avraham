@@ -20,7 +20,7 @@ import { guestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { GENDERS } from "@/app/enums/gender";
-import Autocomplete from "@/components/layout/autocomplete-adress";
+import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "../../_components/profile-ui/view-value";
@@ -119,7 +119,7 @@ export function GuestProfileCard({
               name="region"
               control={form.control}
               render={({ field }) => (
-                <Autocomplete
+                <AutocompleteAddress
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                   // className="w-full border-none p-0 focus-visible:ring-0 bg-transparent"

@@ -19,7 +19,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Accessibility, MapPin, Phone, X } from "lucide-react";
 import { hostSchema, HostType } from "@/app/schemas/host";
-import Autocomplete from "@/components/layout/autocomplete-adress";
+import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
 import {
@@ -37,6 +37,8 @@ import { Label } from "@/components/ui/label";
 import { KASHROUT } from "@/app/enums/kashrout";
 import { Doc } from "@/convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
+import { useWarnIfUnsavedChanges } from "@/hooks/use-warn-if-unsaved-changes";
+import Link from "next/link";
 
 interface HostProfileCardProps {
   hostData: Doc<"hosts"> | null | undefined;
@@ -63,6 +65,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
       : undefined,
   });
 
+  useWarnIfUnsavedChanges(isEditing && form.formState.isDirty);
+
   if (!hostData) return <EmptyProfile />;
 
   const handleSave = (values: HostType) => {
@@ -87,7 +91,6 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             variant="outline"
             size="sm"
             onClick={() => setIsEditing(true)}
-            className="h-8 rounded-md shadow-xs bg-background"
           >
             Edit
           </Button>
@@ -125,10 +128,9 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 name="address"
                 control={form.control}
                 render={({ field }) => (
-                  <Autocomplete
+                  <AutocompleteAddress
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    // className="w-full bg-transparent border-none p-0 focus-visible:ring-0"
                   />
                 )}
               />
@@ -201,7 +203,11 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             />
           ) : (
             <ViewValue
-              value={RPNInput.formatPhoneNumberIntl(hostData.phoneNumber)}
+              value={
+                <Link href={`tel:${hostData.phoneNumber}`}>
+                  {RPNInput.formatPhoneNumberIntl(hostData.phoneNumber)}
+                </Link>
+              }
               icon={<Phone className="size-4" />}
             />
           )}
