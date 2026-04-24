@@ -1,15 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useT } from "@/lib/i18n/context";
 
 const BackHomeButton = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useT();
 
   const userType = searchParams.get("userType");
 
-  // If userType exists → remove it
   const onBack = () => {
     const params = new URLSearchParams(searchParams.toString());
     const isRegistering = params.has("userType");
@@ -18,10 +21,7 @@ const BackHomeButton = () => {
 
     if (isRegistering) {
       params.delete("userType");
-      // url = params.toString();
       url = "?";
-
-      // router.push(params.toString());
     } else {
       url = "/";
     }
@@ -29,7 +29,6 @@ const BackHomeButton = () => {
     router.push(url, { scroll: false });
   };
 
-  // No userType → go home
   if (!userType) {
     return (
       <Link
@@ -40,12 +39,11 @@ const BackHomeButton = () => {
         })}
       >
         <ChevronLeftIcon />
-        Home
+        {t.common.home}
       </Link>
     );
   }
 
-  // userType exists → go back one step
   return (
     <Button
       type="button"
@@ -54,7 +52,7 @@ const BackHomeButton = () => {
       className="absolute top-7 left-5"
     >
       <ChevronLeftIcon />
-      Back
+      {t.common.back}
     </Button>
   );
 };

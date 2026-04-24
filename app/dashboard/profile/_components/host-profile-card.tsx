@@ -39,6 +39,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { useWarnIfUnsavedChanges } from "@/hooks/use-warn-if-unsaved-changes";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/context";
 
 interface HostProfileCardProps {
   hostData: Doc<"hosts"> | null | undefined;
@@ -48,6 +49,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const upsertHost = useMutation(api.hosts.upsertHost);
+  const { t } = useT();
 
   const form = useForm({
     resolver: zodResolver(hostSchema),
@@ -73,10 +75,10 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
     startSaving(async () => {
       try {
         await upsertHost({ data: { ...values, dob: values.dob.getTime() } });
-        toast.success("Changes saved");
+        toast.success(t.common.save);
         setIsEditing(false);
       } catch {
-        toast.error("Failed to save");
+        toast.error(t.auth.errorCreating);
       }
     });
   };
@@ -85,14 +87,14 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
     <div className="space-y-2">
       {/* Action Header */}
       <div className="flex items-center justify-between pb-4 border-b border-border">
-        <h3 className="text-base font-semibold">Host Settings</h3>
+        <h3 className="text-base font-semibold">{t.hostProfile.title}</h3>
         {!isEditing ? (
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsEditing(true)}
           >
-            Edit
+            {t.common.edit}
           </Button>
         ) : (
           <div className="flex gap-2">
@@ -102,7 +104,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               onClick={() => setIsEditing(false)}
               disabled={isSaving}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               size="sm"
@@ -110,7 +112,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               disabled={isSaving}
             >
               {isSaving && <Spinner className="mr-2 border-background/30" />}
-              Save changes
+              {t.common.save}
             </Button>
           </div>
         )}
@@ -119,8 +121,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
       <div className="divide-y divide-border/40">
         {/* --- LIGNE : ADRESSE --- */}
         <SettingsRow
-          label="Address"
-          description="The location where you will host meals."
+          label={t.form.address}
+          description={t.hostProfile.addressDesc}
         >
           {isEditing ? (
             <div className="grid gap-4 w-full">
@@ -144,7 +146,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Entrance</FieldLabel>
+                    <FieldLabel>{t.form.entrance}</FieldLabel>
                     <Input {...field} className="w-fit" />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -158,7 +160,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Floor</FieldLabel>
+                    <FieldLabel>{t.form.floor}</FieldLabel>
                     <Input {...field} className="w-fit" />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -174,17 +176,17 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 icon={<MapPin className="size-4" />}
               />
 
-              <ViewValue value={hostData.entrance} title="Entrance" />
+              <ViewValue value={hostData.entrance} title={t.form.entrance} />
 
-              <ViewValue value={hostData.floor} title="Floor" />
+              <ViewValue value={hostData.floor} title={t.form.floor} />
             </div>
           )}
         </SettingsRow>
 
         {/* --- LIGNE : TELEPHONE --- */}
         <SettingsRow
-          label="Phone Number"
-          description="Used for urgent coordination with guests."
+          label={t.form.phoneNumber}
+          description={t.hostProfile.phoneDesc}
         >
           {isEditing ? (
             <Controller
@@ -219,8 +221,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
         {/* --- LIGNE : KASHROUT --- */}
         <SettingsRow
-          label="Community details"
-          description="Sector and cultural background."
+          label={t.hostProfile.communityDetails}
+          description={t.hostProfile.communityDetailsDesc}
         >
           {isEditing ? (
             <div className="grid gap-4 w-full">
@@ -229,13 +231,13 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Kashrout</FieldLabel>
+                    <FieldLabel>{t.form.kashrout}</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Kashrout" />
+                        <SelectValue placeholder={t.form.selectKashrout} />
                       </SelectTrigger>
                       <SelectContent>
                         {KASHROUT.map((s) => (
@@ -253,13 +255,13 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Sector</FieldLabel>
+                    <FieldLabel>{t.form.sector}</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Sector" />
+                        <SelectValue placeholder={t.form.selectSector} />
                       </SelectTrigger>
                       <SelectContent>
                         {SECTORS.map((s) => (
@@ -277,13 +279,13 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Ethnicity</FieldLabel>
+                    <FieldLabel>{t.form.ethnicity}</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Ethnicity" />
+                        <SelectValue placeholder={t.form.selectEthnicity} />
                       </SelectTrigger>
                       <SelectContent>
                         {ETHNICITIES.map((e) => (
@@ -300,15 +302,15 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
           ) : (
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
-                <Label>Kashrout</Label>
+                <Label>{t.form.kashrout}</Label>
                 <Badge variant="secondary">{hostData.kashrout}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Sector</Label>
+                <Label>{t.form.sector}</Label>
                 <Badge variant="secondary">{hostData.sector}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Ethnicity</Label>
+                <Label>{t.form.ethnicity}</Label>
                 <Badge variant="secondary">{hostData.ethnicity}</Badge>
               </div>
             </div>
@@ -317,8 +319,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
         {/* --- LIGNE : ACCESSIBILITÉ --- */}
         <SettingsRow
-          label="Accessibility"
-          description="Does your home have step-free access for wheelchairs?"
+          label={t.hostProfile.accessibility}
+          description={t.hostProfile.accessibilityDesc}
         >
           {isEditing ? (
             <Controller
@@ -331,7 +333,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                     onCheckedChange={field.onChange}
                   />
                   <span className="text-sm text-muted-foreground">
-                    {field.value ? "Enabled" : "Disabled"}
+                    {field.value ? t.common.enabled : t.common.disabled}
                   </span>
                 </div>
               )}
@@ -340,8 +342,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             <ViewValue
               value={
                 hostData.hasDisabilityAccess
-                  ? "Step-free access"
-                  : "No specialized access"
+                  ? t.hostProfile.stepFreeAccess
+                  : t.hostProfile.noSpecializedAccess
               }
               icon={
                 hostData.hasDisabilityAccess ? (
@@ -356,8 +358,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
         {/* --- LIGNE : NOTES --- */}
         <SettingsRow
-          label="Notes"
-          description="Any specific details your guests should know beforehand."
+          label={t.form.notes}
+          description={t.hostProfile.notesDesc}
         >
           {isEditing ? (
             <Controller
@@ -371,7 +373,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               )}
             />
           ) : (
-            <ViewValue value={hostData.notes || "No additional notes."} />
+            <ViewValue value={hostData.notes || t.common.noAdditionalNotes} />
           )}
         </SettingsRow>
       </div>

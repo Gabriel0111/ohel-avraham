@@ -14,16 +14,18 @@ import {
 } from "./_components/dashboard-ui";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
+import { useT } from "@/lib/i18n/context";
 
 export default function DashboardPage() {
+  const { t } = useT();
   const data = useQuery(api.dashboard.getDashboardData);
 
   const stats = useMemo(() => {
     if (!data) return [];
     return [
       {
-        label: "Profile Setup",
-        value: data.hasProfile ? "Complete" : "Incomplete",
+        label: t.dashboard.profileSetup,
+        value: data.hasProfile ? t.dashboard.complete : t.dashboard.incomplete,
         icon: data.hasProfile ? (
           <CheckCircle2 className="size-5 text-green-600" />
         ) : (
@@ -31,7 +33,7 @@ export default function DashboardPage() {
         ),
       },
       {
-        label: "Your Role",
+        label: t.dashboard.yourRole,
         value: data.user.role,
         icon: (
           <div className="text-primary">{getIconForRole(data.user.role)}</div>
@@ -39,8 +41,8 @@ export default function DashboardPage() {
         capitalize: true,
       },
       {
-        label: "Verification",
-        value: data.user.isVerified ? "Verified" : "Pending",
+        label: t.dashboard.verification,
+        value: data.user.isVerified ? t.dashboard.verified : t.dashboard.pending,
         icon: data.user.isVerified ? (
           <CheckCircle2 className="size-5 text-green-600" />
         ) : (
@@ -48,21 +50,21 @@ export default function DashboardPage() {
         ),
       },
     ];
-  }, [data]);
+  }, [data, t]);
 
   if (data === undefined) return <ProfileLoading />;
   if (data === null) return <ProfileError />;
 
   return (
     <div>
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t.dashboard.title}</h1>
 
       <DashboardSection
-        title="Account Overview"
-        description="Manage your profile status and community permissions."
+        title={t.dashboard.accountOverview}
+        description={t.dashboard.accountOverviewDesc}
         action={
           <Button variant="outline" asChild>
-            <Link href="/dashboard/profile">Edit Profile</Link>
+            <Link href="/dashboard/profile">{t.dashboard.editProfile}</Link>
           </Button>
         }
       >
@@ -78,16 +80,16 @@ export default function DashboardPage() {
       </DashboardSection>
 
       <DashboardSection
-        title="Community"
-        description="Connect with other members of the community."
+        title={t.dashboard.community}
+        description={t.dashboard.communityDesc}
       >
         <div className="">
           <ActionCard
-            title="Browse People"
+            title={t.dashboard.browsePeople}
             subtitle={
               data.roleInfo.isHost
-                ? "See guests looking for meals"
-                : "Find hosts near you"
+                ? t.dashboard.seeGuests
+                : t.dashboard.findHosts
             }
             href="/dashboard/people"
             icon={<Users className="size-5" />}

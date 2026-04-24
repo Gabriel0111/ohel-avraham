@@ -4,8 +4,11 @@ import { Logo } from "@/components/icons/logo";
 import { PropsWithChildren, Suspense } from "react";
 import { FloatingPaths } from "@/app/(auth)/_components/floating-paths";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/context";
 
 export function AuthPage({ children }: PropsWithChildren) {
+  const { t } = useT();
+
   return (
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 sm:-mx-8mx-auto!">
       <div className="relative hidden h-full flex-col border-r bg-secondary p-10 lg:flex dark:bg-secondary/20">
@@ -18,24 +21,11 @@ export function AuthPage({ children }: PropsWithChildren) {
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2 text-white">
             <p className="text-xl">
-              &ldquo;Welcoming guests is greater than receiving the Divine
-              Presence.&rdquo;
+              &ldquo;{t.auth.quote}&rdquo;
             </p>
             <footer className="text-sm text-muted-foreground">
-              Shabbat 127a
+              {t.auth.quoteSource}
             </footer>
-
-            {/*<LayoutTextFlip*/}
-            {/*  text=""*/}
-            {/*  words={[*/}
-            {/*    "Welcoming guests is greater than receiving the Divine",*/}
-            {/*    "— Shabbat 127a",*/}
-            {/*    "How good and pleasant it is when brothers dwell together",*/}
-            {/*    "— Tehillim 133:1",*/}
-            {/*    "The world is built through kindness.",*/}
-            {/*    "— Tehillim 89:3"*/}
-            {/*  ]}*/}
-            {/*/>*/}
           </blockquote>
         </div>
         <div className="absolute inset-0">
@@ -48,7 +38,7 @@ export function AuthPage({ children }: PropsWithChildren) {
         fallback={
           <div className="flex items-center justify-center min-h-screen">
             <p className="text-sm text-muted-foreground">
-              Loading registration...
+              {t.auth.loadingRegistration}
             </p>
           </div>
         }

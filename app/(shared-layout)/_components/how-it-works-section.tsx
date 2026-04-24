@@ -3,26 +3,12 @@
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { UserPlus, CalendarHeart, Utensils } from "lucide-react";
 import type { ReactNode } from "react";
+import { useT } from "@/lib/i18n/context";
 
-const steps: { icon: ReactNode; title: string; description: string }[] = [
-  {
-    icon: <UserPlus className="size-7" />,
-    title: "Create your profile",
-    description:
-      "Sign up as a host or a guest. Tell us about your preferences, kashrut level, and what makes your Shabbat special.",
-  },
-  {
-    icon: <CalendarHeart className="size-7" />,
-    title: "Find a match",
-    description:
-      "Browse available Shabbat meals in your area, or open your home and let guests find you. We make the connection easy.",
-  },
-  {
-    icon: <Utensils className="size-7" />,
-    title: "Share a meal",
-    description:
-      "Enjoy a warm Shabbat experience together. Build lasting connections and strengthen the community, one meal at a time.",
-  },
+const stepIcons: ReactNode[] = [
+  <UserPlus key="0" className="size-7" />,
+  <CalendarHeart key="1" className="size-7" />,
+  <Utensils key="2" className="size-7" />,
 ];
 
 function StepCard({
@@ -31,12 +17,14 @@ function StepCard({
   description,
   index,
   isVisible,
+  stepLabel,
 }: {
   icon: ReactNode;
   title: string;
   description: string;
   index: number;
   isVisible: boolean;
+  stepLabel: string;
 }) {
   return (
     <div
@@ -52,7 +40,7 @@ function StepCard({
       </div>
       <div className="flex flex-col gap-2">
         <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {"Step " + (index + 1)}
+          {stepLabel} {index + 1}
         </span>
         <h3 className="text-xl font-semibold text-foreground">{title}</h3>
       </div>
@@ -63,6 +51,7 @@ function StepCard({
 
 export function HowItWorksSection() {
   const { ref, isVisible } = useScrollAnimation(0.1);
+  const { t } = useT();
 
   return (
     <section ref={ref} className="py-20 md:py-28">
@@ -74,7 +63,7 @@ export function HowItWorksSection() {
             transform: isVisible ? "translateY(0)" : "translateY(20px)",
           }}
         >
-          How it works
+          {t.howItWorks.sectionLabel}
         </span>
         <h2
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-balance text-center transition-all duration-700"
@@ -84,19 +73,20 @@ export function HowItWorksSection() {
             transitionDelay: "100ms",
           }}
         >
-          Three simple steps to a meaningful Shabbat
+          {t.howItWorks.sectionTitle}
         </h2>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {steps.map((step, i) => (
+        {t.howItWorks.steps.map((step, i) => (
           <StepCard
-            key={step.title}
-            icon={step.icon}
+            key={i}
+            icon={stepIcons[i]}
             title={step.title}
             description={step.description}
             index={i}
             isVisible={isVisible}
+            stepLabel={t.howItWorks.step}
           />
         ))}
       </div>

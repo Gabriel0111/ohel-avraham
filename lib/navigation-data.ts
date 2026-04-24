@@ -1,15 +1,13 @@
+import type { Translations } from "@/lib/i18n/translations";
+
+type NavKey = keyof Translations["nav"];
+
 type NavigationData = {
   href: string;
-  title: string;
+  titleKey: NavKey;
 };
 
 export const navigationData: NavigationData[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-  },
-  {
-    title: "About us",
-    href: "/about",
-  },
+  { href: "/dashboard", titleKey: "dashboard" },
+  { href: "/about", titleKey: "aboutUs" },
 ];

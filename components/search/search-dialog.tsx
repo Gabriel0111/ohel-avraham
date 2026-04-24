@@ -12,6 +12,7 @@ import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
 import { HostListCard, type PublicHost } from "./host-list-card";
 import { Search, MapPin, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -33,6 +34,7 @@ interface SearchDialogProps {
 }
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
+  const { t } = useT();
   const hosts = useQuery(api.hosts.getPublicHosts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
@@ -75,12 +77,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="size-5 text-primary" />
-            Find a Shabbat Host
+            {t.search.title}
           </DialogTitle>
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, address, sector..."
+              placeholder={t.search.placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -100,7 +102,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
               {hosts && filteredHosts.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">
-                  No hosts found matching your search.
+                  {t.search.noResults}
                 </div>
               )}
 

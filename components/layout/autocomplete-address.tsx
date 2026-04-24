@@ -16,6 +16,7 @@ import {
 } from "@/lib/google";
 import { useDebouncedCallback } from "use-debounce";
 import { Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
 
 export interface PlaceData {
   address: string;
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
+  const { t } = useT();
   const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [text, setText] = useState(defaultValue);
   const [resultsOpen, setResultsOpen] = useState(false);
@@ -56,12 +58,12 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
     try {
       const data = await getFullPlaceData(placeId);
       if (!data.streetNumber) {
-        setError("Please select an address that includes a street number.");
+        setError(t.address.streetNumberRequired);
         return;
       }
       onPlaceSelect({ address: data.address, lat: data.lat, lng: data.lng });
     } catch {
-      setError("Failed to fetch address details. Please try again.");
+      setError(t.address.fetchError);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +79,7 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
     <div className="space-y-1">
       <Command className="rounded-lg border-border border" shouldFilter={false}>
         <CommandInput
-          placeholder="Search for an address with street number..."
+          placeholder={t.address.searchPlaceholder}
           value={text}
           onValueChange={handleValueChange}
         />
@@ -98,7 +100,7 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
       {isLoading && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="size-3 animate-spin" />
-          Loading address details...
+          {t.address.loading}
         </div>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}

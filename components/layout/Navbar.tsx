@@ -28,13 +28,27 @@ import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { SearchTriggerButton } from "@/components/search/search-trigger";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/context";
+import type { Language } from "@/lib/i18n/translations";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const LANGUAGES: { value: Language; label: string; flag: string }[] = [
+  { value: "en", label: "EN", flag: "🇬🇧" },
+  { value: "fr", label: "FR", flag: "🇫🇷" },
+  { value: "he", label: "HE", flag: "🇮🇱" },
+];
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-
   const router = useRouter();
-
   const { user } = useAuth();
+  const { t, lang, setLang } = useT();
 
   useEffect(() => {
     const onScroll = () => {
@@ -49,7 +63,7 @@ const Navbar = () => {
     authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          toast.success("Logout successfully.");
+          toast.success(t.common.logoutSuccess);
         },
         onError: (error) => {
           toast.error(error.error.message);
@@ -77,22 +91,36 @@ const Navbar = () => {
         <NavigationMenu className="max-md:hidden">
           <NavigationMenuList className="flex-wrap justify-start gap-0">
             {navigationData.map((navItem) => (
-              <NavigationMenuItem key={navItem.title}>
+              <NavigationMenuItem key={navItem.titleKey}>
                 <NavigationMenuLink
                   href={navItem.href}
                   className="text-muted-foreground hover:text-primary px-3 py-1.5 text-base! font-medium hover:bg-transparent"
                 >
-                  {navItem.title}
+                  {t.nav[navItem.titleKey]}
                 </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Login Button */}
-        <div className="flex gap-4 items-center">
+        {/* Right side controls */}
+        <div className="flex gap-3 items-center">
           <SearchTriggerButton />
           <AnimatedThemeToggler />
+
+          {/* Language selector */}
+          <Select value={lang} onValueChange={(v) => setLang(v as Language)}>
+            <SelectTrigger className="h-8 w-20 text-xs px-2 gap-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.value} value={l.value} className="text-xs">
+                  {l.flag} {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Authenticated>
             <AvatarDropdown
@@ -102,12 +130,12 @@ const Navbar = () => {
               items={[
                 {
                   icon: <UserIcon />,
-                  label: "Profile",
+                  label: t.nav.profile,
                   onClick: () => router.push("/dashboard/profile"),
                 },
                 {
                   icon: <LogOutIcon />,
-                  label: "Sign Out",
+                  label: t.nav.signOut,
                   onClick: onSignOut,
                   variant: "destructive",
                 },
@@ -121,11 +149,11 @@ const Navbar = () => {
                 href="/login"
                 className={buttonVariants({ variant: "ghost" })}
               >
-                Login
+                {t.nav.login}
               </Link>
 
               <Link href="/sign-up" className={buttonVariants()}>
-                Sign up
+                {t.nav.signup}
               </Link>
             </>
           </Unauthenticated>
@@ -142,21 +170,21 @@ const Navbar = () => {
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <MenuIcon />
-                  <span className="sr-only">Menu</span>
+                  <span className="sr-only">{t.nav.menu}</span>
                 </Button>
               </SheetTrigger>
               <SheetTitle className="hidden">
-                <p>Menu</p>
+                <p>{t.nav.menu}</p>
               </SheetTitle>
               <SheetContent side="right" className="w-64 p-5">
                 <nav className="flex flex-col gap-4 mt-8">
-                  {navigationData.map((item, index) => (
+                  {navigationData.map((item) => (
                     <Link
-                      key={index}
+                      key={item.titleKey}
                       href={item.href}
                       className="text-lg font-medium hover:text-primary transition-colors"
                     >
-                      {item.title}
+                      {t.nav[item.titleKey]}
                     </Link>
                   ))}
                 </nav>

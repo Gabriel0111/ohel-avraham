@@ -24,9 +24,11 @@ import AuthHeader from "@/app/(auth)/_components/auth-header";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/context";
 
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
+  const { t } = useT();
 
   const router = useRouter();
 
@@ -42,7 +44,7 @@ const LoginPage = () => {
         callbackURL: "/complete-registration",
         fetchOptions: {
           onSuccess: async () => {
-            toast.success("Signed in with Google, you will be redirected...");
+            toast.success(t.auth.signedInWithGoogle);
           },
           onError: () => {
             toast.error("Internal Server Error");
@@ -60,7 +62,7 @@ const LoginPage = () => {
         fetchOptions: {
           onSuccess: () => {
             router.push("/");
-            toast.success("Login successfully.");
+            toast.success(t.auth.loginSuccess);
           },
           onError: (error) => {
             toast.error(error.error.message);
@@ -76,8 +78,8 @@ const LoginPage = () => {
 
       <div className="mx-auto space-y-8 sm:w-sm mt-10">
         <AuthHeader
-          title="Login"
-          description="Log in to your Account to start your sharing experience"
+          title={t.auth.loginTitle}
+          description={t.auth.loginDesc}
         />
 
         <Button
@@ -87,7 +89,7 @@ const LoginPage = () => {
           onClick={signInWithGoogle}
         >
           {isRegistering ? <Spinner /> : <GoogleIcon />}
-          Continue with Google
+          {t.auth.continueWithGoogle}
         </Button>
 
         <OrDivider />
@@ -100,7 +102,7 @@ const LoginPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <>
-                    <FieldLabel>Email</FieldLabel>
+                    <FieldLabel>{t.form.email}</FieldLabel>
 
                     <InputGroup aria-invalid={fieldState.invalid}>
                       <InputGroupInput
@@ -131,7 +133,7 @@ const LoginPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <>
-                    <FieldLabel>Password</FieldLabel>
+                    <FieldLabel>{t.form.password}</FieldLabel>
 
                     <InputGroup aria-invalid={fieldState.invalid}>
                       <InputGroupAddon>
@@ -158,7 +160,7 @@ const LoginPage = () => {
 
               <Button className="w-full" type="submit" disabled={isRegistering}>
                 {isRegistering && <Spinner />}
-                Continue With Email
+                {t.auth.continueWithEmail}
               </Button>
             </div>
           </FieldGroup>
@@ -182,7 +184,7 @@ const LoginPage = () => {
         {/*</p>*/}
 
         <p className="flex justify-center items-center mt-8 text-muted-foreground text-sm">
-          <span>Don&#39;t have an account?</span>
+          <span>{t.auth.noAccount}</span>
           <Link
             href="/sign-up"
             className={buttonVariants({
@@ -190,7 +192,7 @@ const LoginPage = () => {
               className: "font-normal",
             })}
           >
-            Click here to register
+            {t.auth.clickToRegister}
           </Link>
         </p>
       </div>

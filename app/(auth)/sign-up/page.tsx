@@ -35,9 +35,11 @@ import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/context";
 
 const SignUpPage = () => {
   const [isRegistering, startRegistering] = useTransition();
+  const { t } = useT();
 
   const router = useRouter();
 
@@ -56,7 +58,7 @@ const SignUpPage = () => {
         callbackURL: "/complete-registration",
         fetchOptions: {
           onSuccess: async () => {
-            toast.success("Signed in with Google, you will be redirected...");
+            toast.success(t.auth.signedInWithGoogle);
           },
           onError: () => {
             toast.error("Internal Server Error");
@@ -101,9 +103,9 @@ const SignUpPage = () => {
 
       if (result) {
         router.push("/complete-registration");
-        toast.success("Signed up successfully.");
+        toast.success(t.auth.signedUpSuccess);
       } else {
-        toast.error("Error creating new user");
+        toast.error(t.auth.errorCreating);
       }
     });
   };
@@ -114,8 +116,8 @@ const SignUpPage = () => {
 
       <div className="mx-auto space-y-8 md:w-sm w-sm mt-10">
         <AuthHeader
-          title="Sign up"
-          description="Create your Account to start your sharing experience"
+          title={t.auth.signUpTitle}
+          description={t.auth.signUpDesc}
         />
 
         <Button
@@ -125,7 +127,7 @@ const SignUpPage = () => {
           onClick={signInWithGoogle}
         >
           {isRegistering ? <Spinner /> : <GoogleIcon />}
-          Continue with Google
+          {t.auth.continueWithGoogle}
         </Button>
 
         <OrDivider />
@@ -138,7 +140,7 @@ const SignUpPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>First Name</FieldLabel>
+                    <FieldLabel>{t.form.firstName}</FieldLabel>
                     <Input
                       placeholder="Avraham"
                       aria-invalid={fieldState.invalid}
@@ -158,7 +160,7 @@ const SignUpPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>Last Name</FieldLabel>
+                    <FieldLabel>{t.form.lastName}</FieldLabel>
                     <Input
                       placeholder="Avinu"
                       aria-invalid={fieldState.invalid}
@@ -179,7 +181,7 @@ const SignUpPage = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>Email</FieldLabel>
+                  <FieldLabel>{t.form.email}</FieldLabel>
 
                   <InputGroup>
                     <InputGroupInput
@@ -209,7 +211,7 @@ const SignUpPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>Password</FieldLabel>
+                    <FieldLabel>{t.form.password}</FieldLabel>
 
                     <Input
                       type="password"
@@ -230,7 +232,7 @@ const SignUpPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>Confirm Password</FieldLabel>
+                    <FieldLabel>{t.form.confirmPassword}</FieldLabel>
 
                     <Input
                       type="password"
@@ -249,7 +251,7 @@ const SignUpPage = () => {
 
             <Button className="w-full" type="submit" disabled={isRegistering}>
               {isRegistering && <Spinner />}
-              Register
+              {t.auth.register}
             </Button>
           </FieldGroup>
         </form>
@@ -272,7 +274,7 @@ const SignUpPage = () => {
         {/*</p>*/}
 
         <p className="flex justify-center items-center mt-2 text-muted-foreground text-sm">
-          <span>Already have an account?</span>
+          <span>{t.auth.alreadyHaveAccount}</span>
           <Link
             href="/login"
             className={buttonVariants({
@@ -280,7 +282,7 @@ const SignUpPage = () => {
               className: "font-normal",
             })}
           >
-            Click here to login
+            {t.auth.clickToLogin}
           </Link>
         </p>
       </div>
