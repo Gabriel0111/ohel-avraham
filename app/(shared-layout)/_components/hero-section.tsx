@@ -6,8 +6,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { FloatingPaths } from "@/app/(auth)/_components/floating-paths";
 import { SearchBarTrigger } from "@/components/search/search-trigger";
+import { useT } from "@/lib/i18n/context";
 
 export function HeroSection() {
+  const { t } = useT();
+
   return (
     <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden">
       {/* Background decoration */}
@@ -25,7 +28,7 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <span className="inline-block rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground">
-            {"Bringing the spirit of Abraham's hospitality to life"}
+            {t.hero.badge}
           </span>
         </motion.div>
 
@@ -35,10 +38,10 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
         >
-          Share the warmth of{" "}
-          <span className="text-primary">Shabbat</span>
+          {t.hero.titleLine1}{" "}
+          <span className="text-primary">{t.hero.titleHighlight}</span>
           <br />
-          with open doors
+          {t.hero.titleLine2}
         </motion.h1>
 
         <motion.p
@@ -47,9 +50,7 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
         >
-          Ohel Avraham connects hosts who open their homes for Shabbat meals
-          with guests looking for a warm, meaningful experience. No one should
-          eat alone.
+          {t.hero.description}
         </motion.p>
 
         <motion.div
@@ -65,7 +66,7 @@ export function HeroSection() {
               className: "text-base px-8 h-12",
             })}
           >
-            Get Started
+            {t.hero.getStarted}
             <ArrowRight className="size-4" />
           </Link>
           <Link
@@ -76,7 +77,7 @@ export function HeroSection() {
               className: "text-base px-8 h-12",
             })}
           >
-            Learn More
+            {t.hero.learnMore}
           </Link>
         </motion.div>
 

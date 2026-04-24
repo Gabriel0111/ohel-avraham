@@ -15,6 +15,8 @@ export const HostFields = {
 
   phoneNumber: v.string(),
   address: v.string(),
+  lat: v.optional(v.number()),
+  lng: v.optional(v.number()),
   entrance: v.string(),
   floor: v.string(),
 

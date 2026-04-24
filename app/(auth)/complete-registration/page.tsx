@@ -14,6 +14,7 @@ import { authClient } from "@/lib/auth-client";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { useT } from "@/lib/i18n/context";
 
 const CompleteRegistration = () => {
   const [selectedUserType, setSelectedUserType] = useState<string>();
@@ -28,6 +29,7 @@ const CompleteRegistration = () => {
   const createUser = useMutation(api.users.createUser);
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const { t } = useT();
 
   useEffect(() => {
     const performSync = async () => {
@@ -52,13 +54,13 @@ const CompleteRegistration = () => {
 
   const items: RadioGroupItem[] = [
     {
-      label: "Host",
-      description: "Welcome people on Shabbat and share a wonderful holy day",
+      label: t.auth.hostLabel,
+      description: t.auth.hostDesc,
       value: "host",
     },
     {
-      label: "Guest",
-      description: "Search for people that can host you on Shabbat",
+      label: t.auth.guestLabel,
+      description: t.auth.guestDesc,
       value: "guest",
     },
   ];
@@ -94,8 +96,8 @@ const CompleteRegistration = () => {
             >
               <div className="flex flex-col space-y-5 justify-center">
                 <AuthHeader
-                  title="Complete your registration"
-                  description="Finish your registration to pursue your sharing experience."
+                  title={t.auth.completeRegTitle}
+                  description={t.auth.completeRegDesc}
                 />
 
                 <RadioSelect
@@ -108,7 +110,7 @@ const CompleteRegistration = () => {
                   disabled={!selectedUserType}
                   onClick={onContinue}
                 >
-                  Continue
+                  {t.common.continue}
                 </Button>
               </div>
             </motion.div>

@@ -9,9 +9,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { HostListCard, type PublicHost } from "./host-list-card";
 import { Search, MapPin, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -33,37 +34,20 @@ interface SearchDialogProps {
 }
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
+  const { t } = useT();
   const hosts = useQuery(api.hosts.getPublicHosts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
-  const [coords, setCoords] = useState<
-    Record<string, { lat: number; lng: number } | null>
-  >({});
-  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Geocode addresses when hosts change
-  useEffect(() => {
-    if (!hosts || hosts.length === 0 || !open) return;
-
-    const uncachedAddresses = hosts
-      .map((h) => h.address)
-      .filter((addr) => !(addr in coords));
-
-    if (uncachedAddresses.length === 0) return;
-
-    setIsGeocoding(true);
-    fetch("/api/geocode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ addresses: uncachedAddresses }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setCoords((prev) => ({ ...prev, ...data }));
-      })
-      .catch(console.error)
-      .finally(() => setIsGeocoding(false));
-  }, [hosts, open]);
+  const coords = useMemo(() => {
+    if (!hosts) return {};
+    return Object.fromEntries(
+      (hosts as PublicHost[]).map((h) => [
+        h.address,
+        h.lat != null && h.lng != null ? { lat: h.lat, lng: h.lng } : null,
+      ]),
+    );
+  }, [hosts]);
 
   const filteredHosts = useMemo(() => {
     if (!hosts) return [];
@@ -93,12 +77,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="size-5 text-primary" />
-            Find a Shabbat Host
+            {t.search.title}
           </DialogTitle>
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, address, sector..."
+              placeholder={t.search.placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -118,7 +102,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
               {hosts && filteredHosts.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground text-sm">
-                  No hosts found matching your search.
+                  {t.search.noResults}
                 </div>
               )}
 
@@ -130,13 +114,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   onSelect={handleSelectHost}
                 />
               ))}
-
-              {isGeocoding && (
-                <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-                  <Loader2 className="size-3 animate-spin" />
-                  Loading map locations...
-                </div>
-              )}
             </div>
           </ScrollArea>
 

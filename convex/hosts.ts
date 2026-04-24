@@ -99,6 +99,8 @@ export const getPublicHosts = query({
           name: user?.name ?? "Host",
           image: user?.image,
           address: host.address,
+          lat: host.lat,
+          lng: host.lng,
           sector: host.sector,
           ethnicity: host.ethnicity,
           kashrout: host.kashrout,

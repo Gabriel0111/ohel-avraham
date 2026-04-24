@@ -9,23 +9,38 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useEffect, useState } from "react";
-import { autocomplete } from "@/lib/google";
+import {
+  autocomplete,
+  getFullPlaceData,
+  type PlaceSuggestion,
+} from "@/lib/google";
 import { useDebouncedCallback } from "use-debounce";
+import { Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
+
+export interface PlaceData {
+  address: string;
+  lat: number;
+  lng: number;
+}
 
 interface Props {
   defaultValue: string;
-  onValueChange: (value: string) => void;
+  onPlaceSelect: (place: PlaceData) => void;
 }
 
-const AutocompleteAddress = ({ defaultValue, onValueChange }: Props) => {
-  const [predictions, setPredictions] = useState<string[]>([]);
+const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
+  const { t } = useT();
+  const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [text, setText] = useState(defaultValue);
   const [resultsOpen, setResultsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const debouncedFetchPredictions = useDebouncedCallback(
     async (value: string) => {
-      const predictions = await autocomplete(value);
-      setPredictions(predictions || []);
+      const results = await autocomplete(value);
+      setPredictions(results || []);
     },
     800,
   );
@@ -34,35 +49,62 @@ const AutocompleteAddress = ({ defaultValue, onValueChange }: Props) => {
     debouncedFetchPredictions(text);
   }, [text, debouncedFetchPredictions]);
 
-  const handleSelectedPlace = (place: string) => {
-    setText(place);
-    onValueChange(place);
+  const handleSelectedPlace = async (placeId: string, placeText: string) => {
+    setText(placeText);
     setResultsOpen(false);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const data = await getFullPlaceData(placeId);
+      if (!data.streetNumber) {
+        setError(t.address.streetNumberRequired);
+        return;
+      }
+      onPlaceSelect({ address: data.address, lat: data.lat, lng: data.lng });
+    } catch {
+      setError(t.address.fetchError);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleValueChange = (text: string) => {
-    setText(text);
-    setResultsOpen(text !== "");
+  const handleValueChange = (value: string) => {
+    setText(value);
+    setError(null);
+    setResultsOpen(value !== "");
   };
 
   return (
-    <Command className="rounded-lg border-border border" shouldFilter={false}>
-      <CommandInput
-        placeholder="Search for an address..."
-        value={text}
-        onValueChange={handleValueChange}
-      />
-      <CommandList hidden={!resultsOpen}>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Suggestions">
-          {predictions.map((item) => (
-            <CommandItem key={item} onSelect={() => handleSelectedPlace(item)}>
-              {item}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
+    <div className="space-y-1">
+      <Command className="rounded-lg border-border border" shouldFilter={false}>
+        <CommandInput
+          placeholder={t.address.searchPlaceholder}
+          value={text}
+          onValueChange={handleValueChange}
+        />
+        <CommandList hidden={!resultsOpen}>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Suggestions">
+            {predictions.map((item) => (
+              <CommandItem
+                key={item.placeId}
+                onSelect={() => handleSelectedPlace(item.placeId, item.text)}
+              >
+                {item.text}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+      {isLoading && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="size-3 animate-spin" />
+          {t.address.loading}
+        </div>
+      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
   );
 };
 

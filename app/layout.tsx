@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/lib/i18n/context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,12 +44,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <main className="mx-auto w-full">
-            <ConvexClientProvider>
-              {children}
-              <Toaster richColors />
-            </ConvexClientProvider>
-          </main>
+          <LanguageProvider>
+            <main className="mx-auto w-full">
+              <ConvexClientProvider>
+                {children}
+                <Toaster richColors />
+              </ConvexClientProvider>
+            </main>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

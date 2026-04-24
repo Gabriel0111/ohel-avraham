@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useT } from "@/lib/i18n/context";
 
 export function GuestProfileCard({
   guestData,
@@ -37,6 +38,7 @@ export function GuestProfileCard({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, startSaving] = useTransition();
   const upsertGuest = useMutation(api.guests.upsertGuest);
+  const { t } = useT();
 
   const form = useForm({
     resolver: zodResolver(guestSchema),
@@ -57,10 +59,10 @@ export function GuestProfileCard({
     startSaving(async () => {
       try {
         await upsertGuest({ data: { ...values, dob: values.dob.getTime() } });
-        toast.success("Guest profile updated");
+        toast.success(t.common.save);
         setIsEditing(false);
       } catch {
-        toast.error("Failed to update profile");
+        toast.error(t.auth.errorCreating);
       }
     });
   };
@@ -83,7 +85,7 @@ export function GuestProfileCard({
             onClick={() => setIsEditing(true)}
             className="h-8 rounded-md shadow-xs bg-background"
           >
-            Edit
+            {t.common.edit}
           </Button>
         ) : (
           <div className="flex gap-2">
@@ -93,7 +95,7 @@ export function GuestProfileCard({
               onClick={() => setIsEditing(false)}
               disabled={isSaving}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               size="sm"
@@ -102,7 +104,7 @@ export function GuestProfileCard({
               className="h-8 rounded-md px-4 bg-foreground text-background hover:bg-foreground/90"
             >
               {isSaving && <Spinner className="mr-2 border-background/30" />}
-              Save changes
+              {t.common.save}
             </Button>
           </div>
         )}
@@ -111,8 +113,8 @@ export function GuestProfileCard({
       <div className="divide-y divide-border/20">
         {/* LIGNE : REGION */}
         <SettingsRow
-          label="Preferred Region"
-          description="The area where you are looking for a host."
+          label={t.guestProfile.preferredRegion}
+          description={t.guestProfile.preferredRegionDesc}
         >
           {isEditing ? (
             <Controller
@@ -120,9 +122,8 @@ export function GuestProfileCard({
               control={form.control}
               render={({ field }) => (
                 <AutocompleteAddress
-                  onValueChange={field.onChange}
                   defaultValue={field.value}
-                  // className="w-full border-none p-0 focus-visible:ring-0 bg-transparent"
+                  onPlaceSelect={(place) => field.onChange(place.address)}
                 />
               )}
             />
@@ -136,7 +137,7 @@ export function GuestProfileCard({
 
         {/* LIGNE : GENDER */}
         <SettingsRow
-          label="Gender"
+          label={t.form.gender}
           description="Helps hosts coordinate sleeping arrangements."
         >
           {isEditing ? (
@@ -171,8 +172,8 @@ export function GuestProfileCard({
 
         {/* LIGNE : SECTOR & ETHNICITY */}
         <SettingsRow
-          label="Community details"
-          description="Sector and cultural background."
+          label={t.hostProfile.communityDetails}
+          description={t.hostProfile.communityDetailsDesc}
         >
           {isEditing ? (
             <div className="grid gap-4 w-full">
@@ -181,13 +182,13 @@ export function GuestProfileCard({
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Sector</FieldLabel>
+                    <FieldLabel>{t.form.sector}</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Sector" />
+                        <SelectValue placeholder={t.form.selectSector} />
                       </SelectTrigger>
                       <SelectContent>
                         {SECTORS.map((s) => (
@@ -205,13 +206,13 @@ export function GuestProfileCard({
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center justify-between">
-                    <FieldLabel>Ethnicity</FieldLabel>
+                    <FieldLabel>{t.form.ethnicity}</FieldLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Ethnicity" />
+                        <SelectValue placeholder={t.form.selectEthnicity} />
                       </SelectTrigger>
                       <SelectContent>
                         {ETHNICITIES.map((e) => (
@@ -228,11 +229,11 @@ export function GuestProfileCard({
           ) : (
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
-                <Label>Sector</Label>
+                <Label>{t.form.sector}</Label>
                 <Badge variant="secondary">{guestData.sector}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Ethnicity</Label>
+                <Label>{t.form.ethnicity}</Label>
                 <Badge variant="secondary">{guestData.ethnicity}</Badge>
               </div>
             </div>

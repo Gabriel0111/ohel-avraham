@@ -1,3 +1,5 @@
+"use client";
+
 import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -37,12 +39,14 @@ import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
+import { useT } from "@/lib/i18n/context";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const router = useRouter();
   const searchParams = useSearchParams();
   const userType = searchParams.get("userType");
+  const { t } = useT();
 
   const createHost = useMutation(api.hosts.createHost);
 
@@ -64,7 +68,7 @@ const HostForm = () => {
         toast.success(`Guest successfully created, id: ${id}`);
         router.push("/");
       } else {
-        toast.error("Error creating guest");
+        toast.error(t.auth.errorCreating);
       }
     });
   };
@@ -73,14 +77,14 @@ const HostForm = () => {
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <FieldGroup>
         <div className="flex flex-col space-y-5 justify-between w-full mx-auto">
-          <AuthHeader title={`Welcome new ${userType}`} />
+          <AuthHeader title={`${t.auth.welcomeNew} ${userType}`} />
 
           <Controller
             name="dob"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
-                <FieldLabel>Date of birth</FieldLabel>
+                <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
 
                 <InputGroup>
                   <Input
@@ -103,7 +107,7 @@ const HostForm = () => {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
-                <FieldLabel>Phone Number</FieldLabel>
+                <FieldLabel>{t.form.phoneNumber}</FieldLabel>
 
                 <RPNInput.default
                   defaultCountry="IL"
@@ -128,26 +132,16 @@ const HostForm = () => {
             control={form.control}
             name="address"
             render={({ field, fieldState }) => (
-              // <Field>
-              //   <FieldLabel>Region</FieldLabel>
-              //
-              //   <Input placeholder="12 Bayit Vagan, Jerusalem" {...field} />
-              //   {/*<Autocomplete*/}
-              //   {/*  onValueChange={field.onChange}*/}
-              //   {/*  defaultValue={field.value}*/}
-              //   {/*/>*/}
-              //
-              //   {fieldState.invalid && (
-              //     <FieldError errors={[fieldState.error]} />
-              //   )}
-              // </Field>
               <Field>
-                <FieldLabel>Address</FieldLabel>
+                <FieldLabel>{t.form.address}</FieldLabel>
                 <AutocompleteAddress
-                  onValueChange={field.onChange}
                   defaultValue={field.value}
+                  onPlaceSelect={(place) => {
+                    form.setValue("address", place.address, { shouldValidate: true });
+                    form.setValue("lat", place.lat, { shouldValidate: true });
+                    form.setValue("lng", place.lng, { shouldValidate: true });
+                  }}
                 />
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -161,14 +155,14 @@ const HostForm = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>Sector</FieldLabel>
+                  <FieldLabel>{t.form.sector}</FieldLabel>
 
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Sector" />
+                      <SelectValue placeholder={t.form.selectSector} />
                       <SelectContent>
                         {Object.values(SECTORS).map((sector, index) => (
                           <SelectItem value={sector} key={sector}>
@@ -191,14 +185,14 @@ const HostForm = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>Ethnicity</FieldLabel>
+                  <FieldLabel>{t.form.ethnicity}</FieldLabel>
 
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Ethnicity" />
+                      <SelectValue placeholder={t.form.selectEthnicity} />
                       <SelectContent>
                         {Object.values(ETHNICITIES).map((sector, index) => (
                           <SelectItem value={sector} key={sector}>
@@ -223,7 +217,7 @@ const HostForm = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>Floor</FieldLabel>
+                  <FieldLabel>{t.form.floor}</FieldLabel>
 
                   <Input type="string" {...field} />
 
@@ -239,7 +233,7 @@ const HostForm = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>Disability Access</FieldLabel>
+                  <FieldLabel>{t.form.disabilityAccess}</FieldLabel>
 
                   <Switch
                     checked={field.value}
@@ -259,14 +253,14 @@ const HostForm = () => {
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
-                <FieldLabel>Kashrout</FieldLabel>
+                <FieldLabel>{t.form.kashrout}</FieldLabel>
 
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Kashrout" />
+                    <SelectValue placeholder={t.form.selectKashrout} />
                     <SelectContent>
                       {Object.values(KASHROUT).map((kashrout, index) => (
                         <SelectItem value={kashrout} key={kashrout}>
@@ -289,10 +283,10 @@ const HostForm = () => {
             name="notes"
             render={({ field, fieldState }) => (
               <Field>
-                <FieldLabel>Notes</FieldLabel>
+                <FieldLabel>{t.form.notes}</FieldLabel>
 
                 <Textarea
-                  placeholder="Notes for futher explanations"
+                  placeholder={t.form.notesPlaceholder}
                   {...field}
                 />
 
@@ -305,7 +299,7 @@ const HostForm = () => {
 
           <Button type="submit" className="w-full" disabled={isRegistering}>
             {isRegistering && <Spinner />}
-            Continue
+            {t.common.continue}
           </Button>
         </div>
       </FieldGroup>

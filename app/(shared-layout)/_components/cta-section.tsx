@@ -4,9 +4,11 @@ import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
 
 export function CTASection() {
   const { ref, isVisible } = useScrollAnimation(0.2);
+  const { t } = useT();
 
   return (
     <section ref={ref} className="py-20 md:py-28">
@@ -22,11 +24,10 @@ export function CTASection() {
         <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-primary-foreground/10" />
 
         <h2 className="relative text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground text-balance max-w-2xl">
-          Ready to open your door or find your next Shabbat meal?
+          {t.cta.title}
         </h2>
         <p className="relative text-lg text-primary-foreground/80 max-w-xl leading-relaxed">
-          Join hundreds of hosts and guests building a stronger, more connected
-          community, one Shabbat at a time.
+          {t.cta.description}
         </p>
         <div
           className="relative flex flex-col sm:flex-row gap-4 transition-all duration-700"
@@ -44,7 +45,7 @@ export function CTASection() {
               className: "text-base px-8 h-12 bg-primary-foreground text-primary hover:bg-primary-foreground/90",
             })}
           >
-            Join as a Host
+            {t.cta.joinAsHost}
             <ArrowRight className="size-4" />
           </Link>
           <Link
@@ -56,7 +57,7 @@ export function CTASection() {
                 "text-base px-8 h-12 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground bg-transparent",
             })}
           >
-            Join as a Guest
+            {t.cta.joinAsGuest}
           </Link>
         </div>
       </div>

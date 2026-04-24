@@ -2,12 +2,13 @@
 
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { useCountUp } from "@/hooks/use-count-up";
+import { useT } from "@/lib/i18n/context";
 
-const stats = [
-  { value: 1200, suffix: "+", label: "Shabbat meals shared" },
-  { value: 350, suffix: "+", label: "Active hosts" },
-  { value: 50, suffix: "+", label: "Communities reached" },
-  { value: 98, suffix: "%", label: "Guest satisfaction" },
+const statValues = [
+  { value: 1200, suffix: "+" },
+  { value: 350, suffix: "+" },
+  { value: 50, suffix: "+" },
+  { value: 98, suffix: "%" },
 ];
 
 function StatItem({
@@ -47,16 +48,17 @@ function StatItem({
 
 export function StatsSection() {
   const { ref, isVisible } = useScrollAnimation(0.2);
+  const { t } = useT();
 
   return (
     <section ref={ref} className="py-20 md:py-28 border-y border-border">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16">
-        {stats.map((stat, i) => (
+        {statValues.map((stat, i) => (
           <StatItem
-            key={stat.label}
+            key={i}
             value={stat.value}
             suffix={stat.suffix}
-            label={stat.label}
+            label={t.stats.labels[i]}
             isVisible={isVisible}
             delay={i * 150}
           />
