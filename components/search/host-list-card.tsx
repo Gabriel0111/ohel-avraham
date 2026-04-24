@@ -3,12 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Utensils, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export interface PublicHost {
   _id: string;
   name: string;
   image?: string;
   address: string;
+  lat?: number;
+  lng?: number;
   sector: string;
   ethnicity: string;
   kashrout: string;
@@ -21,7 +24,11 @@ interface HostListCardProps {
   onSelect: (host: PublicHost) => void;
 }
 
-export function HostListCard({ host, isSelected, onSelect }: HostListCardProps) {
+export function HostListCard({
+  host,
+  isSelected,
+  onSelect,
+}: HostListCardProps) {
   return (
     <button
       type="button"
@@ -31,13 +38,13 @@ export function HostListCard({ host, isSelected, onSelect }: HostListCardProps) 
         "hover:border-primary/40 hover:bg-accent/50",
         isSelected
           ? "border-primary bg-primary/5 shadow-sm"
-          : "border-border bg-card"
+          : "border-border bg-card",
       )}
     >
       <div className="flex items-start gap-3">
         <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
           {host.image ? (
-            <img
+            <Image
               src={host.image}
               alt={host.name}
               className="size-10 rounded-full object-cover"

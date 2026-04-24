@@ -14,7 +14,12 @@ interface AutocompleteSuggestion {
 
 // const client = new Client();
 
-export const autocomplete = async (input: string) => {
+export interface PlaceSuggestion {
+  placeId: string;
+  text: string;
+}
+
+export const autocomplete = async (input: string): Promise<PlaceSuggestion[]> => {
   if (!input) return [];
 
   try {
@@ -26,7 +31,7 @@ export const autocomplete = async (input: string) => {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": env.GOOGLE_MAPS_API_KEY,
           "X-Goog-FieldMask":
-            "suggestions.placePrediction.placeId,suggestions.placePrediction",
+            "suggestions.placePrediction.placeId,suggestions.placePrediction.text",
         },
         body: JSON.stringify({
           input,
@@ -38,9 +43,10 @@ export const autocomplete = async (input: string) => {
     const response = await res.json();
 
     return (
-      response.suggestions.map((item: AutocompleteSuggestion) => {
-        return item.placePrediction.text.text;
-      }) || []
+      response.suggestions?.map((item: AutocompleteSuggestion) => ({
+        placeId: item.placePrediction.placeId,
+        text: item.placePrediction.text.text,
+      })) || []
     );
   } catch (error) {
     console.log(JSON.stringify(error));

@@ -128,26 +128,16 @@ const HostForm = () => {
             control={form.control}
             name="address"
             render={({ field, fieldState }) => (
-              // <Field>
-              //   <FieldLabel>Region</FieldLabel>
-              //
-              //   <Input placeholder="12 Bayit Vagan, Jerusalem" {...field} />
-              //   {/*<Autocomplete*/}
-              //   {/*  onValueChange={field.onChange}*/}
-              //   {/*  defaultValue={field.value}*/}
-              //   {/*/>*/}
-              //
-              //   {fieldState.invalid && (
-              //     <FieldError errors={[fieldState.error]} />
-              //   )}
-              // </Field>
               <Field>
                 <FieldLabel>Address</FieldLabel>
                 <AutocompleteAddress
-                  onValueChange={field.onChange}
                   defaultValue={field.value}
+                  onPlaceSelect={(place) => {
+                    form.setValue("address", place.address, { shouldValidate: true });
+                    form.setValue("lat", place.lat, { shouldValidate: true });
+                    form.setValue("lng", place.lng, { shouldValidate: true });
+                  }}
                 />
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

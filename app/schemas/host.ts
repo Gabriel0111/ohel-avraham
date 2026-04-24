@@ -11,6 +11,8 @@ export const hostSchema = z.object({
     .regex(/^[0-9\-+()\s]+$/, "Invalid phone number"),
 
   address: z.string({ message: "Address must be defined" }).min(5),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
   floor: z.string(),
   entrance: z.string(),
 

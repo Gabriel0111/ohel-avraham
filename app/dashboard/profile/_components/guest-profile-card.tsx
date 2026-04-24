@@ -120,9 +120,8 @@ export function GuestProfileCard({
               control={form.control}
               render={({ field }) => (
                 <AutocompleteAddress
-                  onValueChange={field.onChange}
                   defaultValue={field.value}
-                  // className="w-full border-none p-0 focus-visible:ring-0 bg-transparent"
+                  onPlaceSelect={(place) => field.onChange(place.address)}
                 />
               )}
             />

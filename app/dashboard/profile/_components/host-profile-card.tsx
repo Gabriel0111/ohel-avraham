@@ -129,8 +129,12 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 control={form.control}
                 render={({ field }) => (
                   <AutocompleteAddress
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onPlaceSelect={(place) => {
+                      form.setValue("address", place.address, { shouldValidate: true });
+                      form.setValue("lat", place.lat, { shouldValidate: true });
+                      form.setValue("lng", place.lng, { shouldValidate: true });
+                    }}
                   />
                 )}
               />

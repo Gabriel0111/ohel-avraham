@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { HostListCard, type PublicHost } from "./host-list-card";
 import { Search, MapPin, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -36,34 +36,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const hosts = useQuery(api.hosts.getPublicHosts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
-  const [coords, setCoords] = useState<
-    Record<string, { lat: number; lng: number } | null>
-  >({});
-  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Geocode addresses when hosts change
-  useEffect(() => {
-    if (!hosts || hosts.length === 0 || !open) return;
-
-    const uncachedAddresses = hosts
-      .map((h) => h.address)
-      .filter((addr) => !(addr in coords));
-
-    if (uncachedAddresses.length === 0) return;
-
-    setIsGeocoding(true);
-    fetch("/api/geocode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ addresses: uncachedAddresses }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setCoords((prev) => ({ ...prev, ...data }));
-      })
-      .catch(console.error)
-      .finally(() => setIsGeocoding(false));
-  }, [hosts, open]);
+  const coords = useMemo(() => {
+    if (!hosts) return {};
+    return Object.fromEntries(
+      (hosts as PublicHost[]).map((h) => [
+        h.address,
+        h.lat != null && h.lng != null ? { lat: h.lat, lng: h.lng } : null,
+      ]),
+    );
+  }, [hosts]);
 
   const filteredHosts = useMemo(() => {
     if (!hosts) return [];
@@ -130,13 +112,6 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   onSelect={handleSelectHost}
                 />
               ))}
-
-              {isGeocoding && (
-                <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-                  <Loader2 className="size-3 animate-spin" />
-                  Loading map locations...
-                </div>
-              )}
             </div>
           </ScrollArea>
 

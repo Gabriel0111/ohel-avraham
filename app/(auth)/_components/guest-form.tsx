@@ -131,14 +131,8 @@ const GuestForm = () => {
                 <FieldLabel>Region</FieldLabel>
 
                 <AutocompleteAddress
-                  onValueChange={(e) => {
-                    console.log("e", e);
-                    field.onChange(e);
-                    console.log(field.onChange);
-
-                    console.log(form.getValues());
-                  }}
                   defaultValue={field.value}
+                  onPlaceSelect={(place) => field.onChange(place.address)}
                 />
 
                 {fieldState.invalid && (
