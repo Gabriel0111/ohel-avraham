@@ -56,6 +56,9 @@ export const translations = {
         "Please select an address that includes a street number.",
       fetchError: "Failed to fetch address details. Please try again.",
       selectFromList: "Please select an address from the suggestions.",
+      streetNumberHint: "This address has no street number. Please enter it manually.",
+      streetNumberPlaceholder: "e.g. 12",
+      streetNumberConfirm: "Confirm",
     },
     search: {
       title: "Find a Shabbat Host",
@@ -371,6 +374,9 @@ export const translations = {
         "Impossible de récupérer les détails de l'adresse. Réessayez.",
       selectFromList:
         "Veuillez sélectionner une adresse parmi les suggestions.",
+      streetNumberHint: "Cette adresse ne contient pas de numéro de rue. Veuillez le saisir manuellement.",
+      streetNumberPlaceholder: "ex : 12",
+      streetNumberConfirm: "Confirmer",
     },
     search: {
       title: "Trouver un hôte pour Chabbat",
@@ -696,6 +702,9 @@ export const translations = {
       streetNumberRequired: "אנא בחר כתובת הכוללת מספר רחוב.",
       fetchError: "שגיאה בטעינת פרטי הכתובת. נסה שוב.",
       selectFromList: "אנא בחר כתובת מהרשימה.",
+      streetNumberHint: "לכתובת זו אין מספר רחוב. אנא הזן אותו ידנית.",
+      streetNumberPlaceholder: "לדוגמה: 12",
+      streetNumberConfirm: "אישור",
     },
     search: {
       title: "מצא מארח לשבת",
