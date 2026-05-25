@@ -59,6 +59,7 @@ export const translations = {
       title: "Find a Shabbat Host",
       placeholder: "Search by name, address, sector...",
       noResults: "No hosts found matching your search.",
+      searchBarPlaceholder: "Search for a Shabbat host near you...",
     },
     hero: {
       badge: "Bringing the spirit of Abraham's hospitality to life",
@@ -69,6 +70,15 @@ export const translations = {
         "Ohel Avraham connects hosts who open their homes for Shabbat meals with guests looking for a warm, meaningful experience. No one should eat alone.",
       getStarted: "Get Started",
       learnMore: "Learn More",
+      illustration: {
+        hostLabel: "Host",
+        guestLabel: "Guest",
+        invitation: "Invitation!",
+        accepted: "Accepted this morning",
+        lookingForShabbat: "Looking for Shabbat · Friday",
+        seats: "6 seats",
+        fridayTime: "Friday · 6:30 pm",
+      },
     },
     stats: {
       labels: [
@@ -289,6 +299,7 @@ export const translations = {
       title: "Trouver un hôte pour Chabbat",
       placeholder: "Rechercher par nom, adresse, secteur...",
       noResults: "Aucun hôte trouvé.",
+      searchBarPlaceholder: "Rechercher un hôte de Chabbat près de chez vous...",
     },
     hero: {
       badge: "Faire vivre l'esprit d'hospitalité d'Avraham",
@@ -299,6 +310,15 @@ export const translations = {
         "Ohel Avraham met en relation des hôtes qui ouvrent leur maison pour les repas de Chabbat avec des invités à la recherche d'une expérience chaleureuse et enrichissante. Personne ne devrait manger seul.",
       getStarted: "Commencer",
       learnMore: "En savoir plus",
+      illustration: {
+        hostLabel: "Hôte",
+        guestLabel: "Invité",
+        invitation: "Invitation !",
+        accepted: "Acceptée ce matin",
+        lookingForShabbat: "Cherche Chabbat · Vendredi",
+        seats: "6 places",
+        fridayTime: "Vendredi · 18h30",
+      },
     },
     stats: {
       labels: [
@@ -519,6 +539,7 @@ export const translations = {
       title: "מצא מארח לשבת",
       placeholder: "חיפוש לפי שם, כתובת, מגזר...",
       noResults: "לא נמצאו מארחים.",
+      searchBarPlaceholder: "חפש מארח שבת קרוב אליך...",
     },
     hero: {
       badge: "מביאים לחיים את רוח האירוח של אברהם",
@@ -529,6 +550,15 @@ export const translations = {
         "אוהל אברהם מחבר בין מארחים שפותחים את בתיהם לארוחות שבת לבין אורחים המחפשים חוויה חמה ומשמעותית. אף אחד לא צריך לאכול לבד.",
       getStarted: "בואו נתחיל",
       learnMore: "קרא עוד",
+      illustration: {
+        hostLabel: "מארח",
+        guestLabel: "אורח",
+        invitation: "הזמנה!",
+        accepted: "התקבלה הבוקר",
+        lookingForShabbat: "מחפש שבת · יום שישי",
+        seats: "6 מקומות",
+        fridayTime: "יום שישי · 18:30",
+      },
     },
     stats: {
       labels: [

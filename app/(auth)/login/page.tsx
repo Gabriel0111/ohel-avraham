@@ -41,7 +41,7 @@ const LoginPage = () => {
     startRegistering(async () => {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/complete-registration",
+        callbackURL: "/",
         fetchOptions: {
           onSuccess: async () => {
             toast.success(t.auth.signedInWithGoogle);
@@ -108,11 +108,12 @@ const LoginPage = () => {
                       <InputGroupInput
                         placeholder="avraham.avinu@gmail.com"
                         type="email"
+                        dir="ltr"
                         aria-invalid={fieldState.invalid}
                         className={cn(fieldState.invalid && "text-destructive")}
                         {...field}
                       />
-                      <InputGroupAddon>
+                      <InputGroupAddon align="inline-start">
                         <AtSignIcon
                           className={cn(
                             fieldState.invalid && "text-destructive",

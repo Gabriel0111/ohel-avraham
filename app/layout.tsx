@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/i18n/context";
+import { AuthSync } from "@/components/auth-sync";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
-});
-
-const inter = Inter({
-  variable: "--inter-sans",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -36,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable}  ${geistSans.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
+        className={`${plusJakarta.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
       >
         <ThemeProvider
           attribute="class"
@@ -47,6 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <LanguageProvider>
             <main className="mx-auto w-full">
               <ConvexClientProvider>
+                <AuthSync />
                 {children}
                 <Toaster richColors />
               </ConvexClientProvider>

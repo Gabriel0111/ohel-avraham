@@ -5,6 +5,7 @@ import { SearchDialog } from "./search-dialog";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/context";
 
 interface SearchTriggerButtonProps {
   className?: string;
@@ -35,6 +36,7 @@ interface SearchBarTriggerProps {
 
 export function SearchBarTrigger({ className }: SearchBarTriggerProps) {
   const [open, setOpen] = useState(false);
+  const { t } = useT();
 
   return (
     <>
@@ -50,7 +52,7 @@ export function SearchBarTrigger({ className }: SearchBarTriggerProps) {
         )}
       >
         <Search className="size-4 shrink-0" />
-        <span>Search for a Shabbat host near you...</span>
+        <span>{t.search.searchBarPlaceholder}</span>
       </button>
       <SearchDialog open={open} onOpenChange={setOpen} />
     </>
