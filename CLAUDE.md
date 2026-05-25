@@ -4,54 +4,242 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Ohel Avraham** — a platform connecting Shabbat hosts and guests. Users register as hosts or guests, fill out a profile (region, sector, ethnicity, kashrout level, etc.), and browse compatible matches.
+**Ohel Avraham** — a platform connecting Shabbat hosts and guests in Israel. Users register as hosts or guests, fill out a profile (region, sector, ethnicity, kashrout level, etc.), and browse compatible matches. The name means "Tent of Abraham" in Hebrew.
 
 ## Commands
 
 ```bash
 pnpm dev        # Start Next.js + Convex dev servers
 pnpm build      # Build Next.js app
+pnpm start      # Run built Next.js app
 pnpm lint       # Run ESLint
 npx convex dev  # Start only the Convex backend (auto-generates types)
 ```
 
-No test runner is configured. If adding tests, use `convex-test` with Vitest (see Convex guidelines).
+No test runner is configured. If adding tests, use `convex-test` with Vitest and `@edge-runtime/vm` (see Convex guidelines).
+
+## Tech Stack
+
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Framework | Next.js App Router | 16.2.3 |
+| UI Runtime | React | 19.2.1 |
+| Language | TypeScript | 5.9.3 |
+| Styling | Tailwind CSS v4 | 4.2.2 |
+| UI Components | shadcn/ui (Radix UI) | — |
+| Backend/DB | Convex | 1.35.1 |
+| Auth | Better Auth + `@convex-dev/better-auth` | 1.4.9 |
+| Forms | React Hook Form + Yup/Zod | — |
+| State | Zustand | 5.0.12 |
+| Maps | `@vis.gl/react-google-maps`, Leaflet | — |
+| Email | Resend | 6.11.0 |
+| Animations | Framer Motion / Motion | 12.x |
 
 ## Architecture
 
 **Frontend**: Next.js 15 App Router (`app/`), React 19, TypeScript, Tailwind CSS v4, shadcn/ui (Radix UI).
 
-**Backend**: Convex — all DB, auth logic, and server-side code lives in `convex/`.
+**Backend**: Convex — all DB, auth logic, and server-side code lives in `convex/`. No traditional REST API layer.
 
-**Auth**: Better Auth (`@convex-dev/better-auth`). Auth config in `convex/auth.ts` and `convex/auth.config.ts`. HTTP handler in `convex/http.ts` wires Better Auth routes.
+**Auth**: Better Auth (`@convex-dev/better-auth`). Supports email/password and Google OAuth. Auth config in `convex/auth.ts` and `convex/auth.config.ts`. HTTP handler in `convex/http.ts` wires Better Auth routes. Next.js catch-all at `app/api/auth/[...all]/route.ts`.
 
-**Data flow**: Client components call Convex via `useQuery` / `useMutation` hooks from `convex/react`. No traditional REST API layer.
+**Data flow**: Client components call Convex via `useQuery` / `useMutation` hooks from `convex/react`. The `ConvexClientProvider` in `app/ConvexClientProvider.tsx` wraps `ConvexBetterAuthProvider` and exposes a `useAuth()` hook backed by `api.users.getCurrentUser`.
+
+**Maps**: Dual map support — Google Maps (`@vis.gl/react-google-maps`) for full-featured geocoding and Leaflet (`react-leaflet`) for open-source rendering. Geocoding helpers in `lib/google-maps.ts`. Address autocomplete component at `components/layout/autocomplete-address.tsx`.
+
+**i18n**: Lightweight custom solution in `lib/i18n/` (`context.tsx` + `translations.ts`).
 
 ### Key directories
 
 | Path | Purpose |
 |------|---------|
-| `app/(auth)/` | Login, sign-up, complete-registration pages |
-| `app/(shared-layout)/` | Public/marketing pages |
-| `app/dashboard/` | Protected dashboard (profile, browse people) |
-| `app/enums/` | Shared TypeScript enums (sector, ethnicity, gender, kashrout) |
-| `app/schemas/` | Client-side form validation schemas (Yup/Zod) |
-| `components/` | Reusable UI components (layout, navigation, primitives) |
+| `app/(auth)/` | Login, sign-up, complete-registration pages + auth-specific components |
+| `app/(redirection)/account/` | Account redirect page |
+| `app/(shared-layout)/` | Public/marketing landing page (hero, features, stats, testimonials, etc.) |
+| `app/dashboard/` | Protected dashboard: profile, people browsing |
+| `app/dashboard/profile/` | Profile cards for host and guest views |
+| `app/enums/` | Shared TypeScript enum arrays (sector, ethnicity, gender, kashrout) |
+| `app/schemas/` | Client-side Zod/Yup validation schemas for all forms |
+| `app/api/auth/[...all]/` | Better Auth Next.js HTTP catch-all route |
+| `components/ui/` | Base shadcn/ui primitives (button, card, dialog, sidebar, etc.) |
+| `components/layout/` | Navbar and address autocomplete |
+| `components/search/` | Host list card, map views, search dialog + trigger |
+| `components/icons/` | SVG icon components (Google, Apple, Logo) |
 | `hooks/` | Custom React hooks |
-| `lib/` | Auth client/server helpers, Google Maps, Resend email, env vars, `cn()` util |
+| `lib/` | Auth client/server helpers, Google Maps, Resend email, env vars, i18n, `cn()` |
+| `data/` | Shared non-component utilities |
 | `convex/` | All backend: schema, queries, mutations, validators, helpers |
 | `convex/validators/` | Convex arg validators (`host.ts`, `guest.ts`) |
 | `convex/helpers/` | Shared backend utilities (`canAccessRole.ts`) |
+| `convex/_generated/` | Auto-generated types — never edit manually |
 
-### Database schema (`convex/schema.ts`)
+## Database Schema (`convex/schema.ts`)
 
-- **users** — auth identity, role (`admin | user | guest | host`), email, name, image, verification status
-- **hosts** — DOB, phone, address, kashrout level, sector, ethnicity, disability access
-- **guests** — DOB, region, gender, sector, ethnicity, notes
+Schema imports field definitions from `convex/validators/` via spread (`...HostFields`, `...GuestFields`).
 
-### Role-based access control
+### `users` table
+| Field | Type | Notes |
+|-------|------|-------|
+| `authUserId` | `string` | Indexed (`by_authUserId`); equals `identity.subject` from Better Auth |
+| `role` | `SystemRole` | `"user" \| "guest" \| "host" \| "guest:host" \| "admin"` |
+| `isVerified` | `boolean` | Admin-controlled verification status |
+| `email` | `string?` | |
+| `name` | `string?` | |
+| `image` | `string?` | Avatar URL |
 
-Roles defined in `convex/enums.ts`. Access checks in `convex/helpers/canAccessRole.ts`. Never accept `userId` as a function arg — always derive identity from `ctx.auth.getUserIdentity()` and use `tokenIdentifier` for lookups.
+### `hosts` table
+Indexes: `by_authUserId`, `by_sector`, `by_ethnicity`, `by_kashrout`
+
+| Field | Type |
+|-------|------|
+| `authUserId` | `string` |
+| `dob` | `number` (ms timestamp) |
+| `phoneNumber` | `string` |
+| `address` | `string` |
+| `lat`, `lng` | `number?` (geocoded coordinates) |
+| `entrance` | `string?` |
+| `floor` | `string` |
+| `hasDisabilityAccess` | `boolean` |
+| `kashrout` | `Kashrout` enum |
+| `sector` | `Sector` enum |
+| `ethnicity` | `Ethnicity` enum |
+| `notes` | `string?` |
+
+### `guests` table
+Indexes: `by_authUserId`, `by_region`, `by_gender`, `by_sector`, `by_ethnicity`
+
+| Field | Type |
+|-------|------|
+| `authUserId` | `string` |
+| `dob` | `number` (ms timestamp) |
+| `region` | `string` |
+| `gender` | `Gender` enum |
+| `sector` | `Sector` enum |
+| `ethnicity` | `Ethnicity` enum |
+| `notes` | `string?` |
+
+## Enums (`app/enums/` and `convex/enums.ts`)
+
+Frontend enum arrays live in `app/enums/*.ts`; Convex validators use `v.union(v.literal(...))` defined in `convex/validators/`.
+
+| Enum | Values |
+|------|--------|
+| `Sector` | `"Haredi"`, `"Dati"`, `"Traditional"`, `"Secular"` |
+| `Ethnicity` | `"Ashkenazi"`, `"Sefardi"`, `"Mizrahi"`, `"Other"` |
+| `Gender` | `"Male"`, `"Female"`, `"Couple"` |
+| `Kashrout` | `"Mehadrin"`, `"Regular"`, `"Badatz"`, `"Rabbanut"`, `"None"` |
+| `SystemRole` | `"user"`, `"guest"`, `"host"`, `"guest:host"`, `"admin"` |
+
+## Role-Based Access Control
+
+Roles defined in `convex/enums.ts`. Access checks in `convex/helpers/canAccessRole.ts`.
+
+Role hierarchy (numeric levels):
+- `admin` → 3
+- `user`, `guest`, `host`, `guest:host` → 1
+
+`canAccess(actorRole, minRoleRequired)` returns `true` when actor's level ≥ required level.
+
+**Critical rule**: Never accept `userId` as a function argument for authorization. Always derive identity via `ctx.auth.getUserIdentity()` and use `identity.subject` as `authUserId` for lookups.
+
+## Convex Backend API
+
+All functions are in `convex/`. Reference pattern: `api.<module>.<function>`.
+
+### `convex/users.ts`
+| Function | Type | Description |
+|----------|------|-------------|
+| `getCurrentUser` | `query` | Returns current `users` doc via `identity.subject` or `null` |
+| `getFullProfile` | `query` | Returns `{ user, host, guest }` for current user |
+| `getPeopleDashboard` | `query` | Returns `{ hosts, guests, permissions }` based on caller's role |
+| `createUser` | `mutation` | Creates user doc on first auth; uses `authComponent.getAuthUser(ctx)` |
+| `addRoleToMe` | `mutation` | Sets caller's role; args: `{ role: SystemRole }` |
+| `assignSystemRole` | `mutation` | Admin mutation to change any user's role |
+| `verifyUser` | `mutation` | Admin-only; sets `isVerified: true`; args: `{ userId }` |
+| `deleteUser` | `mutation` | Deletes caller's own user doc |
+
+### `convex/hosts.ts`
+| Function | Type | Description |
+|----------|------|-------------|
+| `getAllHosts` | `query` | Returns all hosts joined with user data (auth required) |
+| `getPublicHosts` | `query` | Returns sanitized host list for map/search (no auth required) |
+| `getMyHost` | `query` | Returns current user's host doc |
+| `createHost` | `mutation` | Inserts host doc + calls `addRoleToMe({ role: "host" })` |
+| `upsertHost` | `mutation` | Insert or patch host doc |
+| `deleteHost` | `mutation` | Deletes caller's host doc |
+
+### `convex/guests.ts`
+| Function | Type | Description |
+|----------|------|-------------|
+| `getAllGuests` | `query` | Returns all guests joined with user data (auth required) |
+| `getMyGuest` | `query` | Returns current user's guest doc |
+| `createGuest` | `mutation` | Inserts guest doc + calls `addRoleToMe({ role: "guest" })` |
+| `upsertGuest` | `mutation` | Insert or patch guest doc |
+| `deleteGuest` | `mutation` | Deletes caller's guest doc |
+
+### `convex/dashboard.ts`
+| Function | Type | Description |
+|----------|------|-------------|
+| `getDashboardData` | `query` | Returns aggregated dashboard data |
+
+## Authentication Flow
+
+1. **Client**: `lib/auth-client.ts` — `createAuthClient` with `convexClient()` plugin from `@convex-dev/better-auth`.
+2. **Provider**: `app/ConvexClientProvider.tsx` wraps `ConvexBetterAuthProvider` (handles token forwarding) → `AuthProvider` (exposes `useAuth()` hook).
+3. **Server/Next.js**: `lib/auth-server.ts` — Convex Better Auth Next.js helpers for SSR token access.
+4. **Convex backend**: `convex/auth.ts` — `createAuth` setup; `convex/auth.config.ts` — JWT provider config; `convex/http.ts` — registers Better Auth HTTP routes via `authComponent`.
+5. **HTTP route**: `app/api/auth/[...all]/route.ts` — catches all Better Auth endpoints.
+
+### In Convex functions
+- Get identity: `const identity = await ctx.auth.getUserIdentity()`
+- Look up user: query `users` table with `.withIndex("by_authUserId", q => q.eq("authUserId", identity.subject))`
+- The `identity.subject` value equals the stored `authUserId` field.
+
+## Client-Side Forms
+
+Forms use **React Hook Form** with **`@hookform/resolvers`**. Validation schemas in `app/schemas/`:
+
+| Schema file | Validates |
+|-------------|-----------|
+| `host.ts` | Host registration form (Zod) |
+| `guest.ts` | Guest registration form (Zod) |
+| `sign-up-schema.ts` | Email/password sign-up |
+| `sign-in-schema.ts` | Sign-in form |
+| `user.ts` | User profile updates |
+
+## Key Component Patterns
+
+- **shadcn/ui** components are in `components/ui/` — extend but do not replace; add new primitives by running `npx shadcn add <name>`.
+- **Search / maps**: `components/search/` contains `SearchDialog`, `SearchTrigger`, `HostListCard`, `HostMapGoogle` (Google Maps), and `HostMap` (Leaflet).
+- **Dashboard UI**: `app/dashboard/_components/` holds page-level layout pieces (`PageHeader`, `PageSection`, `DashboardUI`, profile sub-components).
+- **Auth forms**: `app/(auth)/_components/` has `GuestForm`, `HostForm`, `PhoneNumberComps`, and reusable auth page wrappers.
+- **`useAuth()` hook**: exported from `app/ConvexClientProvider.tsx`; provides `{ user, isLoading, isAuthenticated }`.
+
+## Environment Variables
+
+Managed via `@t3-oss/env-nextjs` in `lib/env.ts`. All env access must go through this module (not `process.env` directly).
+
+Required variables include:
+- `NEXT_PUBLIC_CONVEX_URL` — Convex deployment URL
+- Google OAuth credentials
+- Google Maps API key
+- Resend API key
+
+## Convex Development Conventions
+
+When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
+
+Key rules (summary — full details in guidelines.md):
+- Always include arg validators for every `query`, `mutation`, `action`.
+- Never accept `userId` as a function arg for auth — derive from `ctx.auth.getUserIdentity()`.
+- Use `withIndex` instead of `.filter()` for queries.
+- Use `.take(n)` or paginate instead of unbounded `.collect()`.
+- Use `ctx.db.patch` for partial updates, `ctx.db.replace` for full replacement.
+- Public functions: `query`, `mutation`, `action`. Private: `internalQuery`, `internalMutation`, `internalAction`.
+- File-based routing: `convex/foo.ts` exports `bar` → reference as `api.foo.bar`.
+- Add `"use node";` at top of action files that need Node.js built-ins; never mix with queries/mutations.
+
+Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
 
 ---
 
