@@ -24,6 +24,7 @@ export const getAllHosts = query({
         return {
           ...user!,
           ...host,
+          userId: user!._id,
         };
       }),
     );
@@ -80,6 +81,12 @@ export const upsertHost = mutation({
   },
 });
 
+function extractCity(address: string): string {
+  const parts = address.split(", ");
+  const filtered = parts.filter((p) => p !== "Israel" && p !== "ישראל");
+  return filtered.length > 0 ? filtered[filtered.length - 1] : address;
+}
+
 export const getPublicHosts = query({
   args: {},
   handler: async (ctx) => {
@@ -99,6 +106,7 @@ export const getPublicHosts = query({
           name: user?.name ?? "Host",
           image: user?.image,
           address: host.address,
+          city: extractCity(host.address),
           lat: host.lat,
           lng: host.lng,
           sector: host.sector,

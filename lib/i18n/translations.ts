@@ -50,16 +50,24 @@ export const translations = {
       confirmPassword: "Confirm Password",
     },
     address: {
-      searchPlaceholder: "Search for an address with street number...",
+      searchPlaceholder: "e.g. 12 Bayit Vagan, Jerusalem...",
       loading: "Loading address details...",
-      streetNumberRequired: "Please select an address that includes a street number.",
+      streetNumberRequired:
+        "Please select an address that includes a street number.",
       fetchError: "Failed to fetch address details. Please try again.",
+      selectFromList: "Please select an address from the suggestions.",
     },
     search: {
       title: "Find a Shabbat Host",
       placeholder: "Search by name, address, sector...",
       noResults: "No hosts found matching your search.",
       searchBarPlaceholder: "Search for a Shabbat host near you...",
+      signInToSeeHosts: "Sign in to see individual hosts",
+      signInDesc: "Create an account to browse available hosts near you.",
+      hostsInCity: "host",
+      hostsInCityPlural: "hosts",
+      availableCities: "Available cities",
+      signIn: "Sign in",
     },
     hero: {
       badge: "Bringing the spirit of Abraham's hospitality to life",
@@ -194,7 +202,8 @@ export const translations = {
       quoteSource: "Shabbat 127a",
       loadingRegistration: "Loading registration...",
       completeRegTitle: "Complete your registration",
-      completeRegDesc: "Finish your registration to pursue your sharing experience.",
+      completeRegDesc:
+        "Finish your registration to pursue your sharing experience.",
       hostLabel: "Host",
       hostDesc: "Welcome people on Shabbat and share a wonderful holy day",
       guestLabel: "Guest",
@@ -208,13 +217,15 @@ export const translations = {
     dashboard: {
       title: "Dashboard",
       accountOverview: "Account Overview",
-      accountOverviewDesc: "Manage your profile status and community permissions.",
+      accountOverviewDesc:
+        "Manage your profile status and community permissions.",
       editProfile: "Edit Profile",
       community: "Community",
       communityDesc: "Connect with other members of the community.",
       browsePeople: "Browse People",
       seeGuests: "See guests looking for meals",
       findHosts: "Find hosts near you",
+      adminDesc: "Manage hosts, guests and verify profiles.",
       profileSetup: "Profile Setup",
       complete: "Complete",
       incomplete: "Incomplete",
@@ -230,7 +241,8 @@ export const translations = {
       communityDetails: "Community details",
       communityDetailsDesc: "Sector and cultural background.",
       accessibility: "Accessibility",
-      accessibilityDesc: "Does your home have step-free access for wheelchairs?",
+      accessibilityDesc:
+        "Does your home have step-free access for wheelchairs?",
       stepFreeAccess: "Step-free access",
       noSpecializedAccess: "No specialized access",
       notesDesc: "Any specific details your guests should know beforehand.",
@@ -263,6 +275,13 @@ export const translations = {
       loginRequired: "Please log in to view people.",
       unknown: "Unknown",
       access: "Access",
+      confirm: "Confirm",
+      confirmed: "Confirmed",
+      unverified: "Unverified",
+      showUnverifiedOnly: "Unverified only",
+      confirmSuccess: "Profile confirmed.",
+      confirmError: "Failed to confirm profile.",
+      status: "Status",
     },
     profile: {
       title: "Profile Settings",
@@ -272,7 +291,8 @@ export const translations = {
       communityMember: "Community Member",
       joined: "Joined",
       communityProfiles: "Community Profiles",
-      communityProfilesDesc: "Update your specific details for hosting or joining meals.",
+      communityProfilesDesc:
+        "Update your specific details for hosting or joining meals.",
       hostProfile: "Host Profile",
       guestProfile: "Guest Profile",
       verificationStatus: "Verification Status",
@@ -282,7 +302,8 @@ export const translations = {
       manualReview: "Manual review by community admins.",
       actionRequired: "Action Required",
       adminNoticePre: "As an ",
-      adminNoticePost: ", you have platform-wide access. No specific host or guest profiles are needed.",
+      adminNoticePost:
+        ", you have platform-wide access. No specific host or guest profiles are needed.",
     },
     roles: {
       admin: "Admin",
@@ -342,16 +363,28 @@ export const translations = {
       confirmPassword: "Confirmer le mot de passe",
     },
     address: {
-      searchPlaceholder: "Rechercher une adresse avec numéro de rue...",
+      searchPlaceholder: "Ex : 5 rue Herzl, Tel Aviv...",
       loading: "Chargement des détails de l'adresse...",
-      streetNumberRequired: "Veuillez sélectionner une adresse incluant un numéro de rue.",
-      fetchError: "Impossible de récupérer les détails de l'adresse. Réessayez.",
+      streetNumberRequired:
+        "Veuillez sélectionner une adresse incluant un numéro de rue.",
+      fetchError:
+        "Impossible de récupérer les détails de l'adresse. Réessayez.",
+      selectFromList:
+        "Veuillez sélectionner une adresse parmi les suggestions.",
     },
     search: {
       title: "Trouver un hôte pour Chabbat",
       placeholder: "Rechercher par nom, adresse, secteur...",
       noResults: "Aucun hôte trouvé.",
-      searchBarPlaceholder: "Rechercher un hôte de Chabbat près de chez vous...",
+      searchBarPlaceholder:
+        "Rechercher un hôte de Chabbat près de chez vous...",
+      signInToSeeHosts: "Connectez-vous pour voir les hôtes",
+      signInDesc:
+        "Créez un compte pour parcourir les hôtes disponibles près de chez vous.",
+      hostsInCity: "hôte",
+      hostsInCityPlural: "hôtes",
+      availableCities: "Villes disponibles",
+      signIn: "Se connecter",
     },
     hero: {
       badge: "Faire vivre l'esprit d'hospitalité d'Avraham",
@@ -453,7 +486,8 @@ export const translations = {
       ],
     },
     cta: {
-      title: "Prêt à ouvrir votre porte ou à trouver votre prochain repas de Chabbat ?",
+      title:
+        "Prêt à ouvrir votre porte ou à trouver votre prochain repas de Chabbat ?",
       description:
         "Rejoignez des centaines d'hôtes et d'invités qui bâtissent une communauté plus forte et plus unie, un Chabbat à la fois.",
       joinAsHost: "Rejoindre en tant qu'hôte",
@@ -472,9 +506,11 @@ export const translations = {
     },
     auth: {
       signUpTitle: "S'inscrire",
-      signUpDesc: "Créez votre compte pour commencer votre expérience de partage",
+      signUpDesc:
+        "Créez votre compte pour commencer votre expérience de partage",
       loginTitle: "Connexion",
-      loginDesc: "Connectez-vous à votre compte pour commencer votre expérience de partage",
+      loginDesc:
+        "Connectez-vous à votre compte pour commencer votre expérience de partage",
       continueWithGoogle: "Continuer avec Google",
       continueWithEmail: "Continuer avec l'e-mail",
       register: "S'inscrire",
@@ -482,13 +518,16 @@ export const translations = {
       clickToLogin: "Cliquez ici pour vous connecter",
       noAccount: "Vous n'avez pas de compte ?",
       clickToRegister: "Cliquez ici pour vous inscrire",
-      quote: "Accueillir des invités est plus grand que recevoir la Présence Divine.",
+      quote:
+        "Accueillir des invités est plus grand que recevoir la Présence Divine.",
       quoteSource: "Chabbat 127a",
       loadingRegistration: "Chargement de l'inscription...",
       completeRegTitle: "Terminez votre inscription",
-      completeRegDesc: "Finalisez votre inscription pour poursuivre votre expérience de partage.",
+      completeRegDesc:
+        "Finalisez votre inscription pour poursuivre votre expérience de partage.",
       hostLabel: "Hôte",
-      hostDesc: "Accueillez des personnes pour le Chabbat et partagez une merveilleuse journée sainte",
+      hostDesc:
+        "Accueillez des personnes pour le Chabbat et partagez une merveilleuse journée sainte",
       guestLabel: "Invité",
       guestDesc: "Cherchez des personnes pouvant vous héberger pour le Chabbat",
       welcomeNew: "Bienvenue nouveau",
@@ -500,13 +539,15 @@ export const translations = {
     dashboard: {
       title: "Tableau de bord",
       accountOverview: "Aperçu du compte",
-      accountOverviewDesc: "Gérez le statut de votre profil et les autorisations communautaires.",
+      accountOverviewDesc:
+        "Gérez le statut de votre profil et les autorisations communautaires.",
       editProfile: "Modifier le profil",
       community: "Communauté",
       communityDesc: "Connectez-vous avec d'autres membres de la communauté.",
       browsePeople: "Parcourir les membres",
       seeGuests: "Voir les invités cherchant des repas",
       findHosts: "Trouver des hôtes près de chez vous",
+      adminDesc: "Gérer les hôtes, invités et vérifier les profils.",
       profileSetup: "Configuration du profil",
       complete: "Complet",
       incomplete: "Incomplet",
@@ -522,10 +563,12 @@ export const translations = {
       communityDetails: "Détails de la communauté",
       communityDetailsDesc: "Secteur et appartenance culturelle.",
       accessibility: "Accessibilité",
-      accessibilityDesc: "Votre domicile dispose-t-il d'un accès sans marches pour les fauteuils roulants ?",
+      accessibilityDesc:
+        "Votre domicile dispose-t-il d'un accès sans marches pour les fauteuils roulants ?",
       stepFreeAccess: "Accès sans marches",
       noSpecializedAccess: "Pas d'accès spécialisé",
-      notesDesc: "Tous les détails spécifiques que vos invités devraient savoir à l'avance.",
+      notesDesc:
+        "Tous les détails spécifiques que vos invités devraient savoir à l'avance.",
     },
     guestProfile: {
       preferredRegion: "Région préférée",
@@ -534,14 +577,16 @@ export const translations = {
       genderDesc: "Aide les hôtes à coordonner les arrangements de couchage.",
       bioNotes: "Bio & Notes",
       bioNotesDesc: "Partagez un peu sur vous ou vos besoins particuliers.",
-      bioNotesPlaceholder: "Ex : Je suis des règles alimentaires spécifiques...",
+      bioNotesPlaceholder:
+        "Ex : Je suis des règles alimentaires spécifiques...",
       noNotes: "Aucune note spécifique fournie.",
     },
     people: {
       title: "Personnes",
       adminDesc: "Gérez tous les hôtes et invités de la plateforme.",
       hostDesc: "Parcourez les invités à la recherche d'un repas de Chabbat.",
-      guestDesc: "Trouvez des hôtes qui proposent des repas de Chabbat près de chez vous.",
+      guestDesc:
+        "Trouvez des hôtes qui proposent des repas de Chabbat près de chez vous.",
       totalHosts: "Total Hôtes",
       totalGuests: "Total Invités",
       hosts: "Hôtes",
@@ -555,26 +600,38 @@ export const translations = {
       loginRequired: "Veuillez vous connecter pour voir les membres.",
       unknown: "Inconnu",
       access: "Accès",
+      confirm: "Confirmer",
+      confirmed: "Confirmé",
+      unverified: "Non confirmé",
+      showUnverifiedOnly: "Non confirmés uniquement",
+      confirmSuccess: "Profil confirmé.",
+      confirmError: "Échec de la confirmation.",
+      status: "Statut",
     },
     profile: {
       title: "Paramètres du profil",
       subtitle: "Gérez votre identité et votre présence dans la communauté.",
       personalIdentity: "Identité personnelle",
-      personalIdentityDesc: "Comment vous apparaissez aux autres membres de la communauté.",
+      personalIdentityDesc:
+        "Comment vous apparaissez aux autres membres de la communauté.",
       communityMember: "Membre de la communauté",
       joined: "Inscrit en",
       communityProfiles: "Profils communautaires",
-      communityProfilesDesc: "Mettez à jour vos informations pour accueillir ou rejoindre des repas.",
+      communityProfilesDesc:
+        "Mettez à jour vos informations pour accueillir ou rejoindre des repas.",
       hostProfile: "Profil hôte",
       guestProfile: "Profil invité",
       verificationStatus: "Statut de vérification",
-      verificationStatusDesc: "Votre niveau de confiance actuel sur la plateforme.",
+      verificationStatusDesc:
+        "Votre niveau de confiance actuel sur la plateforme.",
       verifiedAccount: "Compte vérifié",
       identityPending: "Identité en attente",
-      manualReview: "Vérification manuelle par les administrateurs de la communauté.",
+      manualReview:
+        "Vérification manuelle par les administrateurs de la communauté.",
       actionRequired: "Action requise",
       adminNoticePre: "En tant qu'",
-      adminNoticePost: " vous avez un accès à toute la plateforme. Aucun profil hôte ou invité spécifique n'est nécessaire.",
+      adminNoticePost:
+        " vous avez un accès à toute la plateforme. Aucun profil hôte ou invité spécifique n'est nécessaire.",
     },
     roles: {
       admin: "Admin",
@@ -629,21 +686,28 @@ export const translations = {
       notesPlaceholder: "הערות להסברים נוספים",
       firstName: "שם פרטי",
       lastName: "שם משפחה",
-      email: "דוא\"ל",
+      email: 'דוא"ל',
       password: "סיסמה",
       confirmPassword: "אישור סיסמה",
     },
     address: {
-      searchPlaceholder: "חפש כתובת עם מספר רחוב...",
+      searchPlaceholder: "לדוגמה: הרצל 5, תל אביב...",
       loading: "טוען פרטי כתובת...",
       streetNumberRequired: "אנא בחר כתובת הכוללת מספר רחוב.",
       fetchError: "שגיאה בטעינת פרטי הכתובת. נסה שוב.",
+      selectFromList: "אנא בחר כתובת מהרשימה.",
     },
     search: {
       title: "מצא מארח לשבת",
       placeholder: "חיפוש לפי שם, כתובת, מגזר...",
       noResults: "לא נמצאו מארחים.",
       searchBarPlaceholder: "חפש מארח שבת קרוב אליך...",
+      signInToSeeHosts: "התחבר כדי לראות מארחים",
+      signInDesc: "צור חשבון כדי לעיין במארחים הזמינים קרוב אליך.",
+      hostsInCity: "מארח",
+      hostsInCityPlural: "מארחים",
+      availableCities: "ערים זמינות",
+      signIn: "התחבר",
     },
     hero: {
       badge: "מביאים לחיים את רוח האירוח של אברהם",
@@ -768,14 +832,14 @@ export const translations = {
       loginTitle: "כניסה",
       loginDesc: "התחבר לחשבונך כדי להתחיל את חוויית השיתוף שלך",
       continueWithGoogle: "המשך עם Google",
-      continueWithEmail: "המשך עם דוא\"ל",
+      continueWithEmail: 'המשך עם דוא"ל',
       register: "הירשם",
       alreadyHaveAccount: "כבר יש לך חשבון?",
       clickToLogin: "לחץ כאן להתחברות",
       noAccount: "אין לך חשבון?",
       clickToRegister: "לחץ כאן להרשמה",
       quote: "הכנסת אורחים גדולה מהכנסת שכינה.",
-      quoteSource: "שבת קכז ע\"א",
+      quoteSource: 'שבת קכז ע"א',
       loadingRegistration: "טוען הרשמה...",
       completeRegTitle: "השלם את ההרשמה שלך",
       completeRegDesc: "סיים את ההרשמה שלך כדי להמשיך בחוויית השיתוף שלך.",
@@ -799,6 +863,7 @@ export const translations = {
       browsePeople: "עיין באנשים",
       seeGuests: "ראה אורחים המחפשים ארוחות",
       findHosts: "מצא מארחים קרובים אליך",
+      adminDesc: "נהל מארחים, אורחים ואמת פרופילים.",
       profileSetup: "הגדרת פרופיל",
       complete: "מושלם",
       incomplete: "לא שלם",
@@ -847,6 +912,13 @@ export const translations = {
       loginRequired: "אנא התחבר כדי לראות את האנשים.",
       unknown: "לא ידוע",
       access: "נגישות",
+      confirm: "אמת",
+      confirmed: "מאומת",
+      unverified: "לא מאומת",
+      showUnverifiedOnly: "לא מאומתים בלבד",
+      confirmSuccess: "הפרופיל אומת.",
+      confirmError: "שגיאה באימות הפרופיל.",
+      status: "סטטוס",
     },
     profile: {
       title: "הגדרות פרופיל",
@@ -856,7 +928,8 @@ export const translations = {
       communityMember: "חבר קהילה",
       joined: "הצטרף",
       communityProfiles: "פרופילי קהילה",
-      communityProfilesDesc: "עדכן את הפרטים הספציפיים שלך לאירוח או הצטרפות לארוחות.",
+      communityProfilesDesc:
+        "עדכן את הפרטים הספציפיים שלך לאירוח או הצטרפות לארוחות.",
       hostProfile: "פרופיל מארח",
       guestProfile: "פרופיל אורח",
       verificationStatus: "סטטוס אימות",
@@ -866,7 +939,8 @@ export const translations = {
       manualReview: "בדיקה ידנית על ידי מנהלי הקהילה.",
       actionRequired: "נדרשת פעולה",
       adminNoticePre: "כ",
-      adminNoticePost: " יש לך גישה לכל הפלטפורמה. אין צורך בפרופילי מארח או אורח ספציפיים.",
+      adminNoticePost:
+        " יש לך גישה לכל הפלטפורמה. אין צורך בפרופילי מארח או אורח ספציפיים.",
     },
     roles: {
       admin: "מנהל",

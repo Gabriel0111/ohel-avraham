@@ -158,6 +158,24 @@ export const assignSystemRole = mutation({
   },
 });
 
+export const verifyUser = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const caller = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+
+    if (caller?.role !== "admin") throw new Error("Forbidden");
+
+    await ctx.db.patch(userId, { isVerified: true });
+    return { success: true };
+  },
+});
+
 export const deleteUser = mutation({
   args: {},
   handler: async (ctx) => {

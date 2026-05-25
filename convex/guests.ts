@@ -23,6 +23,7 @@ export const getAllGuests = query({
         return {
           ...user!,
           ...guest,
+          userId: user!._id,
         };
       }),
     );

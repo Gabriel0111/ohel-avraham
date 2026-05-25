@@ -10,6 +10,7 @@ export interface PublicHost {
   name: string;
   image?: string;
   address: string;
+  city?: string;
   lat?: number;
   lng?: number;
   sector: string;

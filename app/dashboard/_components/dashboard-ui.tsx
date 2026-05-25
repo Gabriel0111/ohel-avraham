@@ -38,19 +38,22 @@ interface InfoRowProps {
   value: string;
   isLast?: boolean;
   capitalize?: boolean;
+  valueEl?: ReactNode;
 }
 
-export const InfoRow = ({ icon, label, value, isLast, capitalize }: InfoRowProps) => (
+export const InfoRow = ({ icon, label, isLast, capitalize, value, valueEl }: InfoRowProps) => (
   <div
-    className={`flex items-center py-4 ${!isLast ? "border-b border-border/50" : ""}`}
+    className={`flex items-center gap-3 py-3.5 ${!isLast ? "border-b border-border/40" : ""}`}
   >
-    <div className="w-10 shrink-0">{icon}</div>
-    <span className="grow text-sm font-medium text-foreground">{label}</span>
-    <span
-      className={`text-sm text-muted-foreground ${capitalize ? "capitalize" : ""}`}
-    >
-      {value}
-    </span>
+    <div className="size-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+      {icon}
+    </div>
+    <span className="grow text-sm text-muted-foreground">{label}</span>
+    {valueEl ?? (
+      <span className={`text-sm font-medium text-foreground ${capitalize ? "capitalize" : ""}`}>
+        {value}
+      </span>
+    )}
   </div>
 );
 

@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, LogOutIcon, MenuIcon, UserIcon } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  LogOutIcon,
+  MenuIcon,
+  UserIcon,
+} from "lucide-react";
 import { navigationData } from "@/lib/navigation-data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -60,8 +66,12 @@ const Navbar = () => {
   function onSignOut() {
     authClient.signOut({
       fetchOptions: {
-        onSuccess: () => { toast.success(t.common.logoutSuccess); },
-        onError: (error) => { toast.error(error.error.message); },
+        onSuccess: () => {
+          toast.success(t.common.logoutSuccess);
+        },
+        onError: (error) => {
+          toast.error(error.error.message);
+        },
       },
     });
   }
@@ -97,7 +107,9 @@ const Navbar = () => {
               );
               return navItem.requiresAuth ? (
                 <Authenticated key={navItem.titleKey}>{item}</Authenticated>
-              ) : item;
+              ) : (
+                item
+              );
             })}
           </NavigationMenuList>
         </NavigationMenu>
@@ -120,7 +132,7 @@ const Navbar = () => {
                 <ChevronDown className="size-3 opacity-60" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[110px] z-[100]">
+            <DropdownMenuContent align="end" className="min-w-27.5 z-100">
               {LANGUAGES.map((l) => (
                 <DropdownMenuItem
                   key={l.value}
@@ -132,7 +144,9 @@ const Navbar = () => {
                 >
                   <span>{l.flag}</span>
                   <span>{l.label}</span>
-                  {lang === l.value && <Check className="size-3 ml-auto text-primary" />}
+                  {lang === l.value && (
+                    <Check className="size-3 ml-auto text-primary" />
+                  )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -161,7 +175,10 @@ const Navbar = () => {
 
           <Unauthenticated>
             <div className="flex items-center gap-1.5 max-md:hidden">
-              <Link href="/login" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
                 {t.nav.login}
               </Link>
               <Link href="/sign-up" className={buttonVariants({ size: "sm" })}>
@@ -202,12 +219,17 @@ const Navbar = () => {
                     );
                     return item.requiresAuth ? (
                       <Authenticated key={item.titleKey}>{link}</Authenticated>
-                    ) : link;
+                    ) : (
+                      link
+                    );
                   })}
                   <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
                     <Unauthenticated>
                       <>
-                        <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+                        <Link
+                          href="/login"
+                          className={buttonVariants({ variant: "outline" })}
+                        >
                           {t.nav.login}
                         </Link>
                         <Link href="/sign-up" className={buttonVariants()}>

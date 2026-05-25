@@ -62,7 +62,6 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
           sector: hostData.sector as HostType["sector"],
           ethnicity: hostData.ethnicity as HostType["ethnicity"],
           notes: hostData.notes || "",
-          entrance: hostData.entrance || "",
         }
       : undefined,
   });
@@ -142,20 +141,6 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               />
 
               <Controller
-                name="entrance"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <div className="flex items-center justify-between">
-                    <FieldLabel>{t.form.entrance}</FieldLabel>
-                    <Input {...field} className="w-fit" />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </div>
-                )}
-              />
-
-              <Controller
                 name="floor"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -175,8 +160,6 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 value={hostData.address}
                 icon={<MapPin className="size-4" />}
               />
-
-              <ViewValue value={hostData.entrance} title={t.form.entrance} />
 
               <ViewValue value={hostData.floor} title={t.form.floor} />
             </div>
