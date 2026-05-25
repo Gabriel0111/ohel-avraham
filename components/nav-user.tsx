@@ -76,10 +76,7 @@ export function NavUser({ user }: { user: Doc<"users"> | null | undefined }) {
               </Avatar>
 
               <div className="grid flex-1 text-left text-sm leading-tight ml-1">
-                <div className="flex items-center gap-2">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <RoleBadge role={user.role} />
-                </div>
+                <span className="truncate font-semibold">{user.name}</span>
                 <span className="text-muted-foreground truncate text-xs font-normal">
                   {user.email}
                 </span>

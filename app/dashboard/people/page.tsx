@@ -27,6 +27,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useT } from "@/lib/i18n/context";
 
 function getInitials(name?: string) {
   if (!name) return "?";
@@ -47,6 +48,7 @@ function formatDate(timestamp: number) {
 }
 
 export default function PeoplePage() {
+  const { t } = useT();
   const currentUser = useQuery(api.users.getCurrentUser);
   const allHosts = useQuery(api.hosts.getAllHosts);
   const allGuests = useQuery(api.guests.getAllGuests);
@@ -98,7 +100,7 @@ export default function PeoplePage() {
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center flex-1 py-20 text-muted-foreground">
-        Please log in to view people.
+        {t.people.loginRequired}
       </div>
     );
   }
@@ -112,14 +114,14 @@ export default function PeoplePage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          People
+          {t.people.title}
         </h1>
         <p className="text-muted-foreground">
           {isAdmin
-            ? "Manage all hosts and guests on the platform."
+            ? t.people.adminDesc
             : isHost
-              ? "Browse guests looking for a Shabbat meal."
-              : "Find hosts offering Shabbat meals near you."}
+              ? t.people.hostDesc
+              : t.people.guestDesc}
         </p>
       </div>
 
@@ -129,7 +131,7 @@ export default function PeoplePage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Hosts
+                {t.people.totalHosts}
               </CardTitle>
               <Home className="size-4 text-muted-foreground" />
             </CardHeader>
@@ -144,7 +146,7 @@ export default function PeoplePage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Guests
+                {t.people.totalGuests}
               </CardTitle>
               <User className="size-4 text-muted-foreground" />
             </CardHeader>
@@ -163,11 +165,11 @@ export default function PeoplePage() {
           <TabsList>
             <TabsTrigger value="hosts" className="gap-1.5">
               <Home className="size-3.5" />
-              Hosts
+              {t.people.hosts}
             </TabsTrigger>
             <TabsTrigger value="guests" className="gap-1.5">
               <Users className="size-3.5" />
-              Guests
+              {t.people.guests}
             </TabsTrigger>
           </TabsList>
         )}
@@ -178,11 +180,11 @@ export default function PeoplePage() {
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <CardTitle className="text-foreground">Hosts</CardTitle>
+                  <CardTitle className="text-foreground">{t.people.hosts}</CardTitle>
                   <div className="relative max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search hosts..."
+                      placeholder={t.people.searchHosts}
                       value={hostSearch}
                       onChange={(e) => setHostSearch(e.target.value)}
                       className="pl-9"
@@ -198,31 +200,31 @@ export default function PeoplePage() {
                 ) : filteredHosts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
                     <Home className="size-8" />
-                    <p>No hosts found.</p>
+                    <p>{t.people.noHostsFound}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Host</TableHead>
+                        <TableHead>{t.people.host}</TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Address
+                          {t.form.address}
                         </TableHead>
                         <TableHead className="hidden sm:table-cell">
-                          Sector
+                          {t.form.sector}
                         </TableHead>
                         <TableHead className="hidden sm:table-cell">
-                          Kashrout
+                          {t.form.kashrout}
                         </TableHead>
                         <TableHead className="hidden lg:table-cell">
-                          Ethnicity
+                          {t.form.ethnicity}
                         </TableHead>
                         <TableHead className="hidden lg:table-cell">
-                          Access
+                          {t.people.access}
                         </TableHead>
                         {isAdmin && (
                           <TableHead className="hidden lg:table-cell">
-                            Phone
+                            {t.form.phoneNumber}
                           </TableHead>
                         )}
                       </TableRow>
@@ -240,7 +242,7 @@ export default function PeoplePage() {
                               </Avatar>
                               <div className="flex flex-col">
                                 <span className="font-medium text-foreground">
-                                  {host.name || "Unknown"}
+                                  {host.name || t.people.unknown}
                                 </span>
                                 <span className="text-xs text-muted-foreground md:hidden">
                                   {host.address}
@@ -300,11 +302,11 @@ export default function PeoplePage() {
             <Card>
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <CardTitle className="text-foreground">Guests</CardTitle>
+                  <CardTitle className="text-foreground">{t.people.guests}</CardTitle>
                   <div className="relative max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search guests..."
+                      placeholder={t.people.searchGuests}
                       value={guestSearch}
                       onChange={(e) => setGuestSearch(e.target.value)}
                       className="pl-9"
@@ -320,27 +322,27 @@ export default function PeoplePage() {
                 ) : filteredGuests.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
                     <Users className="size-8" />
-                    <p>No guests found.</p>
+                    <p>{t.people.noGuestsFound}</p>
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Guest</TableHead>
+                        <TableHead>{t.people.guest}</TableHead>
                         <TableHead className="hidden sm:table-cell">
-                          Region
+                          {t.form.region}
                         </TableHead>
                         <TableHead className="hidden sm:table-cell">
-                          Sector
+                          {t.form.sector}
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Ethnicity
+                          {t.form.ethnicity}
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Gender
+                          {t.form.gender}
                         </TableHead>
                         <TableHead className="hidden lg:table-cell">
-                          Date of Birth
+                          {t.form.dateOfBirth}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -357,7 +359,7 @@ export default function PeoplePage() {
                               </Avatar>
                               <div className="flex flex-col">
                                 <span className="font-medium text-foreground">
-                                  {guest.name || "Unknown"}
+                                  {guest.name || t.people.unknown}
                                 </span>
                                 <span className="text-xs text-muted-foreground sm:hidden">
                                   {guest.region}

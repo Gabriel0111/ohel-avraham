@@ -1,10 +1,16 @@
-export const AdminNotice = ({ role }: { role: string }) => (
-  <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center bg-muted/10">
-    <p className="text-sm text-muted-foreground">
-      As an{" "}
-      <span className="text-foreground font-semibold capitalize">{role}</span>,
-      you have platform-wide access. No specific host or guest profiles are
-      needed.
-    </p>
-  </div>
-);
+"use client";
+
+import { useT } from "@/lib/i18n/context";
+
+export const AdminNotice = ({ role }: { role: string }) => {
+  const { t } = useT();
+  return (
+    <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center bg-muted/10">
+      <p className="text-sm text-muted-foreground">
+        {t.profile.adminNoticePre}
+        <span className="text-foreground font-semibold capitalize">{role}</span>
+        {t.profile.adminNoticePost}
+      </p>
+    </div>
+  );
+};

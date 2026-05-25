@@ -1,24 +1,14 @@
 "use client";
 
-import { HTMLAttributes, useState } from "react";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import type { Icon } from "@tabler/icons-react";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { RoleType } from "@/convex/enums";
 import { canAccess } from "@/convex/helpers/canAccessRole";
 
-type SidebarNavProps = HTMLAttributes<HTMLElement> & {
+type SidebarNavProps = {
   items: {
     title: string;
     url: string;
@@ -27,72 +17,50 @@ type SidebarNavProps = HTMLAttributes<HTMLElement> & {
   }[];
 };
 
-export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
+export function SidebarNav({ items }: SidebarNavProps) {
   const { user } = useAuth();
-
-  const router = useRouter();
   const pathname = usePathname();
-  const [val, setVal] = useState(pathname ?? "/settings");
 
-  const handleSelect = (e: string) => {
-    setVal(e);
-    router.push(e);
-  };
-
-  const filteredItemsByRole = items.filter((item) => {
+  const filteredItems = items.filter((item) => {
     if (!item.minRole) return true;
-
     return canAccess(user?.role ?? "guest", item.minRole);
   });
 
   return (
-    <>
-      <div className="md:hidden">
-        <Select value={val} onValueChange={handleSelect}>
-          <SelectTrigger className="h-12 w-full">
-            <SelectValue placeholder="Theme" />
-          </SelectTrigger>
-          <SelectContent>
-            {filteredItemsByRole.map((item) => (
-              <SelectItem key={item.url} value={item.url}>
-                <div className="flex items-center gap-x-4 px-2 py-1">
-                  <span className="scale-125">
-                    {item.icon && <item.icon />}
-                  </span>
-                  <span className="text-md">{item.title}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <nav className="flex flex-col gap-0.5 px-2">
+      {filteredItems.map((item) => {
+        const isActive =
+          item.url === "/dashboard"
+            ? pathname === item.url
+            : pathname.startsWith(item.url);
 
-      <ScrollArea
-        aria-orientation="horizontal"
-        type="always"
-        className="hidden w-full bg-background py-2 md:block"
-      >
-        <nav className={cn("flex flex-col space-y-1", className)} {...props}>
-          {filteredItemsByRole.map((item) => (
-            <Link
-              key={item.url}
-              href={item.url}
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                pathname === item.url
-                  ? "bg-gray-400/40 hover:bg-gray-400/50"
-                  : "hover:bg-gray-400/50 text-muted-foreground/80",
-                "justify-start rounded-md",
-              )}
-            >
-              <span className="me-0 scale-110">
-                {item.icon && <item.icon />}
-              </span>
-              <span> {item.title}</span>
-            </Link>
-          ))}
-        </nav>
-      </ScrollArea>
-    </>
+        return (
+          <Link
+            key={item.url}
+            href={item.url}
+            className={cn(
+              "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
+              "transition-all duration-200 ease-in-out",
+              isActive
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/60",
+            )}
+          >
+            {item.icon && (
+              <item.icon
+                className={cn(
+                  "size-4 shrink-0 transition-all duration-200",
+                  isActive
+                    ? "text-primary"
+                    : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80",
+                )}
+                stroke={isActive ? 2.2 : 1.6}
+              />
+            )}
+            <span className="transition-colors duration-200">{item.title}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }

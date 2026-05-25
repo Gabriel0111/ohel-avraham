@@ -70,7 +70,7 @@ export function GuestProfileCard({
   if (!guestData)
     return (
       <div className="p-8 text-center text-muted-foreground border border-dashed rounded-xl">
-        No guest profile found.
+        {t.guestProfile.noProfileFound}
       </div>
     );
 
@@ -138,7 +138,7 @@ export function GuestProfileCard({
         {/* LIGNE : GENDER */}
         <SettingsRow
           label={t.form.gender}
-          description="Helps hosts coordinate sleeping arrangements."
+          description={t.guestProfile.genderDesc}
         >
           {isEditing ? (
             <Controller
@@ -242,8 +242,8 @@ export function GuestProfileCard({
 
         {/* LIGNE : NOTES */}
         <SettingsRow
-          label="Bio & Notes"
-          description="Share a bit about yourself or special needs."
+          label={t.guestProfile.bioNotes}
+          description={t.guestProfile.bioNotesDesc}
         >
           {isEditing ? (
             <Controller
@@ -253,13 +253,13 @@ export function GuestProfileCard({
                 <Textarea
                   {...field}
                   className="min-h-25 bg-muted/20 border-border/40 focus-visible:ring-1"
-                  placeholder="Ex: I follow specific dietary rules..."
+                  placeholder={t.guestProfile.bioNotesPlaceholder}
                 />
               )}
             />
           ) : (
             <ViewValue
-              value={guestData.notes ?? "No specific notes provided."}
+              value={guestData.notes ?? t.guestProfile.noNotes}
             />
           )}
         </SettingsRow>

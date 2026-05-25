@@ -3,19 +3,22 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Home, Mail, ShieldCheck, User } from "lucide-react";
+import { Calendar, CheckCircle2, Home, Mail, ShieldCheck, User } from "lucide-react";
 import { HostProfileCard } from "./_components/host-profile-card";
 import { GuestProfileCard } from "./_components/guest-profile-card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { AdminNotice } from "@/app/dashboard/_components/profile-ui";
+import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { PageSection } from "@/app/dashboard/_components/dashboard-page-ui/page-section";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
 import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
+import { useT } from "@/lib/i18n/context";
 
 export default function ProfilePage() {
+  const { t, lang } = useT();
   const data = useQuery(api.users.getFullProfile);
 
   if (data === undefined) return <ProfileLoading />;
@@ -28,21 +31,29 @@ export default function ProfilePage() {
   const isGuest = role === "guest" || isBoth;
   const isAdmin = role === "admin";
 
+  const joinDate = new Date(user._creationTime).toLocaleDateString(
+    lang === "he" ? "he-IL" : lang === "fr" ? "fr-FR" : "en-GB",
+    { month: "long", year: "numeric" }
+  );
+
   return (
     <div>
       <PageHeader
-        title="Profile Settings"
-        subtitle="Manage your identity and community presence."
+        title={t.profile.title}
+        subtitle={t.profile.subtitle}
       />
 
       <div className="space-y-2">
         <PageSection
-          title="Personal Identity"
-          description="How you appear to other members of the community."
+          title={t.profile.personalIdentity}
+          description={t.profile.personalIdentityDesc}
         >
-          <div className="flex flex-col sm:flex-row gap-6 items-start">
-            <div className="relative">
-              <div className="relative size-14 rounded-full overflow-hidden bg-muted ring-3 ring-border shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+            {/* Avatar avec anneau de vérification */}
+            <div className="relative shrink-0">
+              <div
+                className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}
+              >
                 {user.image ? (
                   <Image
                     src={user.image}
@@ -52,34 +63,41 @@ export default function ProfilePage() {
                     draggable={false}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-3xl font-medium">
+                  <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
                     {user.name?.[0].toUpperCase()}
                   </div>
                 )}
               </div>
+              {user.isVerified && (
+                <div className="absolute bottom-0 right-0 size-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-background">
+                  <CheckCircle2 className="size-3 text-white" />
+                </div>
+              )}
             </div>
 
-            <div className="flex-1 space-y-2">
-              <div>
-                <h3 className="text-2xl font-bold tracking-tight text-foreground">
-                  {user.name}
-                </h3>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Membre de la communauté
+            {/* Identité */}
+            <div className="flex-1 min-w-0 space-y-3 text-center sm:text-start">
+              <div className="space-y-0.5">
+                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">
+                    {user.name}
+                  </h3>
+                  <RoleBadge role={role} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t.profile.communityMember}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-1">
-                {/* Badge d'email stylisé façon Resend */}
-                <Badge variant="secondary" className="flex gap-2">
-                  <Mail className="size-3.5" />
-                  {user.email}
-                </Badge>
-
-                <Badge variant="secondary" className="flex gap-2">
-                  <Calendar className="size-3.5" />
-                  Joint en Février 2024
-                </Badge>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
+                  <Mail className="size-3.5 shrink-0" />
+                  <span className="truncate">{user.email}</span>
+                </div>
+                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
+                  <Calendar className="size-3.5 shrink-0" />
+                  <span>{t.profile.joined} {joinDate}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -87,8 +105,8 @@ export default function ProfilePage() {
 
         {/* SECTION : COMMUNITY PROFILES */}
         <PageSection
-          title="Community Profiles"
-          description="Update your specific details for hosting or joining meals."
+          title={t.profile.communityProfiles}
+          description={t.profile.communityProfilesDesc}
           className="flex-col!"
           childrenClassName="w-full! pt-5"
         >
@@ -96,10 +114,10 @@ export default function ProfilePage() {
             <Tabs defaultValue="host" className="w-full">
               <TabsList className="grid w-full grid-cols-2 rounded-xl mb-6">
                 <TabsTrigger value="host" className="rounded-lg gap-2">
-                  <Home className="size-4" /> Host Profile
+                  <Home className="size-4" /> {t.profile.hostProfile}
                 </TabsTrigger>
                 <TabsTrigger value="guest" className="rounded-lg gap-2">
-                  <User className="size-4" /> Guest Profile
+                  <User className="size-4" /> {t.profile.guestProfile}
                 </TabsTrigger>
               </TabsList>
 
@@ -126,10 +144,10 @@ export default function ProfilePage() {
           )}
         </PageSection>
 
-        {/* SECTION : ACCOUNT SECURITY (Optionnel) */}
+        {/* SECTION : VERIFICATION */}
         <PageSection
-          title="Verification Status"
-          description="Your current trust level on the platform."
+          title={t.profile.verificationStatus}
+          description={t.profile.verificationStatusDesc}
         >
           <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
             <div className="flex items-center gap-3">
@@ -140,10 +158,10 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-sm font-medium">
-                  {user.isVerified ? "Verified Account" : "Identity Pending"}
+                  {user.isVerified ? t.profile.verifiedAccount : t.profile.identityPending}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Manual review by community admins.
+                  {t.profile.manualReview}
                 </p>
               </div>
             </div>
@@ -152,7 +170,7 @@ export default function ProfilePage() {
                 variant="outline"
                 className="text-amber-600 border-amber-500/30"
               >
-                Action Required
+                {t.profile.actionRequired}
               </Badge>
             )}
           </div>
