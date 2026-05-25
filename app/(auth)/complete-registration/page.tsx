@@ -3,16 +3,12 @@
 import { Button } from "@/components/ui/button";
 import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import RadioSelect, { RadioGroupItem } from "@/components/ui/radio-select";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HostForm from "@/app/(auth)/_components/host-form";
 import GuestForm from "@/app/(auth)/_components/guest-form";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
-import { useAuth } from "@/app/ConvexClientProvider";
-import { authClient } from "@/lib/auth-client";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { useT } from "@/lib/i18n/context";
 
@@ -23,34 +19,7 @@ const CompleteRegistration = () => {
   const searchParams = useSearchParams();
   const userType = searchParams.get("userType");
 
-  const { data: session } = authClient.useSession();
-  const { isAuthenticated, user } = useAuth();
-
-  const createUser = useMutation(api.users.createUser);
-
-  const [isSyncing, setIsSyncing] = useState(false);
   const { t } = useT();
-
-  useEffect(() => {
-    const performSync = async () => {
-      // 1. Check if we have a session but no Convex user yet
-      // 2. Ensure we aren't already in the middle of a request (isSyncing)
-      if (session?.user?.id && !isAuthenticated && !isSyncing) {
-        try {
-          setIsSyncing(true);
-          await createUser();
-        } catch (error) {
-          console.error("Failed to create user:", error);
-        } finally {
-          setIsSyncing(false);
-        }
-      } else if (isAuthenticated && user?.role !== "user") {
-        redirect("/");
-      }
-    };
-
-    performSync();
-  }, [session, isAuthenticated, createUser, isSyncing]);
 
   const items: RadioGroupItem[] = [
     {

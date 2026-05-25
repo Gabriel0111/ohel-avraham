@@ -1,13 +1,21 @@
 import { ArrowRight, Home, Shield, User } from "lucide-react";
 import Link from "next/link";
+import { ReactNode } from "react";
 import { RoleType } from "@/convex/enums";
+
+interface DashboardSectionProps {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}
 
 export const DashboardSection = ({
   title,
   description,
   action,
   children,
-}: never) => (
+}: DashboardSectionProps) => (
   <section className="flex flex-col border-b border-border py-8 md:flex-row md:gap-12">
     <div className="flex w-full justify-between md:block md:w-1/3 lg:w-1/2">
       <div className="space-y-1">
@@ -24,7 +32,15 @@ export const DashboardSection = ({
   </section>
 );
 
-export const InfoRow = ({ icon, label, value, isLast, capitalize }: never) => (
+interface InfoRowProps {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  isLast?: boolean;
+  capitalize?: boolean;
+}
+
+export const InfoRow = ({ icon, label, value, isLast, capitalize }: InfoRowProps) => (
   <div
     className={`flex items-center py-4 ${!isLast ? "border-b border-border/50" : ""}`}
   >
@@ -38,7 +54,14 @@ export const InfoRow = ({ icon, label, value, isLast, capitalize }: never) => (
   </div>
 );
 
-export const ActionCard = ({ title, subtitle, href, icon }: never) => (
+interface ActionCardProps {
+  title: string;
+  subtitle: string;
+  href: string;
+  icon: ReactNode;
+}
+
+export const ActionCard = ({ title, subtitle, href, icon }: ActionCardProps) => (
   <Link
     href={href}
     className="group block p-4 rounded-xl border border-border bg-card hover:border-primary/50 transition-all"
