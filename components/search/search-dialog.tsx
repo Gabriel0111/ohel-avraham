@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
@@ -17,14 +19,14 @@ import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 
 const HostMapGoogle = dynamic(
-  () => import("./host-map-google").then((mod) => ({ default: mod.HostMapGoogle })),
+  () =>
+    import("./host-map-google").then((mod) => ({ default: mod.HostMapGoogle })),
   {
     ssr: false,
     loading: () => (
-      <div className="size-full flex items-center justify-center bg-muted rounded-lg">
+      <div className="size-full flex items-center justify-center bg-muted/50 rounded-xl">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     ),
@@ -89,23 +91,25 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         showCloseButton
       >
         {/* Header */}
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <MapPin className="size-4 text-primary shrink-0" />
+        <DialogHeader className="px-6 pt-5 pb-4 shrink-0">
+          <DialogTitle className="flex items-center gap-2.5 text-base font-semibold">
+            <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center">
+              <MapPin className="size-3.5 text-primary" />
+            </div>
             {t.search.title}
           </DialogTitle>
-          <div className="relative mt-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <div className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder={
-                isAuthenticated ? t.search.placeholder : t.search.placeholder
-              }
+              placeholder={t.search.placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-muted/40 border-transparent focus-visible:border-input focus-visible:bg-background transition-colors"
             />
           </div>
         </DialogHeader>
+
+        <Separator />
 
         {/* Body */}
         {isLoading ? (
@@ -113,12 +117,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
           </div>
         ) : isAuthenticated ? (
-          /* Authenticated: list + Google Maps */
+          /* Authenticated: host list + map */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
-            <ScrollArea className="w-full sm:w-[38%] border-r border-border shrink-0">
-              <div className="p-3 flex flex-col gap-2">
+            <ScrollArea className="w-full sm:w-[38%] shrink-0">
+              <div className="p-3 flex flex-col gap-1.5">
                 {filteredHosts.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground text-sm">
+                  <div className="text-center py-16 text-muted-foreground text-sm">
                     {t.search.noResults}
                   </div>
                 ) : (
@@ -133,50 +137,52 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 )}
               </div>
             </ScrollArea>
-            <div className="flex-1 min-h-[250px] sm:min-h-0 p-2">
-              <HostMapGoogle
-                hosts={filteredHosts}
-                selectedHost={selectedHost}
-                onSelectHost={handleSelectHost}
-              />
+
+            <Separator orientation="vertical" className="hidden sm:block" />
+
+            <div className="flex-1 min-h-[250px] sm:min-h-0 p-3">
+              <div className="size-full rounded-lg overflow-hidden">
+                <HostMapGoogle
+                  hosts={filteredHosts}
+                  selectedHost={selectedHost}
+                  onSelectHost={handleSelectHost}
+                />
+              </div>
             </div>
           </div>
         ) : (
-          /* Unauthenticated: city groups + sign-in prompt */
+          /* Unauthenticated: city list + sign-in prompt */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
-            <ScrollArea className="w-full sm:w-1/2 border-r border-border shrink-0">
-              <div className="p-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <ScrollArea className="w-full sm:w-[45%] shrink-0">
+              <div className="p-5 space-y-3">
+                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                   {t.search.availableCities}
                 </p>
-                <div className="flex flex-col gap-1.5">
+                <div className="space-y-1">
                   {Object.entries(cityGroups)
                     .sort((a, b) => b[1] - a[1])
                     .map(([city, count]) => (
                       <div
                         key={city}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-accent/40 border border-border/50"
+                        className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted/60 transition-colors group"
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <MapPin className="size-3.5 text-primary shrink-0" />
-                          <span className="text-sm font-medium text-foreground truncate">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <MapPin className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
+                          <span className="text-sm font-medium truncate">
                             {city}
                           </span>
                         </div>
                         <Badge
                           variant="secondary"
-                          className="shrink-0 ml-2 text-xs"
+                          className="shrink-0 ml-2 gap-1 text-xs font-normal tabular-nums"
                         >
-                          <Users className="size-3 mr-1" />
-                          {count}{" "}
-                          {count === 1
-                            ? t.search.hostsInCity
-                            : t.search.hostsInCityPlural}
+                          <Users className="size-3" />
+                          {count}
                         </Badge>
                       </div>
                     ))}
                   {Object.keys(cityGroups).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-6">
+                    <p className="text-sm text-muted-foreground text-center py-8">
                       {t.search.noResults}
                     </p>
                   )}
@@ -184,30 +190,38 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               </div>
             </ScrollArea>
 
+            <Separator orientation="vertical" className="hidden sm:block" />
+
             {/* Sign-in prompt */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 gap-5 text-center">
-              <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Lock className="size-7 text-primary" />
+            <div className="flex-1 flex flex-col items-center justify-center p-10 gap-5 text-center">
+              <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
+                <Lock className="size-5 text-muted-foreground" />
               </div>
-              <div className="space-y-1.5">
-                <p className="font-semibold text-foreground">
+              <div className="space-y-1.5 max-w-[220px]">
+                <p className="font-semibold text-sm text-foreground">
                   {t.search.signInToSeeHosts}
                 </p>
-                <p className="text-sm text-muted-foreground max-w-xs">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   {t.search.signInDesc}
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 w-full max-w-xs">
-                <Button asChild className="flex-1" onClick={() => onOpenChange(false)}>
-                  <Link href="/auth/login">{t.search.signIn}</Link>
+              <div className="flex flex-col gap-2 w-full max-w-[180px]">
+                <Button
+                  asChild
+                  size="sm"
+                  className="w-full"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <Link href="/login">{t.search.signIn}</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="flex-1"
+                  size="sm"
+                  className="w-full"
                   onClick={() => onOpenChange(false)}
                 >
-                  <Link href="/auth/signup">{t.nav.signup}</Link>
+                  <Link href="/sign-up">{t.nav.signup}</Link>
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { cn } from "@/lib/utils";
 import type { PublicHost } from "./host-list-card";
+import { env } from "@/lib/env";
 
 interface HostMapProps {
   hosts: PublicHost[];
@@ -12,8 +13,12 @@ interface HostMapProps {
 
 const ISRAEL_CENTER = { lat: 31.5, lng: 34.8 };
 
-export function HostMapGoogle({ hosts, selectedHost, onSelectHost }: HostMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+export function HostMapGoogle({
+  hosts,
+  selectedHost,
+  onSelectHost,
+}: HostMapProps) {
+  const apiKey = env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   return (
     <APIProvider apiKey={apiKey}>

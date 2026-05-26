@@ -184,14 +184,18 @@ export const deleteUser = mutation({
 
     const authUserId = identity.subject;
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
-      .unique();
+    const [user, host, guest] = await Promise.all([
+      ctx.db.query("users").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+      ctx.db.query("hosts").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+      ctx.db.query("guests").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+    ]);
 
-    if (!user) return { deleted: false };
+    await Promise.all([
+      user && ctx.db.delete(user._id),
+      host && ctx.db.delete(host._id),
+      guest && ctx.db.delete(guest._id),
+    ]);
 
-    await ctx.db.delete(user._id);
     return { deleted: true };
   },
 });

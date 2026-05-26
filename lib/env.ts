@@ -9,11 +9,8 @@ export const env = createEnv({
   },
 
   server: {
-    // BETTER_AUTH_URL: z.string().min(1),
-    // ARCJET_KEY: z.string().min(1),
     AUTH_GOOGLE_CLIENT_ID: z.string().min(1),
     AUTH_GOOGLE_CLIENT_SECRET: z.string().min(1),
-    GOOGLE_MAPS_API_KEY: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
 
     CONVEX_DEPLOYMENT: z.string().min(1),

@@ -48,6 +48,8 @@ export function HostListCard({
             <Image
               src={host.image}
               alt={host.name}
+              width={40}
+              height={40}
               className="size-10 rounded-full object-cover"
             />
           ) : (

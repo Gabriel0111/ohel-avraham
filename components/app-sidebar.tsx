@@ -2,6 +2,7 @@
 
 import {
   Icon,
+  IconBuildingCommunity,
   IconDashboard,
   IconUserCircle,
   IconUsers,
@@ -21,6 +22,7 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import { ComponentProps } from "react";
 import Link from "next/link";
 import { RoleType } from "@/convex/enums";
+import { useT } from "@/lib/i18n/context";
 
 const hostname = "/dashboard";
 
@@ -28,34 +30,36 @@ interface NavItem {
   title: string;
   url: string;
   icon?: Icon;
-  minRole?: RoleType; // Utilise le type exact ici
+  minRole?: RoleType;
 }
-
-const items: NavItem[] = [
-  {
-    title: "Dashboard",
-    url: hostname,
-    icon: IconDashboard,
-  },
-  {
-    title: "Account",
-    url: `${hostname}/profile`,
-    icon: IconUserCircle,
-  },
-  {
-    title: "People",
-    url: `${hostname}/people`,
-    icon: IconUsers,
-    minRole: "admin",
-  },
-];
-
-const data = {
-  navMain: items,
-} as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const { t } = useT();
+
+  const items: NavItem[] = [
+    {
+      title: t.nav.dashboard,
+      url: hostname,
+      icon: IconDashboard,
+    },
+    {
+      title: t.nav.account,
+      url: `${hostname}/profile`,
+      icon: IconUserCircle,
+    },
+    {
+      title: t.nav.communityProfile,
+      url: `${hostname}/community-profile`,
+      icon: IconBuildingCommunity,
+    },
+    {
+      title: t.nav.people,
+      url: `${hostname}/people`,
+      icon: IconUsers,
+      minRole: "admin",
+    },
+  ];
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -69,7 +73,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

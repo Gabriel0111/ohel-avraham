@@ -57,7 +57,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
       ? {
           ...hostData,
           dob: new Date(hostData.dob),
-          // On "rassure" TypeScript ici :
+          floor: Number(hostData.floor),
           kashrout: hostData.kashrout as HostType["kashrout"],
           sector: hostData.sector as HostType["sector"],
           ethnicity: hostData.ethnicity as HostType["ethnicity"],
@@ -73,7 +73,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
   const handleSave = (values: HostType) => {
     startSaving(async () => {
       try {
-        await upsertHost({ data: { ...values, dob: values.dob.getTime() } });
+        await upsertHost({ data: { ...values, dob: values.dob.getTime(), floor: String(values.floor) } });
         toast.success(t.common.save);
         setIsEditing(false);
       } catch {
@@ -146,7 +146,15 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 render={({ field, fieldState }) => (
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.floor}</FieldLabel>
-                    <Input {...field} className="w-fit" />
+                    <Input
+                      type="number"
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      value={field.value as number}
+                      onChange={(e) => field.onChange(isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
+                      className="w-20"
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -322,20 +330,17 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               )}
             />
           ) : (
-            <ViewValue
-              value={
-                hostData.hasDisabilityAccess
-                  ? t.hostProfile.stepFreeAccess
-                  : t.hostProfile.noSpecializedAccess
-              }
-              icon={
-                hostData.hasDisabilityAccess ? (
-                  <Accessibility className="size-4 text-emerald-500" />
-                ) : (
-                  <X className="size-4 text-destructive" />
-                )
-              }
-            />
+            hostData.hasDisabilityAccess ? (
+              <Badge className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-normal gap-1.5">
+                <Accessibility className="size-3.5" />
+                {t.hostProfile.stepFreeAccess}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-muted-foreground gap-1.5 font-normal">
+                <X className="size-3.5" />
+                {t.hostProfile.noSpecializedAccess}
+              </Badge>
+            )
           )}
         </SettingsRow>
 
