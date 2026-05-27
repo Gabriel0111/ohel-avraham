@@ -11,7 +11,7 @@ export const getAllGuests = query({
 
     const guests = await ctx.db.query("guests").collect();
 
-    return await Promise.all(
+    const results = await Promise.all(
       guests.map(async (guest) => {
         const user = await ctx.db
           .query("users")
@@ -20,13 +20,23 @@ export const getAllGuests = query({
           )
           .first();
 
+        if (!user) return null;
+
         return {
-          ...user!,
           ...guest,
-          userId: user!._id,
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: user.role,
+          isVerified: user.isVerified,
+          isBlocked: user.isBlocked ?? false,
+          verifiedBy: user.verifiedBy,
+          verifiedAt: user.verifiedAt,
         };
       }),
     );
+    return results.filter((r) => r !== null);
   },
 });
 

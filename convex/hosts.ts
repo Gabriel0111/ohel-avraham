@@ -12,7 +12,7 @@ export const getAllHosts = query({
     const hosts = await ctx.db.query("hosts").collect();
     // const guests = await ctx.db.query("guests").collect();
 
-    return await Promise.all(
+    const results = await Promise.all(
       hosts.map(async (host) => {
         const user = await ctx.db
           .query("users")
@@ -21,13 +21,23 @@ export const getAllHosts = query({
           )
           .first();
 
+        if (!user) return null;
+
         return {
-          ...user!,
           ...host,
-          userId: user!._id,
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: user.role,
+          isVerified: user.isVerified,
+          isBlocked: user.isBlocked ?? false,
+          verifiedBy: user.verifiedBy,
+          verifiedAt: user.verifiedAt,
         };
       }),
     );
+    return results.filter((r) => r !== null);
   },
 });
 

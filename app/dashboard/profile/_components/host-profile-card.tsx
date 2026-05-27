@@ -39,7 +39,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { useWarnIfUnsavedChanges } from "@/hooks/use-warn-if-unsaved-changes";
 import Link from "next/link";
-import { useT } from "@/lib/i18n/context";
+import { useEnumLabel, useT } from "@/lib/i18n/context";
 
 interface HostProfileCardProps {
   hostData: Doc<"hosts"> | null | undefined;
@@ -50,6 +50,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
   const [isSaving, startSaving] = useTransition();
   const upsertHost = useMutation(api.hosts.upsertHost);
   const { t } = useT();
+  const el = useEnumLabel();
 
   const form = useForm({
     resolver: zodResolver(hostSchema),
@@ -233,7 +234,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                       <SelectContent>
                         {KASHROUT.map((s) => (
                           <SelectItem key={s} value={s}>
-                            {s}
+                            {el.kashrout(s)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -257,7 +258,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                       <SelectContent>
                         {SECTORS.map((s) => (
                           <SelectItem key={s} value={s}>
-                            {s}
+                            {el.sector(s)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -281,7 +282,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                       <SelectContent>
                         {ETHNICITIES.map((e) => (
                           <SelectItem key={e} value={e}>
-                            {e}
+                            {el.ethnicity(e)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -294,15 +295,15 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.kashrout}</Label>
-                <Badge variant="secondary">{hostData.kashrout}</Badge>
+                <Badge variant="secondary">{el.kashrout(hostData.kashrout)}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <Badge variant="secondary">{hostData.sector}</Badge>
+                <Badge variant="secondary">{el.sector(hostData.sector)}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <Badge variant="secondary">{hostData.ethnicity}</Badge>
+                <Badge variant="secondary">{el.ethnicity(hostData.ethnicity)}</Badge>
               </div>
             </div>
           )}

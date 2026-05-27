@@ -10,10 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -44,7 +41,6 @@ export function NavUser({ user }: { user: Doc<"users"> | null | undefined }) {
     });
   };
 
-  // 1. État de chargement (Skeleton)
   if (user === undefined) {
     return (
       <div className="flex items-center gap-3 p-2">
@@ -75,42 +71,32 @@ export function NavUser({ user }: { user: Doc<"users"> | null | undefined }) {
                 </AvatarFallback>
               </Avatar>
 
-              <div className="grid flex-1 text-left text-sm leading-tight ml-1">
-                <span className="truncate font-semibold">{user.name}</span>
+              <div className="grid flex-1 text-start text-sm leading-tight ms-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate font-semibold">{user.name}</span>
+                  <RoleBadge role={user.role} />
+                </div>
                 <span className="text-muted-foreground truncate text-xs font-normal">
                   {user.email}
                 </span>
               </div>
-              <IconDotsVertical className="ml-auto size-4 text-muted-foreground/50" />
+              <IconDotsVertical className="ms-auto size-4 text-muted-foreground/50" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-xl p-2"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-48 rounded-xl p-1.5"
             side={isMobile ? "bottom" : "top"}
             align="end"
             sideOffset={8}
           >
-            <DropdownMenuLabel className="font-normal p-2">
-              <div className="flex items-center justify-between space-y-1">
-                <p className="text-sm font-medium leading-none">{user.name}</p>
-                {/*<p className="text-xs leading-none text-muted-foreground italic">*/}
-                {/*  Compte {user.role}*/}
-                {/*</p>*/}
-                <RoleBadge role={user.role} />
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => router.push("/dashboard/profile")}
-                className="cursor-pointer gap-3 rounded-lg"
-              >
-                <IconUserCircle className="size-4 text-muted-foreground" />
-                Mon Profil
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => router.push("/dashboard/profile")}
+              className="cursor-pointer gap-3 rounded-lg"
+            >
+              <IconUserCircle className="size-4 text-muted-foreground" />
+              Mon Profil
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleSignOut}
               className="cursor-pointer gap-3 rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive"

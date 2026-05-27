@@ -7,6 +7,7 @@ interface DashboardPageSection {
   className?: string;
   children: ReactNode;
   childrenClassName?: string;
+  action?: ReactNode;
 }
 
 export const PageSection = ({
@@ -15,6 +16,7 @@ export const PageSection = ({
   className,
   children,
   childrenClassName,
+  action,
 }: DashboardPageSection) => (
   <section
     className={cn(
@@ -23,9 +25,12 @@ export const PageSection = ({
     )}
   >
     <div className="md:w-1/3 lg:w-1/2 space-y-1">
-      <h2 className="text-lg font-bold tracking-tight text-foreground">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-lg font-bold tracking-tight text-foreground">
+          {title}
+        </h2>
+        {action && <div className="shrink-0">{action}</div>}
+      </div>
       {description && (
         <p className="text-sm text-muted-foreground max-w-xs text-balance leading-relaxed">
           {description}

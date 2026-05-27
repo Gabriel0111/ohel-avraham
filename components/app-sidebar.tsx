@@ -35,7 +35,7 @@ interface NavItem {
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
 
   const items: NavItem[] = [
     {
@@ -62,7 +62,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   ];
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" side={lang === "he" ? "right" : "left"} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="px-6 pt-2">

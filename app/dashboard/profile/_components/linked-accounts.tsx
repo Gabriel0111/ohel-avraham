@@ -8,6 +8,7 @@ import GoogleIcon from "@/components/icons/google";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/context";
 
 type Account = {
@@ -43,8 +44,6 @@ export function LinkedAccounts() {
     });
   };
 
-  if (isLoading) return null;
-
   return (
     <div className="space-y-3">
       {/* Google */}
@@ -53,31 +52,19 @@ export function LinkedAccounts() {
           <div className="p-2 rounded-full bg-muted">
             <GoogleIcon className="size-4" />
           </div>
-          <div>
-            <p className="text-sm font-medium">{t.profile.googleAccount}</p>
-          </div>
+          <p className="text-sm font-medium">{t.profile.googleAccount}</p>
         </div>
-        {isGoogleLinked ? (
-          <Badge
-            variant="outline"
-            className="gap-1.5 text-green-600 border-green-500/30"
-          >
+        {isLoading ? (
+          <Skeleton className="h-7 w-20 rounded-full" />
+        ) : isGoogleLinked ? (
+          <Badge variant="outline" className="gap-1.5 text-green-600 border-green-500/30">
             <CheckCircle2 className="size-3" />
             {t.profile.linked}
           </Badge>
         ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleLinkGoogle}
-            disabled={isPending}
-            className="gap-2"
-          >
+          <Button size="sm" variant="outline" onClick={handleLinkGoogle} disabled={isPending} className="gap-2">
             {isPending ? (
-              <>
-                <Spinner className="size-3" />
-                {t.profile.linkingGoogle}
-              </>
+              <><Spinner className="size-3" />{t.profile.linkingGoogle}</>
             ) : (
               <>{t.profile.linkGoogle}</>
             )}

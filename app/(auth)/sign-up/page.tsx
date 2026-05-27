@@ -84,8 +84,8 @@ const SignUpPage = () => {
         return;
       }
 
-      toast.success(t.auth.verifyEmailSent);
-      router.push("/login?verify=1");
+      toast.success(t.auth.signedUpSuccess);
+      router.push("/");
     });
   };
 

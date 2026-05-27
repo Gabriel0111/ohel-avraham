@@ -19,7 +19,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: true,
+      requireEmailVerification: false,
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
@@ -58,5 +58,8 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
         clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET!,
       },
     },
-    plugins: [convex({ authConfig }), nextCookies()],
+    plugins: [
+      convex({ authConfig }),
+      nextCookies(),
+    ],
   });

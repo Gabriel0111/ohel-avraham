@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useT } from "@/lib/i18n/context";
+import { useEnumLabel, useT } from "@/lib/i18n/context";
 
 export function GuestProfileCard({
   guestData,
@@ -39,6 +39,7 @@ export function GuestProfileCard({
   const [isSaving, startSaving] = useTransition();
   const upsertGuest = useMutation(api.guests.upsertGuest);
   const { t } = useT();
+  const el = useEnumLabel();
 
   const form = useForm({
     resolver: zodResolver(guestSchema),
@@ -155,7 +156,7 @@ export function GuestProfileCard({
                   <SelectContent>
                     {GENDERS.map((g) => (
                       <SelectItem key={g} value={g}>
-                        {g}
+                        {el.gender(g)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -164,7 +165,7 @@ export function GuestProfileCard({
             />
           ) : (
             <ViewValue
-              value={guestData.gender}
+              value={el.gender(guestData.gender)}
               icon={<User2 className="size-4" />}
             />
           )}
@@ -193,7 +194,7 @@ export function GuestProfileCard({
                       <SelectContent>
                         {SECTORS.map((s) => (
                           <SelectItem key={s} value={s}>
-                            {s}
+                            {el.sector(s)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -217,7 +218,7 @@ export function GuestProfileCard({
                       <SelectContent>
                         {ETHNICITIES.map((e) => (
                           <SelectItem key={e} value={e}>
-                            {e}
+                            {el.ethnicity(e)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -230,11 +231,11 @@ export function GuestProfileCard({
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <Badge variant="secondary">{guestData.sector}</Badge>
+                <Badge variant="secondary">{el.sector(guestData.sector)}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <Badge variant="secondary">{guestData.ethnicity}</Badge>
+                <Badge variant="secondary">{el.ethnicity(guestData.ethnicity)}</Badge>
               </div>
             </div>
           )}
