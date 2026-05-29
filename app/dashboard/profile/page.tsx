@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Calendar, CheckCircle2, Mail, MailCheck, Pencil } from "lucide-react";
@@ -26,6 +26,23 @@ export default function ProfilePage() {
   const session = authClient.useSession();
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isSendingVerif, startSendingVerif] = useTransition();
+  const [hasPasswordAccount, setHasPasswordAccount] = useState<boolean | null>(
+    null,
+  );
+
+  useEffect(() => {
+    authClient.listAccounts().then((res) => {
+      if (res.data) {
+        setHasPasswordAccount(
+          (res.data as { providerId: string }[]).some(
+            (a) => a.providerId === "credential",
+          ),
+        );
+      } else {
+        setHasPasswordAccount(false);
+      }
+    });
+  }, []);
 
   if (data === undefined) return <ProfileLoading />;
   if (!data) return <ProfileError />;
@@ -76,7 +93,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setIsEditingIdentity(true)}
-                className="relative shrink-0 group focus:outline-none"
+                className="relative shrink-0 group focus:outline-none cursor-pointer"
                 title={t.profile.uploadImage}
               >
                 <div className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}>
@@ -103,14 +120,16 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-lg font-bold tracking-tight text-foreground leading-tight">{user.name}</h3>
                   <RoleBadge role={user.role} />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsEditingIdentity(true)}
-                    className="ml-auto text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
-                    title={t.profile.editIdentity}
+                    className="ml-auto h-8 gap-1.5 rounded-lg border-violet-500/30 text-violet-700 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:border-violet-500/30 dark:hover:bg-violet-500/15"
                   >
                     <Pencil className="size-3.5" />
-                  </button>
+                    {t.profile.editIdentity}
+                  </Button>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -133,44 +152,47 @@ export default function ProfilePage() {
           description={t.profile.verificationStatusDesc}
         >
           <div className="space-y-3">
-            <VerificationStatus
-              isVerified={user.isVerified}
-              isAdmin={user.role === "admin"}
-              verifiedBy={user.verifiedBy}
-              verifiedAt={user.verifiedAt}
-            />
+            {user.role !== "admin" && (
+              <VerificationStatus
+                isVerified={user.isVerified}
+                verifiedBy={user.verifiedBy}
+                verifiedAt={user.verifiedAt}
+              />
+            )}
 
-            {/* Email vérifié */}
-            <div className={`flex items-center justify-between p-4 rounded-xl border ${emailVerified ? "border-green-500/20 bg-green-500/5" : "border-amber-500/20 bg-amber-500/5"}`}>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-full ${emailVerified ? "bg-green-500/15 text-green-600" : "bg-amber-500/15 text-amber-600"}`}>
-                  <MailCheck className="size-4" />
+            {/* Email vérifié — uniquement si compte email/password */}
+            {hasPasswordAccount && (
+              <div className={`flex items-center justify-between p-4 rounded-xl border ${emailVerified ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent" : "border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent"}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${emailVerified ? "bg-green-500/15 text-green-600" : "bg-amber-500/15 text-amber-600"}`}>
+                    <MailCheck className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {emailVerified ? t.profile.emailVerifiedTitle : t.profile.emailNotVerifiedTitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {emailVerified ? t.profile.emailVerifiedDesc : t.profile.emailNotVerifiedDesc}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {emailVerified ? t.profile.emailVerifiedTitle : t.profile.emailNotVerifiedTitle}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {emailVerified ? t.profile.emailVerifiedDesc : t.profile.emailNotVerifiedDesc}
-                  </p>
-                </div>
+                {!emailVerified && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSendVerification}
+                    disabled={isSendingVerif}
+                    className="gap-2 shrink-0"
+                  >
+                    {isSendingVerif ? (
+                      <><Spinner className="size-3" />{t.profile.verifyEmailSending}</>
+                    ) : (
+                      t.profile.verifyEmail
+                    )}
+                  </Button>
+                )}
               </div>
-              {!emailVerified && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSendVerification}
-                  disabled={isSendingVerif}
-                  className="gap-2 shrink-0"
-                >
-                  {isSendingVerif ? (
-                    <><Spinner className="size-3" />{t.profile.verifyEmailSending}</>
-                  ) : (
-                    t.profile.verifyEmail
-                  )}
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </PageSection>
 

@@ -31,6 +31,8 @@ export const translations = {
     },
     form: {
       dateOfBirth: "Date of birth",
+      age: "Age",
+      yearsOld: "years old",
       phoneNumber: "Phone Number",
       address: "Address",
       floor: "Floor",
@@ -437,6 +439,8 @@ export const translations = {
     },
     form: {
       dateOfBirth: "Date de naissance",
+      age: "Âge",
+      yearsOld: "ans",
       phoneNumber: "Numéro de téléphone",
       address: "Adresse",
       floor: "Étage",
@@ -858,6 +862,8 @@ export const translations = {
     },
     form: {
       dateOfBirth: "תאריך לידה",
+      age: "גיל",
+      yearsOld: "שנים",
       phoneNumber: "מספר טלפון",
       address: "כתובת",
       floor: "קומה",

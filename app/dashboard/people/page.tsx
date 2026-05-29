@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -46,6 +44,8 @@ import {
   Search,
   MapPin,
   Phone,
+  Mail,
+  StickyNote,
   Accessibility,
   Calendar,
   CheckCircle2,
@@ -74,6 +74,7 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
+import * as RPNInput from "react-phone-number-input";
 import { toast } from "sonner";
 import { type Id } from "@/convex/_generated/dataModel";
 import { Switch } from "@/components/ui/switch";
@@ -125,12 +126,79 @@ function formatDate(timestamp: number) {
   });
 }
 
+function mapsUrl(address: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
+function computeAge(dobMs: number): number {
+  const dob = new Date(dobMs);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
 type HostData = NonNullable<
   ReturnType<typeof useQuery<typeof api.hosts.getAllHosts>>
 >[number];
 type GuestData = NonNullable<
   ReturnType<typeof useQuery<typeof api.guests.getAllGuests>>
 >[number];
+
+// ─── Shared coloured pill ─────────────────────────────────────────────────────
+
+type PillColor =
+  | "violet"
+  | "blue"
+  | "emerald"
+  | "pink"
+  | "slate"
+  | "green"
+  | "amber";
+
+const PILL_COLORS: Record<PillColor, string> = {
+  violet:
+    "bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300",
+  blue: "bg-blue-500/10 text-blue-700 border-blue-500/15 dark:text-blue-300",
+  emerald:
+    "bg-emerald-500/10 text-emerald-700 border-emerald-500/15 dark:text-emerald-300",
+  pink: "bg-pink-500/10 text-pink-700 border-pink-500/15 dark:text-pink-300",
+  slate:
+    "bg-slate-500/10 text-slate-700 border-slate-500/15 dark:text-slate-300",
+  green:
+    "bg-green-500/10 text-green-700 border-green-500/15 dark:text-green-300",
+  amber:
+    "bg-amber-500/10 text-amber-700 border-amber-500/15 dark:text-amber-300",
+};
+
+function EnumPill({
+  color,
+  icon: Icon,
+  children,
+}: {
+  color: PillColor;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap",
+        PILL_COLORS[color],
+      )}
+    >
+      {Icon && <Icon className="size-3" />}
+      {children}
+    </span>
+  );
+}
+
+function genderColor(gender: string): PillColor {
+  if (gender === "Female") return "pink";
+  if (gender === "Couple") return "violet";
+  return "blue";
+}
 
 // ─── Host Detail Dialog ───────────────────────────────────────────────────────
 
@@ -173,27 +241,22 @@ function HostDetailDialog({
                 )}
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
+                <div className="flex items-center gap-2 flex-wrap mb-2.5">
                   <DialogTitle className="text-base font-bold leading-tight tracking-tight">
                     {host.name || t.people.unknown}
                   </DialogTitle>
                   {host.role && <RoleBadge role={host.role} />}
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{host.email}</p>
-                <div className="flex flex-wrap gap-1.5 mt-2.5">
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-700 border border-violet-500/15">
-                    {el.sector(host.sector)}
-                  </span>
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 border border-blue-500/15">
-                    {el.kashrout(host.kashrout)}
-                  </span>
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-700 border border-slate-500/15">
+                <div className="flex flex-wrap gap-1.5">
+                  <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
+                  <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
+                  <EnumPill color="slate">
                     {el.ethnicity(host.ethnicity)}
-                  </span>
+                  </EnumPill>
                   {host.hasDisabilityAccess && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-700 border border-green-500/15">
-                      <Accessibility className="size-3" />{t.people.access}
-                    </span>
+                    <EnumPill color="green" icon={Accessibility}>
+                      {t.people.access}
+                    </EnumPill>
                   )}
                 </div>
               </div>
@@ -203,11 +266,18 @@ function HostDetailDialog({
 
         {/* Body */}
         <div className="px-6 py-4 space-y-3">
-          <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+          <div className="flex items-start gap-3 p-3 rounded-xl border border-violet-500/15 bg-gradient-to-br from-violet-500/10 to-transparent">
             <MapPin className="size-4 text-violet-500 shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-0.5">{t.form.address}</p>
-              <p className="text-sm text-foreground leading-snug">{host.address}</p>
+              <p className="text-[11px] font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wide mb-0.5">{t.form.address}</p>
+              <a
+                href={mapsUrl(host.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-foreground hover:text-violet-600 transition-colors leading-snug underline-offset-4 hover:underline"
+              >
+                {host.address}
+              </a>
               {(host.floor || host.entrance) && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {host.floor && `${t.form.floor} ${host.floor}`}
@@ -217,19 +287,43 @@ function HostDetailDialog({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-transparent">
             <Phone className="size-4 text-blue-500 shrink-0" />
-            <div>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-0.5">{t.form.phoneNumber}</p>
-              <a href={`tel:${host.phoneNumber}`} className="text-sm text-foreground hover:text-violet-600 transition-colors font-medium">
-                {host.phoneNumber}
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">{t.form.phoneNumber}</p>
+              <a href={`tel:${host.phoneNumber}`} className="text-sm text-foreground hover:text-blue-600 transition-colors font-medium">
+                {RPNInput.formatPhoneNumberIntl(host.phoneNumber) || host.phoneNumber}
               </a>
             </div>
           </div>
+          {host.email && (
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-rose-500/15 bg-gradient-to-br from-rose-500/10 to-transparent">
+              <Mail className="size-4 text-rose-500 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 uppercase tracking-wide mb-0.5">{t.form.email}</p>
+                <a href={`mailto:${host.email}`} className="text-sm text-foreground hover:text-rose-600 transition-colors font-medium break-all">
+                  {host.email}
+                </a>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-500/15 bg-gradient-to-br from-indigo-500/10 to-transparent">
+            <Calendar className="size-4 text-indigo-500 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide mb-0.5">{t.form.dateOfBirth}</p>
+              <p className="text-sm text-foreground font-medium">
+                {formatDate(host.dob)}
+                <span className="text-muted-foreground font-normal"> · {computeAge(host.dob)} {t.form.yearsOld}</span>
+              </p>
+            </div>
+          </div>
           {host.notes && (
-            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-              <p className="text-[11px] font-medium text-amber-700 uppercase tracking-wide mb-1">{t.form.notes}</p>
-              <p className="text-sm text-foreground/80 leading-relaxed">{host.notes}</p>
+            <div className="flex items-start gap-3 p-3 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/15 to-transparent">
+              <StickyNote className="size-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-1">{t.form.notes}</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{host.notes}</p>
+              </div>
             </div>
           )}
         </div>
@@ -238,18 +332,22 @@ function HostDetailDialog({
         {isAdmin && (
           <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-between gap-3">
             {isVerified ? (
-              <div className="flex items-center gap-2 text-green-600">
-                <div className="size-7 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <ShieldCheck className="size-3.5" />
-                </div>
-                <span className="text-sm font-semibold">{t.people.confirmed}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/30 bg-gradient-to-br from-green-500/20 to-green-500/10">
+                <ShieldCheck className="size-3.5 text-green-600" />
+                <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                  {t.people.confirmed}
+                </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="size-7 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <Clock className="size-3.5 text-amber-600" />
-                </div>
-                <span className="text-sm font-medium text-amber-700 dark:text-amber-400">{t.people.unverified}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/30 bg-gradient-to-br from-amber-500/20 to-amber-500/10">
+                <span className="relative flex size-2">
+                  <span className="absolute inset-0 inline-flex rounded-full bg-amber-500 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
+                </span>
+                <Clock className="size-3.5 text-amber-600" />
+                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                  {t.people.unverified}
+                </span>
               </div>
             )}
             {!isVerified && (
@@ -301,23 +399,20 @@ function GuestDetailDialog({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
+                <div className="flex items-center gap-2 flex-wrap mb-2.5">
                   <DialogTitle className="text-base font-bold leading-tight tracking-tight">
                     {guest.name || t.people.unknown}
                   </DialogTitle>
                   {guest.role && <RoleBadge role={guest.role} />}
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{guest.email}</p>
-                <div className="flex flex-wrap gap-1.5 mt-2.5">
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/15">
-                    {el.sector(guest.sector)}
-                  </span>
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-700 border border-pink-500/15">
-                    {el.gender(guest.gender)}
-                  </span>
-                  <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-700 border border-slate-500/15">
+                <div className="flex flex-wrap gap-1.5">
+                  <EnumPill color="emerald">{el.sector(guest.sector)}</EnumPill>
+                  <EnumPill color="slate">
                     {el.ethnicity(guest.ethnicity)}
-                  </span>
+                  </EnumPill>
+                  <EnumPill color={genderColor(guest.gender)}>
+                    {el.gender(guest.gender)}
+                  </EnumPill>
                 </div>
               </div>
             </div>
@@ -326,17 +421,48 @@ function GuestDetailDialog({
 
         {/* Body */}
         <div className="px-6 py-4 space-y-3">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/10 to-transparent">
             <MapPin className="size-4 text-emerald-500 shrink-0" />
-            <div>
-              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-0.5">{t.form.region}</p>
-              <p className="text-sm text-foreground font-medium">{guest.region}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide mb-0.5">{t.form.address}</p>
+              <a
+                href={mapsUrl(guest.region)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-foreground hover:text-emerald-600 transition-colors font-medium underline-offset-4 hover:underline"
+              >
+                {guest.region}
+              </a>
+            </div>
+          </div>
+          {guest.email && (
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-rose-500/15 bg-gradient-to-br from-rose-500/10 to-transparent">
+              <Mail className="size-4 text-rose-500 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 uppercase tracking-wide mb-0.5">{t.form.email}</p>
+                <a href={`mailto:${guest.email}`} className="text-sm text-foreground hover:text-rose-600 transition-colors font-medium break-all">
+                  {guest.email}
+                </a>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-500/15 bg-gradient-to-br from-indigo-500/10 to-transparent">
+            <Calendar className="size-4 text-indigo-500 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide mb-0.5">{t.form.dateOfBirth}</p>
+              <p className="text-sm text-foreground font-medium">
+                {formatDate(guest.dob)}
+                <span className="text-muted-foreground font-normal"> · {computeAge(guest.dob)} {t.form.yearsOld}</span>
+              </p>
             </div>
           </div>
           {guest.notes && (
-            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-              <p className="text-[11px] font-medium text-amber-700 uppercase tracking-wide mb-1">{t.form.notes}</p>
-              <p className="text-sm text-foreground/80 leading-relaxed">{guest.notes}</p>
+            <div className="flex items-start gap-3 p-3 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/15 to-transparent">
+              <StickyNote className="size-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-1">{t.form.notes}</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{guest.notes}</p>
+              </div>
             </div>
           )}
         </div>
@@ -648,7 +774,7 @@ export default function PeoplePage() {
           <button
             onClick={() => setActiveTab("hosts")}
             className={cn(
-              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
               activeTab === "hosts"
                 ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -670,7 +796,7 @@ export default function PeoplePage() {
           <button
             onClick={() => setActiveTab("guests")}
             className={cn(
-              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
               activeTab === "guests"
                 ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -712,18 +838,20 @@ export default function PeoplePage() {
       {/* Hosts table */}
       {activeTab === "hosts" && (
         <Card className="border-border/60">
-          <CardHeader className="pb-3 space-y-3">
-            <CardTitle className="text-base text-foreground">
-              {t.people.hosts}
-            </CardTitle>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder={t.people.searchHosts}
-                value={hostSearch}
-                onChange={(e) => setHostSearch(e.target.value)}
-                className="pl-9 h-10 w-full"
-              />
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base text-foreground">
+                {t.people.hosts}
+              </CardTitle>
+              <div className="relative w-full max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder={t.people.searchHosts}
+                  value={hostSearch}
+                  onChange={(e) => setHostSearch(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -798,27 +926,30 @@ export default function PeoplePage() {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell py-3">
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <MapPin className="size-3.5 shrink-0" />
-                            <span className="text-sm truncate max-w-[180px]">
-                              {host.address}
-                            </span>
-                          </div>
+                          <a
+                            href={mapsUrl(host.address)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline truncate max-w-[180px] block"
+                          >
+                            {host.address}
+                          </a>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color="violet">
                             {el.sector(host.sector)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color="blue">
                             {el.kashrout(host.kashrout)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color="slate">
                             {el.ethnicity(host.ethnicity)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell py-3">
                           {host.hasDisabilityAccess ? (
@@ -936,18 +1067,20 @@ export default function PeoplePage() {
       {/* Guests table */}
       {activeTab === "guests" && (
         <Card className="border-border/60">
-          <CardHeader className="pb-3 space-y-3">
-            <CardTitle className="text-base text-foreground">
-              {t.people.guests}
-            </CardTitle>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder={t.people.searchGuests}
-                value={guestSearch}
-                onChange={(e) => setGuestSearch(e.target.value)}
-                className="pl-9 h-10 w-full"
-              />
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base text-foreground">
+                {t.people.guests}
+              </CardTitle>
+              <div className="relative w-full max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder={t.people.searchGuests}
+                  value={guestSearch}
+                  onChange={(e) => setGuestSearch(e.target.value)}
+                  className="pl-9 h-9"
+                />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -967,7 +1100,7 @@ export default function PeoplePage() {
                     <TableRow className="hover:bg-transparent border-b border-border/60">
                       <TableHead className="pl-5">{t.people.guest}</TableHead>
                       <TableHead className="hidden sm:table-cell">
-                        {t.form.region}
+                        {t.form.address}
                       </TableHead>
                       <TableHead className="hidden sm:table-cell">
                         {t.form.sector}
@@ -980,6 +1113,9 @@ export default function PeoplePage() {
                       </TableHead>
                       <TableHead className="hidden lg:table-cell">
                         {t.form.dateOfBirth}
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        {t.form.age}
                       </TableHead>
                       {isAdmin && (
                         <TableHead className="pr-5 text-right">
@@ -1021,25 +1157,30 @@ export default function PeoplePage() {
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3">
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <MapPin className="size-3.5 shrink-0" />
-                            <span className="text-sm">{guest.region}</span>
-                          </div>
+                          <a
+                            href={mapsUrl(guest.region)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-muted-foreground hover:text-emerald-600 transition-colors underline-offset-4 hover:underline"
+                          >
+                            {guest.region}
+                          </a>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color="emerald">
                             {el.sector(guest.sector)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden md:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color="slate">
                             {el.ethnicity(guest.ethnicity)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden md:table-cell py-3">
-                          <Badge variant="secondary" className="text-xs">
+                          <EnumPill color={genderColor(guest.gender)}>
                             {el.gender(guest.gender)}
-                          </Badge>
+                          </EnumPill>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell py-3">
                           <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -1048,6 +1189,14 @@ export default function PeoplePage() {
                               {formatDate(guest.dob)}
                             </span>
                           </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell py-3">
+                          <span className="text-sm font-medium text-foreground tabular-nums">
+                            {computeAge(guest.dob)}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            {t.form.yearsOld}
+                          </span>
                         </TableCell>
                         {isAdmin && (
                           <TableCell
