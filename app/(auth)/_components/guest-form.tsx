@@ -43,7 +43,7 @@ const GuestForm = () => {
 
   const handleSubmit = (values: GuestType) => {
     startRegistering(async () => {
-      const { success, id } = await createGuest({
+      const { success } = await createGuest({
         data: {
           ...values,
           dob: values.dob.getTime(),
@@ -51,7 +51,6 @@ const GuestForm = () => {
       });
 
       if (success) {
-        toast.success(`Guest successfully created, id: ${id}`);
         router.push("/");
       } else {
         toast.error(t.auth.errorCreating);
@@ -66,8 +65,8 @@ const GuestForm = () => {
 
           {/* Welcome header */}
           <div className="flex flex-col items-center gap-3 text-center py-2">
-            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center ring-4 ring-primary/5">
-              <UserRound className="size-7 text-primary" />
+            <div className="size-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center ring-4 ring-emerald-500/5">
+              <UserRound className="size-7 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">

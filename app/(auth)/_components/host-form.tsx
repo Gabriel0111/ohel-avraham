@@ -76,8 +76,8 @@ const HostForm = () => {
 
           {/* Welcome header */}
           <div className="flex flex-col items-center gap-3 text-center py-2">
-            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center ring-4 ring-primary/5">
-              <Home className="size-7 text-primary" />
+            <div className="size-16 rounded-2xl bg-violet-500/10 flex items-center justify-center ring-4 ring-violet-500/5">
+              <Home className="size-7 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
