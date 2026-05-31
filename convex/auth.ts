@@ -56,6 +56,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
       google: {
         clientId: process.env.AUTH_GOOGLE_CLIENT_ID!,
         clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET!,
+        // Always show the Google account chooser so users can pick an account
+        // other than the one their browser is already signed into.
+        prompt: "select_account",
       },
     },
     plugins: [

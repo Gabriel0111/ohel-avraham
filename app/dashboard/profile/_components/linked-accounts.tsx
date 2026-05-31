@@ -32,13 +32,67 @@ export function LinkedAccounts() {
 
   const isGoogleLinked = accounts.some((a) => a.providerId === "google");
 
+  const refreshAccounts = async () => {
+    const res = await authClient.listAccounts();
+    const list = (res.data as Account[]) ?? [];
+    setAccounts(list);
+    return list;
+  };
+
   const handleLinkGoogle = () => {
     startTransition(async () => {
-      const { error } = await authClient.linkSocial({
+      // `disableRedirect` returns the consent URL instead of navigating the
+      // current tab, so we can open it in a popup window.
+      const { data, error } = await authClient.linkSocial({
         provider: "google",
         callbackURL: "/dashboard/profile",
+        disableRedirect: true,
       });
-      if (error) {
+
+      if (error || !data?.url) {
+        toast.error(t.profile.linkGoogleError);
+        return;
+      }
+
+      const width = 500;
+      const height = 600;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      const popup = window.open(
+        data.url,
+        "link-google",
+        `width=${width},height=${height},left=${left},top=${top}`,
+      );
+
+      if (!popup) {
+        toast.error(t.profile.linkGoogleError);
+        return;
+      }
+
+      // Wait until the popup returns to our origin (link done) or is closed.
+      await new Promise<void>((resolve) => {
+        const timer = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(timer);
+            resolve();
+            return;
+          }
+          try {
+            if (popup.location.origin === window.location.origin) {
+              clearInterval(timer);
+              popup.close();
+              resolve();
+            }
+          } catch {
+            // Still on Google's origin — cross-origin read throws; keep waiting.
+          }
+        }, 500);
+      });
+
+      const list = await refreshAccounts();
+      if (list.some((a) => a.providerId === "google")) {
+        toast.success(t.profile.linkGoogleSuccess);
+      } else {
         toast.error(t.profile.linkGoogleError);
       }
     });
