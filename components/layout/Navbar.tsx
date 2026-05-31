@@ -85,7 +85,7 @@ const Navbar = () => {
           : "bg-transparent",
       )}
     >
-      <nav className="relative mx-auto flex h-16 max-w-7xl items-center w-full px-4 md:px-6 lg:px-8">
+      <nav className="relative mx-auto flex h-16 max-w-7xl items-center w-full px-4 md:px-8 lg:px-12">
         {/* Logo — left */}
         <Link href="/" className="shrink-0">
           <Logo />
