@@ -7,6 +7,7 @@ import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { AuthSync } from "@/components/auth-sync";
+import { getToken } from "@/lib/auth-server";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -29,7 +30,15 @@ export const metadata: Metadata = {
   keywords: "Shabbat, Kosher, Hosts, Guests",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  // Resolve the auth token on the server so the Convex client knows up-front
+  // whether to expect auth (see ConvexClientProvider). Null for logged-out.
+  const initialToken = await getToken();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -43,7 +52,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           <LanguageProvider>
             <main className="mx-auto w-full">
-              <ConvexClientProvider>
+              <ConvexClientProvider initialToken={initialToken}>
                 <AuthSync />
                 {children}
                 <Toaster richColors />
