@@ -3,18 +3,19 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
+import { useDebounce } from "use-debounce";
 import { HostListCard, type PublicHost } from "./host-list-card";
-import { Search, MapPin, Loader2, Users, Lock } from "lucide-react";
+import { Search, MapPin, Loader2, Users, Lock, SearchX } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,75 +42,92 @@ interface SearchDialogProps {
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const { t } = useT();
   const currentUser = useQuery(api.users.getCurrentUser);
-  const hosts = useQuery(api.hosts.getPublicHosts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
+
+  // Debounce the term sent to Convex so we hit the search index per pause,
+  // not per keystroke.
+  const [debouncedQuery] = useDebounce(searchQuery.trim(), 250);
+
+  // Server-side full-text search via the `search_address` index.
+  const hostsResult = useQuery(api.hosts.searchPublicHosts, {
+    query: debouncedQuery || undefined,
+  }) as PublicHost[] | undefined;
+
+  // Keep the previous results visible while a new search is in flight, so the
+  // list/map don't flash to a loader on every keystroke. Adjusting state during
+  // render is the React-sanctioned alternative to caching in an effect.
+  const [cachedHosts, setCachedHosts] = useState<PublicHost[] | undefined>(
+    undefined,
+  );
+  if (hostsResult !== undefined && hostsResult !== cachedHosts) {
+    setCachedHosts(hostsResult);
+  }
+  const hosts = hostsResult ?? cachedHosts;
 
   const isAuthenticated = currentUser !== null && currentUser !== undefined;
   const isLoading = hosts === undefined || currentUser === undefined;
 
-  const filteredHosts = useMemo(() => {
-    if (!hosts) return [];
-    if (!searchQuery.trim()) return hosts as PublicHost[];
-    const q = searchQuery.toLowerCase();
-    return (hosts as PublicHost[]).filter(
-      (h) =>
-        h.name.toLowerCase().includes(q) ||
-        h.address.toLowerCase().includes(q) ||
-        h.city?.toLowerCase().includes(q) ||
-        h.sector.toLowerCase().includes(q) ||
-        h.ethnicity.toLowerCase().includes(q) ||
-        h.kashrout.toLowerCase().includes(q),
-    );
-  }, [hosts, searchQuery]);
+  const filteredHosts = hosts ?? [];
 
+  // Results are already narrowed server-side; just group them by city.
   const cityGroups = useMemo(() => {
     if (!hosts) return {};
-    const q = searchQuery.toLowerCase();
-    const filtered = q
-      ? (hosts as PublicHost[]).filter(
-          (h) =>
-            h.city?.toLowerCase().includes(q) ||
-            h.address.toLowerCase().includes(q),
-        )
-      : (hosts as PublicHost[]);
-    return filtered.reduce<Record<string, number>>((acc, h) => {
+    return hosts.reduce<Record<string, number>>((acc, h) => {
       const city = h.city || h.address;
       acc[city] = (acc[city] || 0) + 1;
       return acc;
     }, {});
-  }, [hosts, searchQuery]);
+  }, [hosts]);
 
   const handleSelectHost = useCallback((host: PublicHost) => {
     setSelectedHost((prev) => (prev?._id === host._id ? null : host));
   }, []);
 
+  const resultsLabel =
+    filteredHosts.length === 1
+      ? t.search.hostsInCity
+      : t.search.hostsInCityPlural;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-5xl h-[85vh] sm:h-[75vh] flex flex-col p-0 gap-0 overflow-hidden"
+        className="w-[calc(100%-2rem)] sm:max-w-5xl h-[80vh] max-h-[calc(100dvh-2rem)] sm:h-[78vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl"
         showCloseButton
       >
-        {/* Header */}
-        <DialogHeader className="px-6 pt-5 pb-4 shrink-0">
-          <DialogTitle className="flex items-center gap-2.5 text-base font-semibold">
-            <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center">
-              <MapPin className="size-3.5 text-primary" />
+        {/* Header — gradient accent (host = violet, cohérent avec le dashboard) */}
+        <DialogHeader className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-4 shrink-0 text-start border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0 ring-1 ring-violet-500/15">
+              <MapPin className="size-5 text-violet-600 dark:text-violet-400" />
             </div>
-            {t.search.title}
-          </DialogTitle>
-          <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+            <div className="min-w-0">
+              <DialogTitle className="text-base font-bold tracking-tight">
+                {t.search.title}
+              </DialogTitle>
+              <DialogDescription className="sr-only">
+                {t.search.searchBarPlaceholder}
+              </DialogDescription>
+              {!isLoading && isAuthenticated && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {filteredHosts.length}
+                  </span>{" "}
+                  {resultsLabel}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="relative mt-4">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder={t.search.placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-muted/40 border-transparent focus-visible:border-input focus-visible:bg-background transition-colors"
+              className="ps-9 h-11 rounded-xl bg-background/80 border-border/60 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20 transition-colors"
             />
           </div>
         </DialogHeader>
-
-        <Separator />
 
         {/* Body */}
         {isLoading ? (
@@ -120,10 +138,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           /* Authenticated: host list + map */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
             <ScrollArea className="w-full sm:w-[38%] shrink-0">
-              <div className="p-3 flex flex-col gap-1.5">
+              <div className="p-3 flex flex-col gap-2">
                 {filteredHosts.length === 0 ? (
-                  <div className="text-center py-16 text-muted-foreground text-sm">
-                    {t.search.noResults}
+                  <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
+                    <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
+                      <SearchX className="size-5" />
+                    </div>
+                    <p className="text-sm">{t.search.noResults}</p>
                   </div>
                 ) : (
                   filteredHosts.map((host) => (
@@ -141,7 +162,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <Separator orientation="vertical" className="hidden sm:block" />
 
             <div className="flex-1 min-h-[250px] sm:min-h-0 p-3">
-              <div className="size-full rounded-lg overflow-hidden">
+              <div className="size-full rounded-xl overflow-hidden border border-border/60">
                 <HostMapGoogle
                   hosts={filteredHosts}
                   selectedHost={selectedHost}
@@ -164,27 +185,27 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     .map(([city, count]) => (
                       <div
                         key={city}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-muted/60 transition-colors group"
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-violet-500/5 border border-transparent hover:border-violet-500/15 transition-colors group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <MapPin className="size-3.5 text-muted-foreground group-hover:text-primary shrink-0 transition-colors" />
+                          <MapPin className="size-3.5 text-muted-foreground group-hover:text-violet-500 shrink-0 transition-colors" />
                           <span className="text-sm font-medium truncate">
                             {city}
                           </span>
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 ml-2 gap-1 text-xs font-normal tabular-nums"
-                        >
+                        <span className="shrink-0 ms-2 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300 tabular-nums">
                           <Users className="size-3" />
                           {count}
-                        </Badge>
+                        </span>
                       </div>
                     ))}
                   {Object.keys(cityGroups).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      {t.search.noResults}
-                    </p>
+                    <div className="flex flex-col items-center justify-center text-center py-12 px-4 gap-3 text-muted-foreground">
+                      <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
+                        <SearchX className="size-5" />
+                      </div>
+                      <p className="text-sm">{t.search.noResults}</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -193,11 +214,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <Separator orientation="vertical" className="hidden sm:block" />
 
             {/* Sign-in prompt */}
-            <div className="flex-1 flex flex-col items-center justify-center p-10 gap-5 text-center">
-              <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
-                <Lock className="size-5 text-muted-foreground" />
+            <div className="flex-1 flex flex-col items-center justify-center p-10 gap-5 text-center bg-gradient-to-br from-violet-500/5 to-transparent">
+              <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-500/15">
+                <Lock className="size-6 text-violet-600 dark:text-violet-400" />
               </div>
-              <div className="space-y-1.5 max-w-[220px]">
+              <div className="space-y-1.5 max-w-[240px]">
                 <p className="font-semibold text-sm text-foreground">
                   {t.search.signInToSeeHosts}
                 </p>
@@ -205,7 +226,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   {t.search.signInDesc}
                 </p>
               </div>
-              <div className="flex flex-col gap-2 w-full max-w-[180px]">
+              <div className="flex flex-col gap-3 w-full max-w-[200px]">
                 <Button
                   asChild
                   size="sm"

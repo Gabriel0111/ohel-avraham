@@ -24,7 +24,11 @@ export default defineSchema({
     .index("by_authUserId", ["authUserId"])
     .index("by_sector", ["sector"])
     .index("by_ethnicity", ["ethnicity"])
-    .index("by_kashrout", ["kashrout"]),
+    .index("by_kashrout", ["kashrout"])
+    .searchIndex("search_address", {
+      searchField: "address",
+      filterFields: ["sector", "ethnicity", "kashrout"],
+    }),
 
   guests: defineTable({
     authUserId: v.string(),
