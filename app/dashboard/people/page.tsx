@@ -80,6 +80,7 @@ import { type Id } from "@/convex/_generated/dataModel";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
+import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { EnumPill, genderColor } from "@/components/ui/enum-pill";
@@ -654,18 +655,11 @@ export default function PeoplePage() {
   const unverifiedCount = allHosts?.filter((h) => !h.isVerified).length ?? 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t.people.title}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {t.people.adminDesc}
-        </p>
-      </div>
+    <div>
+      <PageHeader title={t.people.title} subtitle={t.people.adminDesc} />
 
-      {/* Stat cards */}
+      <div className="flex flex-col gap-6">
+        {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="border-border/60 overflow-hidden py-0 pb-5">
           <div className="h-0.5 bg-gradient-to-r from-violet-500/40 via-violet-500 to-violet-500/40" />
@@ -1273,6 +1267,7 @@ export default function PeoplePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }

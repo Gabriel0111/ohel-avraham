@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { SystemRole } from "./enums";
 import { GuestFields } from "./validators/guest";
 import { HostFields } from "./validators/host";
+import { RequestFields } from "./validators/request";
 
 export default defineSchema({
   users: defineTable({
@@ -39,4 +40,12 @@ export default defineSchema({
     .index("by_gender", ["gender"])
     .index("by_sector", ["sector"])
     .index("by_ethnicity", ["ethnicity"]),
+
+  requests: defineTable({
+    ...RequestFields,
+  })
+    .index("by_guest", ["guestAuthUserId"])
+    .index("by_host", ["hostAuthUserId"])
+    .index("by_host_status", ["hostAuthUserId", "status"])
+    .index("by_guest_host", ["guestAuthUserId", "hostAuthUserId"]),
 });

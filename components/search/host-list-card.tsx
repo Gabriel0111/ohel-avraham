@@ -40,7 +40,7 @@ export function HostListCard({
       type="button"
       onClick={() => onSelect(host)}
       className={cn(
-        "group w-full text-start p-3 rounded-xl border transition-all",
+        "group w-full text-start p-3 rounded-xl border transition-all cursor-pointer",
         "hover:border-violet-500/40 hover:shadow-sm",
         isSelected
           ? "border-violet-500/50 bg-violet-500/5 shadow-sm ring-1 ring-violet-500/20"

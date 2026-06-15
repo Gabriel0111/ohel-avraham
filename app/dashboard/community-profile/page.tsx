@@ -11,6 +11,7 @@ import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-h
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
 import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
+import { CommunityHero } from "./_components/community-hero";
 import { useT } from "@/lib/i18n/context";
 
 export default function CommunityProfilePage() {
@@ -26,6 +27,7 @@ export default function CommunityProfilePage() {
   const isHost = role === "host" || isBoth;
   const isGuest = role === "guest" || isBoth;
   const isAdmin = role === "admin";
+  const hasProfile = (isHost && !!host) || (isGuest && !!guest);
 
   return (
     <div>
@@ -34,8 +36,10 @@ export default function CommunityProfilePage() {
         subtitle={t.profile.communityProfilesDesc}
       />
 
+      {hasProfile && <CommunityHero user={user} host={host} guest={guest} />}
+
       {/* Cartes d'édition */}
-      <div className="pt-2">
+      <div className={hasProfile ? "pt-8" : "pt-2"}>
         {isBoth ? (
           <Tabs defaultValue="host" className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-xl mb-6">

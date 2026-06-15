@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { MapPin, User2 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { guestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
@@ -24,7 +24,7 @@ import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "../../_components/profile-ui/view-value";
-import { Badge } from "@/components/ui/badge";
+import { EnumPill, genderColor } from "@/components/ui/enum-pill";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -76,15 +76,15 @@ export function GuestProfileCard({
     );
 
   return (
-    <div className="relative">
-      {/* Action Header Flottant */}
-      <div className="absolute -top-12 right-0">
+    <div className="space-y-2">
+      {/* Action Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-border">
+        <h3 className="text-base font-semibold">{t.profile.guestProfile}</h3>
         {!isEditing ? (
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsEditing(true)}
-            className="h-8 rounded-md shadow-xs bg-background"
           >
             {t.common.edit}
           </Button>
@@ -102,7 +102,6 @@ export function GuestProfileCard({
               size="sm"
               onClick={form.handleSubmit(handleSave)}
               disabled={isSaving}
-              className="h-8 rounded-md px-4 bg-foreground text-background hover:bg-foreground/90"
             >
               {isSaving && <Spinner className="mr-2 border-background/30" />}
               {t.common.save}
@@ -164,10 +163,9 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <ViewValue
-              value={el.gender(guestData.gender)}
-              icon={<User2 className="size-4" />}
-            />
+            <EnumPill color={genderColor(guestData.gender)}>
+              {el.gender(guestData.gender)}
+            </EnumPill>
           )}
         </SettingsRow>
 
@@ -231,11 +229,11 @@ export function GuestProfileCard({
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <Badge variant="secondary">{el.sector(guestData.sector)}</Badge>
+                <EnumPill color="emerald">{el.sector(guestData.sector)}</EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <Badge variant="secondary">{el.ethnicity(guestData.ethnicity)}</Badge>
+                <EnumPill color="slate">{el.ethnicity(guestData.ethnicity)}</EnumPill>
               </div>
             </div>
           )}

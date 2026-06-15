@@ -15,7 +15,16 @@ import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { HostListCard, type PublicHost } from "./host-list-card";
-import { Search, MapPin, Loader2, Users, Lock, SearchX } from "lucide-react";
+import { RequestDialog } from "@/components/requests/request-dialog";
+import {
+  Search,
+  MapPin,
+  Loader2,
+  Users,
+  Lock,
+  SearchX,
+  Send,
+} from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -44,6 +53,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const currentUser = useQuery(api.users.getCurrentUser);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
+  const [requestHost, setRequestHost] = useState<PublicHost | null>(null);
 
   // Debounce the term sent to Convex so we hit the search index per pause,
   // not per keystroke.
@@ -136,6 +146,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           </div>
         ) : isAuthenticated ? (
           /* Authenticated: host list + map */
+          <>
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
             <ScrollArea className="w-full sm:w-[38%] shrink-0">
               <div className="p-4 flex flex-col gap-2">
@@ -171,6 +182,31 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               </div>
             </div>
           </div>
+
+          {/* Action bar — appears when a host is selected */}
+          {selectedHost && (
+            <div className="shrink-0 border-t border-border/50 bg-background/95 px-4 py-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold truncate">
+                  {selectedHost.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {selectedHost.neighborhood
+                    ? `${selectedHost.neighborhood}${selectedHost.city ? ` · ${selectedHost.city}` : ""}`
+                    : selectedHost.city || selectedHost.address}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                className="gap-2 shrink-0"
+                onClick={() => setRequestHost(selectedHost)}
+              >
+                <Send className="size-4" />
+                {t.requests.sendRequest}
+              </Button>
+            </div>
+          )}
+          </>
         ) : (
           /* Unauthenticated: city list + sign-in prompt */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
@@ -249,6 +285,15 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           </div>
         )}
       </DialogContent>
+
+      {requestHost && (
+        <RequestDialog
+          open={!!requestHost}
+          onOpenChange={(o) => !o && setRequestHost(null)}
+          hostId={requestHost._id}
+          hostName={requestHost.name}
+        />
+      )}
     </Dialog>
   );
 }

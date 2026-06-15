@@ -4,9 +4,12 @@ import {
   Icon,
   IconBuildingCommunity,
   IconDashboard,
+  IconMailForward,
   IconUserCircle,
   IconUsers,
 } from "@tabler/icons-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -31,11 +34,13 @@ interface NavItem {
   url: string;
   icon?: Icon;
   minRole?: RoleType;
+  badge?: number;
 }
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
   const { t, lang } = useT();
+  const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const items: NavItem[] = [
     {
@@ -52,6 +57,12 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       title: t.nav.communityProfile,
       url: `${hostname}/community-profile`,
       icon: IconBuildingCommunity,
+    },
+    {
+      title: t.nav.requests,
+      url: `${hostname}/requests`,
+      icon: IconMailForward,
+      badge: pendingCount ?? 0,
     },
     {
       title: t.nav.people,
@@ -76,7 +87,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} pendingCount={pendingCount ?? 0} />
       </SidebarFooter>
     </Sidebar>
   );

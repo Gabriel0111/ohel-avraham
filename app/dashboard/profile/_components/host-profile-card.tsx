@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { EnumPill } from "@/components/ui/enum-pill";
 import {
   Select,
   SelectContent,
@@ -295,15 +296,15 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.kashrout}</Label>
-                <Badge variant="secondary">{el.kashrout(hostData.kashrout)}</Badge>
+                <EnumPill color="blue">{el.kashrout(hostData.kashrout)}</EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <Badge variant="secondary">{el.sector(hostData.sector)}</Badge>
+                <EnumPill color="violet">{el.sector(hostData.sector)}</EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <Badge variant="secondary">{el.ethnicity(hostData.ethnicity)}</Badge>
+                <EnumPill color="slate">{el.ethnicity(hostData.ethnicity)}</EnumPill>
               </div>
             </div>
           )}
@@ -332,10 +333,9 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             />
           ) : (
             hostData.hasDisabilityAccess ? (
-              <Badge className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 font-normal gap-1.5">
-                <Accessibility className="size-3.5" />
+              <EnumPill color="green" icon={Accessibility}>
                 {t.hostProfile.stepFreeAccess}
-              </Badge>
+              </EnumPill>
             ) : (
               <Badge variant="outline" className="text-muted-foreground gap-1.5 font-normal">
                 <X className="size-3.5" />

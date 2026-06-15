@@ -22,6 +22,8 @@ interface AvatarDropdownProps {
   email?: string;
   imageSrc?: string;
   items: DropdownItems[];
+  pendingCount?: number;
+  requestsLabel?: string;
 }
 
 const AvatarDropdown = ({
@@ -29,17 +31,34 @@ const AvatarDropdown = ({
   email,
   imageSrc,
   items,
+  pendingCount = 0,
+  requestsLabel,
 }: AvatarDropdownProps) => {
+  const hasNewRequest = pendingCount > 0;
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className="cursor-pointer shadow-sm">
-        <Avatar className="size-8 shrink-0">
-          <AvatarImage
-            src={imageSrc ?? `https://avatar.vercel.sh/${email}`}
-            alt={email}
-          />
-          <AvatarFallback>{email?.slice(0, 1)}</AvatarFallback>
-        </Avatar>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="relative shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Avatar className="size-8 shadow-sm">
+            <AvatarImage
+              src={imageSrc ?? `https://avatar.vercel.sh/${email}`}
+              alt={email}
+            />
+            <AvatarFallback>{email?.slice(0, 1)}</AvatarFallback>
+          </Avatar>
+          {hasNewRequest && (
+            <span role="status" className="absolute -top-1 -end-1 flex size-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 motion-reduce:hidden" />
+              <span className="relative inline-flex size-3 rounded-full bg-primary ring-2 ring-background" />
+              <span className="sr-only">
+                {`${pendingCount} ${requestsLabel ?? ""}`.trim()}
+              </span>
+            </span>
+          )}
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>

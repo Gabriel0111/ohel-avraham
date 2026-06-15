@@ -1,0 +1,539 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useAuth } from "@/app/ConvexClientProvider";
+import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { toast } from "sonner";
+import * as RPNInput from "react-phone-number-input";
+import {
+  CalendarDays,
+  Users,
+  MapPin,
+  Phone,
+  MessageSquare,
+  Mail,
+  StickyNote,
+  Check,
+  X,
+  Inbox,
+  SendHorizonal,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Ban,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
+
+type Status = "pending" | "accepted" | "declined" | "cancelled";
+
+function getInitials(name?: string) {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function computeAge(dobMs: number): number {
+  const dob = new Date(dobMs);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function formatDate(ms: number, lang: string) {
+  return new Date(ms).toLocaleDateString(
+    lang === "fr" ? "fr-FR" : lang === "he" ? "he-IL" : "en-US",
+    { weekday: "short", day: "2-digit", month: "long", year: "numeric" },
+  );
+}
+
+function StatusBadge({ status }: { status: Status }) {
+  const { t } = useT();
+  const map = {
+    pending: {
+      label: t.requests.statusPending,
+      icon: Clock,
+      cls: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
+    },
+    accepted: {
+      label: t.requests.statusAccepted,
+      icon: CheckCircle2,
+      cls: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30",
+    },
+    declined: {
+      label: t.requests.statusDeclined,
+      icon: XCircle,
+      cls: "bg-destructive/10 text-destructive border-destructive/30",
+    },
+    cancelled: {
+      label: t.requests.statusCancelled,
+      icon: Ban,
+      cls: "bg-muted text-muted-foreground border-border",
+    },
+  } as const;
+  const { label, icon: Icon, cls } = map[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap",
+        cls,
+      )}
+    >
+      <Icon className="size-3" />
+      {label}
+    </span>
+  );
+}
+
+function PartyDateRow({
+  date,
+  adults,
+  kids,
+}: {
+  date: number;
+  adults: number;
+  kids: number;
+}) {
+  const { t, lang } = useT();
+  const total = adults + kids;
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5">
+        <CalendarDays className="size-3.5" />
+        {formatDate(date, lang)}
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <Users className="size-3.5" />
+        {total} {t.requests.people}
+        <span className="text-muted-foreground/60">
+          ({adults} + {kids})
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function MessageBlock({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
+      <MessageSquare className="size-3.5 text-muted-foreground shrink-0 mt-0.5" />
+      <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+        {message}
+      </p>
+    </div>
+  );
+}
+
+// ─── Revealed details (shared) ────────────────────────────────────────────────
+// Same per-field hues as the /people profile dialog, in one light frame.
+
+type Tone = "rose" | "indigo" | "blue" | "violet" | "emerald" | "amber";
+
+const TONE_ICON: Record<Tone, string> = {
+  rose: "text-rose-500",
+  indigo: "text-indigo-500",
+  blue: "text-blue-500",
+  violet: "text-violet-500",
+  emerald: "text-emerald-500",
+  amber: "text-amber-600",
+};
+
+function RevealFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
+      {children}
+    </div>
+  );
+}
+
+function RevealRow({
+  icon: Icon,
+  tone,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  tone: Tone;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-3.5 py-2.5">
+      <Icon className={cn("size-4 shrink-0", TONE_ICON[tone])} />
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="ms-auto text-end text-sm font-medium text-foreground break-all">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function RevealBlock({
+  icon: Icon,
+  tone,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  tone: Tone;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 px-3.5 py-2.5">
+      <Icon className={cn("size-4 shrink-0 mt-0.5", TONE_ICON[tone])} />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm text-muted-foreground mb-0.5">{label}</p>
+        <div className="text-sm font-medium text-foreground">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Received (host view) ─────────────────────────────────────────────────────
+
+function ReceivedList() {
+  const { t } = useT();
+  const el = useEnumLabel();
+  const incoming = useQuery(api.requests.getMyIncomingRequests);
+  const respond = useMutation(api.requests.respondToRequest);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const handleRespond = async (requestId: Id<"requests">, accept: boolean) => {
+    setBusy(requestId);
+    try {
+      await respond({ requestId, accept });
+      toast.success(accept ? t.requests.toastAccepted : t.requests.toastDeclined);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.requests.toastRespondError);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (incoming === undefined) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+  if (incoming.length === 0) {
+    return (
+      <EmptyState icon={Inbox} label={t.requests.noReceived} />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {incoming.map((r) => (
+        <div
+          key={r._id}
+          className="rounded-2xl border border-border/60 bg-card p-4 flex flex-col gap-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar className="size-10 border border-border/50">
+                <AvatarImage src={r.guest.image} />
+                <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
+                  {getInitials(r.guest.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">
+                  {r.guest.name ?? "—"}
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                  {r.guest.sector && (
+                    <EnumPill color="emerald">{el.sector(r.guest.sector)}</EnumPill>
+                  )}
+                  {r.guest.ethnicity && (
+                    <EnumPill color="slate">
+                      {el.ethnicity(r.guest.ethnicity)}
+                    </EnumPill>
+                  )}
+                  {r.guest.gender && (
+                    <EnumPill color={genderColor(r.guest.gender)}>
+                      {el.gender(r.guest.gender)}
+                    </EnumPill>
+                  )}
+                  {r.guest.region && (
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="size-3" />
+                      {r.guest.region}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <StatusBadge status={r.status} />
+          </div>
+
+          <PartyDateRow date={r.date} adults={r.adults} kids={r.children} />
+          <MessageBlock message={r.message} />
+
+          {/* Full guest details — revealed only once accepted */}
+          {r.status === "accepted" && (
+            <RevealFrame>
+              {r.guest.email && (
+                <RevealRow icon={Mail} tone="rose" label={t.form.email}>
+                  <a
+                    href={`mailto:${r.guest.email}`}
+                    className="hover:text-rose-600 transition-colors"
+                  >
+                    {r.guest.email}
+                  </a>
+                </RevealRow>
+              )}
+              {r.guest.dob != null && (
+                <RevealRow
+                  icon={CalendarDays}
+                  tone="indigo"
+                  label={t.form.age}
+                >
+                  {computeAge(r.guest.dob)} {t.form.yearsOld}
+                </RevealRow>
+              )}
+              {r.guest.notes && (
+                <RevealBlock icon={StickyNote} tone="amber" label={t.form.notes}>
+                  <p className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                    {r.guest.notes}
+                  </p>
+                </RevealBlock>
+              )}
+            </RevealFrame>
+          )}
+
+          {r.status === "pending" && (
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                size="sm"
+                className="gap-1.5 flex-1"
+                disabled={busy === r._id}
+                onClick={() => handleRespond(r._id, true)}
+              >
+                {busy === r._id ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <Check className="size-4" />
+                )}
+                {t.requests.accept}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 flex-1"
+                disabled={busy === r._id}
+                onClick={() => handleRespond(r._id, false)}
+              >
+                <X className="size-4" />
+                {t.requests.decline}
+              </Button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Sent (guest view) ────────────────────────────────────────────────────────
+
+function SentList() {
+  const { t } = useT();
+  const el = useEnumLabel();
+  const outgoing = useQuery(api.requests.getMyOutgoingRequests);
+  const cancel = useMutation(api.requests.cancelRequest);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const handleCancel = async (requestId: Id<"requests">) => {
+    setBusy(requestId);
+    try {
+      await cancel({ requestId });
+      toast.success(t.requests.toastCancelled);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.requests.toastCancelError);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (outgoing === undefined) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+  if (outgoing.length === 0) {
+    return <EmptyState icon={SendHorizonal} label={t.requests.noSent} />;
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {outgoing.map((r) => (
+        <div
+          key={r._id}
+          className="rounded-2xl border border-border/60 bg-card p-4 flex flex-col gap-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar className="size-10 border border-border/50">
+                <AvatarImage src={r.host.image} />
+                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-xs font-semibold">
+                  {getInitials(r.host.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-semibold text-sm truncate">
+                  {r.host.name ?? "—"}
+                </p>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {r.host.sector && (
+                    <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
+                  )}
+                  {r.host.kashrout && (
+                    <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
+                  )}
+                </div>
+              </div>
+            </div>
+            <StatusBadge status={r.status} />
+          </div>
+
+          <PartyDateRow date={r.date} adults={r.adults} kids={r.children} />
+          <MessageBlock message={r.message} />
+
+          {/* Contact — revealed only once accepted */}
+          {r.status === "accepted" && (r.host.phoneNumber || r.host.address) && (
+            <RevealFrame>
+              {r.host.phoneNumber && (
+                <RevealRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+                  <a
+                    href={`tel:${r.host.phoneNumber}`}
+                    className="hover:text-blue-600 transition-colors"
+                  >
+                    {RPNInput.formatPhoneNumberIntl(r.host.phoneNumber) ||
+                      r.host.phoneNumber}
+                  </a>
+                </RevealRow>
+              )}
+              {r.host.address && (
+                <RevealBlock icon={MapPin} tone="violet" label={t.form.address}>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.host.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
+                  >
+                    {r.host.address}
+                  </a>
+                  {(r.host.floor || r.host.entrance) && (
+                    <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                      {r.host.floor && `${t.form.floor} ${r.host.floor}`}
+                      {r.host.floor && r.host.entrance && " · "}
+                      {r.host.entrance && `${t.form.entrance} ${r.host.entrance}`}
+                    </span>
+                  )}
+                </RevealBlock>
+              )}
+            </RevealFrame>
+          )}
+
+          {r.status === "pending" && (
+            <div className="flex items-center justify-end pt-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                disabled={busy === r._id}
+                onClick={() => handleCancel(r._id)}
+              >
+                {busy === r._id ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <X className="size-4" />
+                )}
+                {t.requests.cancelRequest}
+              </Button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({
+  icon: Icon,
+  label,
+}: {
+  icon: typeof Inbox;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
+      <div className="size-14 rounded-2xl bg-muted flex items-center justify-center">
+        <Icon className="size-6" />
+      </div>
+      <p className="text-sm">{label}</p>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function RequestsPage() {
+  const { t } = useT();
+  const { user } = useAuth();
+  const pendingCount = useQuery(api.requests.getIncomingPendingCount);
+
+  const isHost = user?.role === "host" || user?.role === "guest:host";
+  const defaultTab = useMemo(() => (isHost ? "received" : "sent"), [isHost]);
+
+  return (
+    <div>
+      <PageHeader title={t.requests.title} subtitle={t.requests.desc} />
+
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList>
+          <TabsTrigger value="received" className="gap-2">
+            <Inbox className="size-4" />
+            {t.requests.received}
+            {pendingCount != null && pendingCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
+                {pendingCount}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="sent" className="gap-2">
+            <SendHorizonal className="size-4" />
+            {t.requests.sent}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="received" className="mt-4">
+          <ReceivedList />
+        </TabsContent>
+        <TabsContent value="sent" className="mt-4">
+          <SentList />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
