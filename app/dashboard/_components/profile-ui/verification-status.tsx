@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { CheckCircle2, Clock, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/lib/i18n/context";
@@ -14,6 +18,24 @@ export const VerificationStatus = ({
   verifiedAt,
 }: VerificationStatusProps) => {
   const { t, lang } = useT();
+  const reduce = useReducedMotion();
+  const [celebrate, setCelebrate] = useState(false);
+
+  // Fire a one-time shine the first time the user sees their account verified.
+  // Keyed by verifiedAt so a re-verification can celebrate again, but a normal
+  // revisit stays calm.
+  useEffect(() => {
+    if (!isVerified || reduce || typeof window === "undefined") return;
+    const key = `ohel:verified-seen:${verifiedAt ?? "y"}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    const raf = requestAnimationFrame(() => setCelebrate(true));
+    const id = setTimeout(() => setCelebrate(false), 2400);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(id);
+    };
+  }, [isVerified, verifiedAt, reduce]);
 
   const verifiedDate = verifiedAt
     ? new Date(verifiedAt).toLocaleDateString(
@@ -24,30 +46,50 @@ export const VerificationStatus = ({
 
   return (
     <div
-      className={`flex items-center justify-between p-4 rounded-xl border ${
+      className={`relative overflow-hidden flex items-center justify-between p-4 rounded-xl border ${
         isVerified
           ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent"
           : "border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent"
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div
+      {celebrate && (
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(100deg, transparent 35%, rgba(16,185,129,0.35) 50%, transparent 65%)",
+          }}
+          initial={{ x: "-120%" }}
+          animate={{ x: "120%" }}
+          transition={{ duration: 1.15, ease: [0.16, 1, 0.3, 1] }}
+        />
+      )}
+
+      <div className="relative flex items-center gap-3">
+        <motion.div
           className={`p-2 rounded-full ${
             isVerified
               ? "bg-green-500/15 text-green-600"
               : "bg-amber-500/15 text-amber-600"
           }`}
+          animate={
+            celebrate && !reduce ? { scale: [1, 1.18, 1] } : { scale: 1 }
+          }
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
           {isVerified ? (
             <ShieldCheck className="size-4" />
           ) : (
             <Clock className="size-4" />
           )}
-        </div>
+        </motion.div>
         <div>
           <p className="text-sm font-medium">
             {isVerified
-              ? t.profile.verifiedAccount
+              ? celebrate
+                ? t.celebrate.verifiedTitle
+                : t.profile.verifiedAccount
               : t.profile.identityPending}
           </p>
           {isVerified && verifiedBy && verifiedDate ? (
@@ -68,7 +110,7 @@ export const VerificationStatus = ({
       {!isVerified && (
         <Badge
           variant="outline"
-          className="text-amber-600 border-amber-500/30 shrink-0 text-xs"
+          className="relative text-amber-600 border-amber-500/30 shrink-0 text-xs"
         >
           {t.profile.actionRequired}
         </Badge>

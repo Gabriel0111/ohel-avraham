@@ -15,6 +15,7 @@ import type * as guests from "../guests.js";
 import type * as helpers_canAccessRole from "../helpers/canAccessRole.js";
 import type * as hosts from "../hosts.js";
 import type * as http from "../http.js";
+import type * as seed from "../seed.js";
 import type * as users from "../users.js";
 import type * as validators_guest from "../validators/guest.js";
 import type * as validators_host from "../validators/host.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   "helpers/canAccessRole": typeof helpers_canAccessRole;
   hosts: typeof hosts;
   http: typeof http;
+  seed: typeof seed;
   users: typeof users;
   "validators/guest": typeof validators_guest;
   "validators/host": typeof validators_host;

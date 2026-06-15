@@ -138,7 +138,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           /* Authenticated: host list + map */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
             <ScrollArea className="w-full sm:w-[38%] shrink-0">
-              <div className="p-3 flex flex-col gap-2">
+              <div className="p-4 flex flex-col gap-2">
                 {filteredHosts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
                     <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
@@ -161,7 +161,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
             <Separator orientation="vertical" className="hidden sm:block" />
 
-            <div className="flex-1 min-h-[250px] sm:min-h-0 p-3">
+            <div className="flex-1 min-h-[250px] sm:min-h-0 p-4">
               <div className="size-full rounded-xl overflow-hidden border border-border/60">
                 <HostMapGoogle
                   hosts={filteredHosts}
@@ -175,7 +175,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           /* Unauthenticated: city list + sign-in prompt */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
             <ScrollArea className="w-full sm:w-[45%] shrink-0">
-              <div className="p-5 space-y-3">
+              <div className="p-4 space-y-3">
                 <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                   {t.search.availableCities}
                 </p>
@@ -214,7 +214,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <Separator orientation="vertical" className="hidden sm:block" />
 
             {/* Sign-in prompt */}
-            <div className="flex-1 flex flex-col items-center justify-center p-10 gap-5 text-center bg-gradient-to-br from-violet-500/5 to-transparent">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 gap-5 text-center bg-gradient-to-br from-violet-500/5 to-transparent">
               <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-500/15">
                 <Lock className="size-6 text-violet-600 dark:text-violet-400" />
               </div>

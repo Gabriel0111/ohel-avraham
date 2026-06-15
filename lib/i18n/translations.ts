@@ -226,6 +226,24 @@ export const translations = {
       verifyEmailTitle: "Check your inbox",
       verifyEmailDesc: "We sent you a verification link. Please verify your email before signing in.",
     },
+    celebrate: {
+      hostTitle: "Your tent is open",
+      hostDesc:
+        "Welcome, host. Your table is now part of Ohel Avraham — guests near you can find a warm place for Shabbat.",
+      guestTitle: "Your seat is saved",
+      guestDesc:
+        "Welcome, guest. You're on the map now — start looking for a warm table for Shabbat.",
+      pendingNote: "An admin will verify your profile shortly.",
+      continue: "Go to my dashboard",
+      verifiedTitle: "You're verified",
+      verifiedDesc:
+        "Your identity has been confirmed — the community knows it can trust you.",
+    },
+    emptyProfile: {
+      title: "Your tent isn't pitched yet",
+      desc: "Complete your registration to open your table as a host, or find one as a guest, for Shabbat.",
+      cta: "Complete your registration",
+    },
     dashboard: {
       title: "Dashboard",
       accountOverview: "Account Overview",
@@ -646,6 +664,24 @@ export const translations = {
       verifyEmailTitle: "Vérifiez votre boîte de réception",
       verifyEmailDesc: "Nous vous avons envoyé un lien de vérification. Veuillez vérifier votre e-mail avant de vous connecter.",
     },
+    celebrate: {
+      hostTitle: "Votre tente est ouverte",
+      hostDesc:
+        "Bienvenue, hôte. Votre table fait désormais partie d'Ohel Avraham — les invités près de chez vous peuvent trouver une place chaleureuse pour Shabbat.",
+      guestTitle: "Votre place est réservée",
+      guestDesc:
+        "Bienvenue, invité. Vous êtes sur la carte — commencez à chercher une table chaleureuse pour Shabbat.",
+      pendingNote: "Un administrateur vérifiera votre profil sous peu.",
+      continue: "Aller à mon tableau de bord",
+      verifiedTitle: "Vous êtes vérifié",
+      verifiedDesc:
+        "Votre identité a été confirmée — la communauté sait qu'elle peut vous faire confiance.",
+    },
+    emptyProfile: {
+      title: "Votre tente n'est pas encore dressée",
+      desc: "Terminez votre inscription pour ouvrir votre table en tant qu'hôte, ou en trouver une en tant qu'invité, pour Shabbat.",
+      cta: "Terminer mon inscription",
+    },
     dashboard: {
       title: "Tableau de bord",
       accountOverview: "Aperçu du compte",
@@ -1060,6 +1096,23 @@ export const translations = {
       verifyEmailSent: "אימייל אימות נשלח! בדוק את תיבת הדואר שלך.",
       verifyEmailTitle: "בדוק את תיבת הדואר שלך",
       verifyEmailDesc: "שלחנו לך קישור אימות. אנא אמת את האימייל שלך לפני ההתחברות.",
+    },
+    celebrate: {
+      hostTitle: "האוהל שלך פתוח",
+      hostDesc:
+        "ברוך הבא, מארח. השולחן שלך הוא כעת חלק מאוהל אברהם — אורחים בקרבתך יכולים למצוא מקום חם לשבת.",
+      guestTitle: "המקום שלך שמור",
+      guestDesc:
+        "ברוך הבא, אורח. אתה על המפה — התחל לחפש שולחן חם לשבת.",
+      pendingNote: "מנהל יאמת את הפרופיל שלך בקרוב.",
+      continue: "מעבר ללוח הבקרה",
+      verifiedTitle: "אומתת בהצלחה",
+      verifiedDesc: "זהותך אושרה — הקהילה יודעת שאפשר לסמוך עליך.",
+    },
+    emptyProfile: {
+      title: "האוהל שלך עדיין לא הוקם",
+      desc: "השלם את ההרשמה כדי לפתוח שולחן כמארח, או למצוא שולחן כאורח, לשבת.",
+      cta: "להשלמת ההרשמה",
     },
     dashboard: {
       title: "לוח בקרה",

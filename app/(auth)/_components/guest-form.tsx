@@ -7,8 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { guestSchema, guestSchemaDV, GuestType } from "@/app/schemas/guest";
 import {
@@ -28,10 +27,11 @@ import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useT } from "@/lib/i18n/context";
 import { UserRound } from "lucide-react";
 import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
-  const router = useRouter();
+  const [registered, setRegistered] = useState(false);
   const { t } = useT();
 
   const createGuest = useMutation(api.guests.createGuest);
@@ -51,12 +51,14 @@ const GuestForm = () => {
       });
 
       if (success) {
-        router.push("/");
+        setRegistered(true);
       } else {
         toast.error(t.auth.errorCreating);
       }
     });
   };
+
+  if (registered) return <RegistrationSuccess role="guest" />;
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>

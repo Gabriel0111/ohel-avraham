@@ -1,7 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -37,10 +36,11 @@ import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useT } from "@/lib/i18n/context";
 import { Home, Accessibility } from "lucide-react";
 import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
-  const router = useRouter();
+  const [registered, setRegistered] = useState(false);
   const { t } = useT();
 
   const createHost = useMutation(api.hosts.createHost);
@@ -52,7 +52,7 @@ const HostForm = () => {
 
   const handleSubmit = (values: HostType) => {
     startRegistering(async () => {
-      const { success, id } = await createHost({
+      const { success } = await createHost({
         data: {
           ...values,
           dob: values.dob.getTime(),
@@ -61,13 +61,14 @@ const HostForm = () => {
       });
 
       if (success) {
-        toast.success(`Host successfully created, id: ${id}`);
-        router.push("/");
+        setRegistered(true);
       } else {
         toast.error(t.auth.errorCreating);
       }
     });
   };
+
+  if (registered) return <RegistrationSuccess role="host" />;
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
