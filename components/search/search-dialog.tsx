@@ -26,6 +26,7 @@ import {
   Send,
   ArrowLeft,
   Globe,
+  ChevronRight,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
@@ -218,45 +219,55 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           inCityStep ? (
             /* Step 1 — pick a city among those with hosts */
             <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4 flex flex-col gap-1.5">
+              <div className="p-4 space-y-3">
+                {/* Toutes les villes — featured entry */}
                 <button
                   type="button"
                   onClick={() => pickCity(ALL_CITIES)}
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-border/60 bg-card hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"
+                  className="group flex w-full items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/8 p-3.5 text-start transition-colors hover:border-violet-500/45 hover:bg-violet-500/12"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Globe className="size-4 text-violet-500 shrink-0" />
-                    <span className="text-sm font-semibold truncate">
-                      {t.search.allCities}
-                    </span>
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
+                    <Globe className="size-5" />
                   </div>
-                  <span className="shrink-0 ms-2 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300 tabular-nums">
-                    <Users className="size-3" />
-                    {totalHostCount}
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-foreground">
+                      {t.search.allCities}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {totalHostCount} {t.search.hostsInCityPlural}
+                    </p>
+                  </div>
+                  <ChevronRight className="size-4 shrink-0 text-violet-500/50 transition-all group-hover:translate-x-0.5 group-hover:text-violet-500" />
                 </button>
 
-                {visibleCities.map(({ city, count }) => (
-                  <button
-                    key={city}
-                    type="button"
-                    onClick={() => pickCity(city)}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-violet-500/5 border border-transparent hover:border-violet-500/15 transition-colors group"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <MapPin className="size-3.5 text-muted-foreground group-hover:text-violet-500 shrink-0 transition-colors" />
-                      <span className="text-sm font-medium truncate">
-                        {city}
-                      </span>
-                    </div>
-                    <span className="shrink-0 ms-2 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300 tabular-nums">
-                      <Users className="size-3" />
-                      {count}
-                    </span>
-                  </button>
-                ))}
-
-                {visibleCities.length === 0 && (
+                {visibleCities.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                    {visibleCities.map(({ city, count }) => (
+                      <button
+                        key={city}
+                        type="button"
+                        onClick={() => pickCity(city)}
+                        className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 text-start transition-all hover:border-violet-500/40 hover:bg-violet-500/5 hover:shadow-sm"
+                      >
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
+                          <MapPin className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {city}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {count}{" "}
+                            {count === 1
+                              ? t.search.hostsInCity
+                              : t.search.hostsInCityPlural}
+                          </p>
+                        </div>
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:text-violet-500" />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
                   <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
                     <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
                       <SearchX className="size-5" />
