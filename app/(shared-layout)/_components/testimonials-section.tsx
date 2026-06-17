@@ -3,6 +3,7 @@
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { Star } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
+import { SectionIntro } from "./section-intro";
 
 function TestimonialCard({
   name,
@@ -19,7 +20,7 @@ function TestimonialCard({
 }) {
   return (
     <div
-      className="flex flex-col gap-5 p-8 rounded-2xl bg-card border border-border transition-all duration-700"
+      className="flex flex-col gap-5 p-8 rounded-2xl bg-card border border-border transition-all duration-700 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5"
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? "translateY(0)" : "translateY(40px)",
@@ -48,27 +49,11 @@ export function TestimonialsSection() {
 
   return (
     <section ref={ref} className="py-20 md:py-28">
-      <div className="flex flex-col items-center gap-4 mb-16">
-        <span
-          className="text-sm font-semibold uppercase tracking-widest text-primary transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "translateY(0)" : "translateY(20px)",
-          }}
-        >
-          {t.testimonials.sectionLabel}
-        </span>
-        <h2
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-balance text-center transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "translateY(0)" : "translateY(20px)",
-            transitionDelay: "100ms",
-          }}
-        >
-          {t.testimonials.sectionTitle}
-        </h2>
-      </div>
+      <SectionIntro
+        title={t.testimonials.sectionTitle}
+        lead={t.testimonials.lead}
+        isVisible={isVisible}
+      />
 
       <div className="grid md:grid-cols-3 gap-6">
         {t.testimonials.items.map((item, i) => (

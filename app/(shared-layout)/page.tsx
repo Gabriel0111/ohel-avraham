@@ -1,5 +1,5 @@
 import { HeroSection } from "./_components/hero-section";
-import { StatsSection } from "./_components/stats-section";
+import { ManifestoSection } from "./_components/manifesto-section";
 import { HowItWorksSection } from "./_components/how-it-works-section";
 import { FeaturesSection } from "./_components/features-section";
 import { TestimonialsSection } from "./_components/testimonials-section";
@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <main>
       <HeroSection />
-      <StatsSection />
+      <ManifestoSection />
       <HowItWorksSection />
       <FeaturesSection />
       <TestimonialsSection />

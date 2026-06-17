@@ -82,6 +82,11 @@ export const translations = {
       navTitle: "My requests",
       title: "Requests",
       desc: "Manage requests you've received and track the ones you've sent.",
+      descReceived: "Manage the requests guests have sent you.",
+      descSent: "Track the requests you've sent to hosts.",
+      expired: "Past",
+      expiredInfo:
+        "The invitation date has passed — contact details are no longer shown.",
       received: "Received",
       sent: "Sent",
       noReceived: "No requests received yet.",
@@ -137,17 +142,15 @@ export const translations = {
         fridayTime: "Friday · 6:30 pm",
       },
     },
-    stats: {
-      labels: [
-        "Shabbat meals shared",
-        "Active hosts",
-        "Communities reached",
-        "Guest satisfaction",
-      ],
+    manifesto: {
+      quote:
+        "A table always has room for one more. A city full of strangers becomes a community the moment a door opens and a seat is offered.",
+      signature: "The spirit of Ohel Avraham",
     },
     howItWorks: {
       sectionLabel: "How it works",
       sectionTitle: "Three simple steps to a meaningful Shabbat",
+      lead: "From a first hello to a seat at the table, in three steps.",
       step: "Step",
       steps: [
         {
@@ -170,6 +173,7 @@ export const translations = {
     features: {
       sectionLabel: "Why Ohel Avraham",
       sectionTitle: "Everything you need for a perfect Shabbat",
+      lead: "Built around what actually makes a Shabbat work — trust, kashrut, community, and warmth.",
       items: [
         {
           title: "Trusted & Verified",
@@ -196,6 +200,7 @@ export const translations = {
     testimonials: {
       sectionLabel: "Testimonials",
       sectionTitle: "Stories from our community",
+      lead: "Real tables, real welcomes.",
       items: [
         {
           name: "Sarah L.",
@@ -337,6 +342,8 @@ export const translations = {
     },
     people: {
       title: "People",
+      accessDenied: "Access denied",
+      accessDeniedDesc: "This page is reserved for administrators.",
       adminDesc: "Manage all hosts and guests on the platform.",
       hostDesc: "Browse guests looking for a Shabbat meal.",
       guestDesc: "Find hosts offering Shabbat meals near you.",
@@ -556,6 +563,11 @@ export const translations = {
       navTitle: "Mes demandes",
       title: "Demandes",
       desc: "Gérez les demandes reçues et suivez celles que vous avez envoyées.",
+      descReceived: "Gérez les demandes que les invités vous ont envoyées.",
+      descSent: "Suivez les demandes que vous avez envoyées aux hôtes.",
+      expired: "Passée",
+      expiredInfo:
+        "La date de l'invitation est passée — les coordonnées ne sont plus affichées.",
       received: "Reçues",
       sent: "Envoyées",
       noReceived: "Aucune demande reçue pour le moment.",
@@ -611,17 +623,15 @@ export const translations = {
         fridayTime: "Vendredi · 18h30",
       },
     },
-    stats: {
-      labels: [
-        "Repas de Chabbat partagés",
-        "Hôtes actifs",
-        "Communautés atteintes",
-        "Satisfaction des invités",
-      ],
+    manifesto: {
+      quote:
+        "Une table a toujours de la place pour une personne de plus. Une ville d'inconnus devient une communauté dès qu'une porte s'ouvre et qu'une place est offerte.",
+      signature: "L'esprit d'Ohel Avraham",
     },
     howItWorks: {
       sectionLabel: "Comment ça marche",
       sectionTitle: "Trois étapes simples vers un Chabbat mémorable",
+      lead: "Du premier bonjour à une place à table, en trois étapes.",
       step: "Étape",
       steps: [
         {
@@ -644,6 +654,7 @@ export const translations = {
     features: {
       sectionLabel: "Pourquoi Ohel Avraham",
       sectionTitle: "Tout ce qu'il vous faut pour un Chabbat parfait",
+      lead: "Pensé autour de ce qui fait vraiment un beau Chabbat : confiance, cacherout, communauté et chaleur.",
       items: [
         {
           title: "Fiable & Vérifié",
@@ -670,6 +681,7 @@ export const translations = {
     testimonials: {
       sectionLabel: "Témoignages",
       sectionTitle: "Les histoires de notre communauté",
+      lead: "De vraies tables, de vrais accueils.",
       items: [
         {
           name: "Sarah L.",
@@ -818,6 +830,8 @@ export const translations = {
     },
     people: {
       title: "Personnes",
+      accessDenied: "Accès refusé",
+      accessDeniedDesc: "Cette page est réservée aux administrateurs.",
       adminDesc: "Gérez tous les hôtes et invités de la plateforme.",
       hostDesc: "Parcourez les invités à la recherche d'un repas de Chabbat.",
       guestDesc:
@@ -1036,6 +1050,10 @@ export const translations = {
       navTitle: "הבקשות שלי",
       title: "בקשות",
       desc: "נהל את הבקשות שקיבלת ועקוב אחר אלו ששלחת.",
+      descReceived: "נהל את הבקשות שאורחים שלחו אליך.",
+      descSent: "עקוב אחר הבקשות ששלחת למארחים.",
+      expired: "עברה",
+      expiredInfo: "מועד ההזמנה חלף — פרטי הקשר אינם מוצגים עוד.",
       received: "התקבלו",
       sent: "נשלחו",
       noReceived: "עדיין לא התקבלו בקשות.",
@@ -1091,17 +1109,15 @@ export const translations = {
         fridayTime: "יום שישי · 18:30",
       },
     },
-    stats: {
-      labels: [
-        "ארוחות שבת שנשתפו",
-        "מארחים פעילים",
-        "קהילות שהגענו אליהן",
-        "שביעות רצון האורחים",
-      ],
+    manifesto: {
+      quote:
+        "לשולחן תמיד יש מקום לעוד אחד. עיר מלאה בזרים הופכת לקהילה ברגע שדלת נפתחת ומוצע מקום.",
+      signature: "רוח אוהל אברהם",
     },
     howItWorks: {
       sectionLabel: "איך זה עובד",
       sectionTitle: "שלושה שלבים פשוטים לשבת משמעותית",
+      lead: "מהיכרות ראשונה ועד מקום בשולחן, בשלושה שלבים.",
       step: "שלב",
       steps: [
         {
@@ -1124,6 +1140,7 @@ export const translations = {
     features: {
       sectionLabel: "למה אוהל אברהם",
       sectionTitle: "כל מה שצריך לשבת מושלמת",
+      lead: "נבנה סביב מה שבאמת הופך שבת למוצלחת — אמון, כשרות, קהילה וחום.",
       items: [
         {
           title: "מהימן ומאומת",
@@ -1150,6 +1167,7 @@ export const translations = {
     testimonials: {
       sectionLabel: "המלצות",
       sectionTitle: "סיפורים מהקהילה שלנו",
+      lead: "שולחנות אמיתיים, אירוח אמיתי.",
       items: [
         {
           name: "שרה ל.",
@@ -1287,6 +1305,8 @@ export const translations = {
     },
     people: {
       title: "אנשים",
+      accessDenied: "הגישה נדחתה",
+      accessDeniedDesc: "דף זה שמור למנהלי מערכת בלבד.",
       adminDesc: "נהל את כל המארחים והאורחים בפלטפורמה.",
       hostDesc: "עיין באורחים המחפשים ארוחת שבת.",
       guestDesc: "מצא מארחים המציעים ארוחות שבת קרוב אליך.",

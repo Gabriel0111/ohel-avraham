@@ -128,3 +128,22 @@
     animation: none;
     mix-blend-mode: normal;
 }
+
+/* Candlelight twinkle — a touch of warmth on the landing. Ambient, slow,
+   never glittery. Disabled entirely under reduced-motion. */
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50% { opacity: 0.85; transform: scale(1) rotate(18deg); }
+}
+.animate-twinkle {
+  animation: twinkle 4.5s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-twinkle {
+    animation: none;
+    opacity: 0.45;
+    transform: none;
+  }
+}

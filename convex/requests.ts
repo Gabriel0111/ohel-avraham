@@ -28,6 +28,13 @@ function partyLabel(adults: number, children: number) {
   return parts.join(" · ");
 }
 
+// Contact details stay visible through the invitation day, then a day of grace,
+// after which they're withheld — the meal is past and the connection private again.
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+function isRequestExpired(dateMs: number) {
+  return Date.now() > dateMs + ONE_DAY_MS;
+}
+
 const emailShell = (title: string, body: string) => `
   <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#111;">
     <h1 style="font-size:22px;font-weight:600;margin-bottom:8px;">${title}</h1>
@@ -248,9 +255,11 @@ export const getMyIncomingRequests = query({
               )
               .unique(),
           ]);
-          const accepted = r.status === "accepted";
+          const expired = isRequestExpired(r.date);
+          const reveal = r.status === "accepted" && !expired;
           return {
             ...baseRequest(r),
+            isExpired: expired,
             guest: {
               name: user?.name,
               image: user?.image,
@@ -259,9 +268,10 @@ export const getMyIncomingRequests = query({
               gender: guest?.gender,
               region: guest?.region,
               dob: guest?.dob,
-              // Contact details are private until the host accepts.
-              email: accepted ? user?.email : undefined,
-              notes: accepted ? guest?.notes : undefined,
+              // Contact details are private until the host accepts, and are
+              // withheld again once the invitation date has passed.
+              email: reveal ? user?.email : undefined,
+              notes: reveal ? guest?.notes : undefined,
             },
           };
         }),
@@ -294,9 +304,11 @@ export const getMyOutgoingRequests = query({
               )
               .unique(),
           ]);
-          const accepted = r.status === "accepted";
+          const expired = isRequestExpired(r.date);
+          const reveal = r.status === "accepted" && !expired;
           return {
             ...baseRequest(r),
+            isExpired: expired,
             host: {
               name: user?.name,
               image: user?.image,
@@ -304,11 +316,12 @@ export const getMyOutgoingRequests = query({
               ethnicity: host?.ethnicity,
               kashrout: host?.kashrout,
               hasDisabilityAccess: host?.hasDisabilityAccess,
-              // Contact details are private until the host accepts.
-              phoneNumber: accepted ? host?.phoneNumber : undefined,
-              address: accepted ? host?.address : undefined,
-              floor: accepted ? host?.floor : undefined,
-              entrance: accepted ? host?.entrance : undefined,
+              // Contact details are private until the host accepts, and are
+              // withheld again once the invitation date has passed.
+              phoneNumber: reveal ? host?.phoneNumber : undefined,
+              address: reveal ? host?.address : undefined,
+              floor: reveal ? host?.floor : undefined,
+              entrance: reveal ? host?.entrance : undefined,
             },
           };
         }),

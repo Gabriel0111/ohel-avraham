@@ -34,7 +34,6 @@ export const ProfileLoading = () => (
         <Skeleton className="h-4 w-full max-w-50" />
       </div>
       <div className="w-full md:w-2/3 lg:w-1/2 mt-6 md:mt-0 grid gap-4">
-        {/* Si tu as des ActionCards ici en chargement */}
         <Skeleton className="h-20 w-full rounded-xl" />
       </div>
     </section>

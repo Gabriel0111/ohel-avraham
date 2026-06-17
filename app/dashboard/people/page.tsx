@@ -59,13 +59,7 @@ import {
   ShieldOff,
   Trash2,
 } from "lucide-react";
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -84,6 +78,7 @@ import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-h
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { DetailList, DetailRow } from "@/components/ui/detail-list";
 
 function getInitials(name?: string) {
   if (!name) return "?";
@@ -93,31 +88,6 @@ function getInitials(name?: string) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-}
-
-function AnimatedNumber({ value }: { value: number }) {
-  const [displayed, setDisplayed] = useState(0);
-  const rafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    const duration = 700;
-    const startTime = performance.now();
-
-    const animate = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayed(Math.round(value * eased));
-      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
-    };
-
-    rafRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [value]);
-
-  return <>{displayed}</>;
 }
 
 function formatDate(timestamp: number) {
@@ -213,67 +183,59 @@ function HostDetailDialog({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 space-y-3">
-          <div className="flex items-start gap-3 p-3 rounded-xl border border-violet-500/15 bg-gradient-to-br from-violet-500/10 to-transparent">
-            <MapPin className="size-4 text-violet-500 shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-violet-700 dark:text-violet-300 uppercase tracking-wide mb-0.5">{t.form.address}</p>
+        <div className="px-6 py-4">
+          <DetailList>
+            <DetailRow icon={MapPin} tone="violet" label={t.form.address}>
               <a
                 href={mapsUrl(host.address)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-foreground hover:text-violet-600 transition-colors leading-snug underline-offset-4 hover:underline"
+                className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
               >
                 {host.address}
               </a>
               {(host.floor || host.entrance) && (
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <span className="block text-xs font-normal text-muted-foreground mt-0.5">
                   {host.floor && `${t.form.floor} ${host.floor}`}
                   {host.floor && host.entrance && " · "}
                   {host.entrance && `${t.form.entrance} ${host.entrance}`}
-                </p>
+                </span>
               )}
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-blue-500/15 bg-gradient-to-br from-blue-500/10 to-transparent">
-            <Phone className="size-4 text-blue-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-0.5">{t.form.phoneNumber}</p>
-              <a href={`tel:${host.phoneNumber}`} className="text-sm text-foreground hover:text-blue-600 transition-colors font-medium">
-                {RPNInput.formatPhoneNumberIntl(host.phoneNumber) || host.phoneNumber}
+            </DetailRow>
+            <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+              <a
+                href={`tel:${host.phoneNumber}`}
+                className="hover:text-blue-600 transition-colors"
+              >
+                {RPNInput.formatPhoneNumberIntl(host.phoneNumber) ||
+                  host.phoneNumber}
               </a>
-            </div>
-          </div>
-          {host.email && (
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-rose-500/15 bg-gradient-to-br from-rose-500/10 to-transparent">
-              <Mail className="size-4 text-rose-500 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 uppercase tracking-wide mb-0.5">{t.form.email}</p>
-                <a href={`mailto:${host.email}`} className="text-sm text-foreground hover:text-rose-600 transition-colors font-medium break-all">
+            </DetailRow>
+            {host.email && (
+              <DetailRow icon={Mail} tone="rose" label={t.form.email}>
+                <a
+                  href={`mailto:${host.email}`}
+                  className="hover:text-rose-600 transition-colors break-all"
+                >
                   {host.email}
                 </a>
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-500/15 bg-gradient-to-br from-indigo-500/10 to-transparent">
-            <Calendar className="size-4 text-indigo-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide mb-0.5">{t.form.dateOfBirth}</p>
-              <p className="text-sm text-foreground font-medium">
-                {formatDate(host.dob)}
-                <span className="text-muted-foreground font-normal"> · {computeAge(host.dob)} {t.form.yearsOld}</span>
-              </p>
-            </div>
-          </div>
-          {host.notes && (
-            <div className="flex items-start gap-3 p-3 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/15 to-transparent">
-              <StickyNote className="size-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-1">{t.form.notes}</p>
-                <p className="text-sm text-foreground/80 leading-relaxed">{host.notes}</p>
-              </div>
-            </div>
-          )}
+              </DetailRow>
+            )}
+            <DetailRow icon={Calendar} tone="indigo" label={t.form.dateOfBirth}>
+              {formatDate(host.dob)}
+              <span className="text-muted-foreground font-normal">
+                {" "}
+                · {computeAge(host.dob)} {t.form.yearsOld}
+              </span>
+            </DetailRow>
+            {host.notes && (
+              <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
+                <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                  {host.notes}
+                </span>
+              </DetailRow>
+            )}
+          </DetailList>
         </div>
 
         {/* Admin footer */}
@@ -368,51 +330,43 @@ function GuestDetailDialog({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-4 space-y-3">
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/10 to-transparent">
-            <MapPin className="size-4 text-emerald-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide mb-0.5">{t.form.address}</p>
+        <div className="px-6 py-4">
+          <DetailList>
+            <DetailRow icon={MapPin} tone="emerald" label={t.form.address}>
               <a
                 href={mapsUrl(guest.region)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-foreground hover:text-emerald-600 transition-colors font-medium underline-offset-4 hover:underline"
+                className="hover:text-emerald-600 transition-colors underline-offset-4 hover:underline"
               >
                 {guest.region}
               </a>
-            </div>
-          </div>
-          {guest.email && (
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-rose-500/15 bg-gradient-to-br from-rose-500/10 to-transparent">
-              <Mail className="size-4 text-rose-500 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 uppercase tracking-wide mb-0.5">{t.form.email}</p>
-                <a href={`mailto:${guest.email}`} className="text-sm text-foreground hover:text-rose-600 transition-colors font-medium break-all">
+            </DetailRow>
+            {guest.email && (
+              <DetailRow icon={Mail} tone="rose" label={t.form.email}>
+                <a
+                  href={`mailto:${guest.email}`}
+                  className="hover:text-rose-600 transition-colors break-all"
+                >
                   {guest.email}
                 </a>
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-indigo-500/15 bg-gradient-to-br from-indigo-500/10 to-transparent">
-            <Calendar className="size-4 text-indigo-500 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide mb-0.5">{t.form.dateOfBirth}</p>
-              <p className="text-sm text-foreground font-medium">
-                {formatDate(guest.dob)}
-                <span className="text-muted-foreground font-normal"> · {computeAge(guest.dob)} {t.form.yearsOld}</span>
-              </p>
-            </div>
-          </div>
-          {guest.notes && (
-            <div className="flex items-start gap-3 p-3 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/15 to-transparent">
-              <StickyNote className="size-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide mb-1">{t.form.notes}</p>
-                <p className="text-sm text-foreground/80 leading-relaxed">{guest.notes}</p>
-              </div>
-            </div>
-          )}
+              </DetailRow>
+            )}
+            <DetailRow icon={Calendar} tone="indigo" label={t.form.dateOfBirth}>
+              {formatDate(guest.dob)}
+              <span className="text-muted-foreground font-normal">
+                {" "}
+                · {computeAge(guest.dob)} {t.form.yearsOld}
+              </span>
+            </DetailRow>
+            {guest.notes && (
+              <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
+                <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                  {guest.notes}
+                </span>
+              </DetailRow>
+            )}
+          </DetailList>
         </div>
       </DialogContent>
     </Dialog>
@@ -643,9 +597,11 @@ export default function PeoplePage() {
           <ShieldAlert className="size-6 text-destructive" />
         </div>
         <div className="space-y-1">
-          <p className="font-semibold text-foreground">Accès refusé</p>
+          <p className="font-semibold text-foreground">
+            {t.people.accessDenied}
+          </p>
           <p className="text-sm text-muted-foreground">
-            Cette page est réservée aux administrateurs.
+            {t.people.accessDeniedDesc}
           </p>
         </div>
       </div>
@@ -661,16 +617,15 @@ export default function PeoplePage() {
       <div className="flex flex-col gap-6">
         {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3">
-        <Card className="border-border/60 overflow-hidden py-0 pb-5">
-          <div className="h-0.5 bg-gradient-to-r from-violet-500/40 via-violet-500 to-violet-500/40" />
+        <Card className="border-border/60">
           <CardContent>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
                   {t.people.totalHosts}
                 </p>
                 <p className="text-3xl font-bold text-foreground tabular-nums">
-                  <AnimatedNumber value={allHosts?.length ?? 0} />
+                  {allHosts?.length ?? 0}
                 </p>
               </div>
               <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
@@ -688,16 +643,15 @@ export default function PeoplePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 overflow-hidden py-0 pb-5">
-          <div className="h-0.5 bg-gradient-to-r from-emerald-500/40 via-emerald-500 to-emerald-500/40" />
+        <Card className="border-border/60">
           <CardContent>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
                   {t.people.totalGuests}
                 </p>
                 <p className="text-3xl font-bold text-foreground tabular-nums">
-                  <AnimatedNumber value={allGuests?.length ?? 0} />
+                  {allGuests?.length ?? 0}
                 </p>
               </div>
               <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">

@@ -3,7 +3,6 @@
 import {
   Icon,
   IconBuildingCommunity,
-  IconDashboard,
   IconMailForward,
   IconUserCircle,
   IconUsers,
@@ -43,11 +42,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const items: NavItem[] = [
-    {
-      title: t.nav.dashboard,
-      url: hostname,
-      icon: IconDashboard,
-    },
     {
       title: t.nav.account,
       url: `${hostname}/profile`,

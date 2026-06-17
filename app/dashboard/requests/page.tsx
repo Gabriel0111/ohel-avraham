@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -29,9 +29,11 @@ import {
   CheckCircle2,
   XCircle,
   Ban,
+  CalendarOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
+import { DetailList, DetailRow } from "@/components/ui/detail-list";
 
 type Status = "pending" | "accepted" | "declined" | "cancelled";
 
@@ -103,10 +105,12 @@ function PartyDateRow({
   date,
   adults,
   kids,
+  expired,
 }: {
   date: number;
   adults: number;
   kids: number;
+  expired?: boolean;
 }) {
   const { t, lang } = useT();
   const total = adults + kids;
@@ -114,7 +118,14 @@ function PartyDateRow({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
       <span className="inline-flex items-center gap-1.5">
         <CalendarDays className="size-3.5" />
-        {formatDate(date, lang)}
+        <span className={cn(expired && "line-through decoration-1")}>
+          {formatDate(date, lang)}
+        </span>
+        {expired && (
+          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            {t.requests.expired}
+          </span>
+        )}
       </span>
       <span className="inline-flex items-center gap-1.5">
         <Users className="size-3.5" />
@@ -139,68 +150,15 @@ function MessageBlock({ message }: { message?: string }) {
   );
 }
 
-// ─── Revealed details (shared) ────────────────────────────────────────────────
-// Same per-field hues as the /people profile dialog, in one light frame.
+// ─── Expired notice ───────────────────────────────────────────────────────────
+// Once the invitation date has passed, contact details are withheld again.
 
-type Tone = "rose" | "indigo" | "blue" | "violet" | "emerald" | "amber";
-
-const TONE_ICON: Record<Tone, string> = {
-  rose: "text-rose-500",
-  indigo: "text-indigo-500",
-  blue: "text-blue-500",
-  violet: "text-violet-500",
-  emerald: "text-emerald-500",
-  amber: "text-amber-600",
-};
-
-function RevealFrame({ children }: { children: React.ReactNode }) {
+function ExpiredNotice() {
+  const { t } = useT();
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
-      {children}
-    </div>
-  );
-}
-
-function RevealRow({
-  icon: Icon,
-  tone,
-  label,
-  children,
-}: {
-  icon: typeof Mail;
-  tone: Tone;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3 px-3.5 py-2.5">
-      <Icon className={cn("size-4 shrink-0", TONE_ICON[tone])} />
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="ms-auto text-end text-sm font-medium text-foreground break-all">
-        {children}
-      </span>
-    </div>
-  );
-}
-
-function RevealBlock({
-  icon: Icon,
-  tone,
-  label,
-  children,
-}: {
-  icon: typeof Mail;
-  tone: Tone;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-start gap-3 px-3.5 py-2.5">
-      <Icon className={cn("size-4 shrink-0 mt-0.5", TONE_ICON[tone])} />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-muted-foreground mb-0.5">{label}</p>
-        <div className="text-sm font-medium text-foreground">{children}</div>
-      </div>
+    <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 text-sm text-muted-foreground">
+      <CalendarOff className="size-4 shrink-0" />
+      <span className="text-pretty">{t.requests.expiredInfo}</span>
     </div>
   );
 }
@@ -284,40 +242,44 @@ function ReceivedList() {
             <StatusBadge status={r.status} />
           </div>
 
-          <PartyDateRow date={r.date} adults={r.adults} kids={r.children} />
+          <PartyDateRow
+            date={r.date}
+            adults={r.adults}
+            kids={r.children}
+            expired={r.isExpired}
+          />
           <MessageBlock message={r.message} />
 
-          {/* Full guest details — revealed only once accepted */}
-          {r.status === "accepted" && (
-            <RevealFrame>
-              {r.guest.email && (
-                <RevealRow icon={Mail} tone="rose" label={t.form.email}>
-                  <a
-                    href={`mailto:${r.guest.email}`}
-                    className="hover:text-rose-600 transition-colors"
-                  >
-                    {r.guest.email}
-                  </a>
-                </RevealRow>
-              )}
-              {r.guest.dob != null && (
-                <RevealRow
-                  icon={CalendarDays}
-                  tone="indigo"
-                  label={t.form.age}
-                >
-                  {computeAge(r.guest.dob)} {t.form.yearsOld}
-                </RevealRow>
-              )}
-              {r.guest.notes && (
-                <RevealBlock icon={StickyNote} tone="amber" label={t.form.notes}>
-                  <p className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                    {r.guest.notes}
-                  </p>
-                </RevealBlock>
-              )}
-            </RevealFrame>
-          )}
+          {/* Full guest details — revealed once accepted, withheld once past */}
+          {r.status === "accepted" &&
+            (r.isExpired ? (
+              <ExpiredNotice />
+            ) : (
+              <DetailList>
+                {r.guest.email && (
+                  <DetailRow icon={Mail} tone="rose" label={t.form.email}>
+                    <a
+                      href={`mailto:${r.guest.email}`}
+                      className="hover:text-rose-600 transition-colors"
+                    >
+                      {r.guest.email}
+                    </a>
+                  </DetailRow>
+                )}
+                {r.guest.dob != null && (
+                  <DetailRow icon={CalendarDays} tone="indigo" label={t.form.age}>
+                    {computeAge(r.guest.dob)} {t.form.yearsOld}
+                  </DetailRow>
+                )}
+                {r.guest.notes && (
+                  <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
+                    <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                      {r.guest.notes}
+                    </span>
+                  </DetailRow>
+                )}
+              </DetailList>
+            ))}
 
           {r.status === "pending" && (
             <div className="flex items-center gap-2 pt-1">
@@ -416,44 +378,53 @@ function SentList() {
             <StatusBadge status={r.status} />
           </div>
 
-          <PartyDateRow date={r.date} adults={r.adults} kids={r.children} />
+          <PartyDateRow
+            date={r.date}
+            adults={r.adults}
+            kids={r.children}
+            expired={r.isExpired}
+          />
           <MessageBlock message={r.message} />
 
-          {/* Contact — revealed only once accepted */}
-          {r.status === "accepted" && (r.host.phoneNumber || r.host.address) && (
-            <RevealFrame>
-              {r.host.phoneNumber && (
-                <RevealRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
-                  <a
-                    href={`tel:${r.host.phoneNumber}`}
-                    className="hover:text-blue-600 transition-colors"
-                  >
-                    {RPNInput.formatPhoneNumberIntl(r.host.phoneNumber) ||
-                      r.host.phoneNumber}
-                  </a>
-                </RevealRow>
-              )}
-              {r.host.address && (
-                <RevealBlock icon={MapPin} tone="violet" label={t.form.address}>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.host.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
-                  >
-                    {r.host.address}
-                  </a>
-                  {(r.host.floor || r.host.entrance) && (
-                    <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                      {r.host.floor && `${t.form.floor} ${r.host.floor}`}
-                      {r.host.floor && r.host.entrance && " · "}
-                      {r.host.entrance && `${t.form.entrance} ${r.host.entrance}`}
-                    </span>
-                  )}
-                </RevealBlock>
-              )}
-            </RevealFrame>
-          )}
+          {/* Contact — revealed once accepted, withheld once past */}
+          {r.status === "accepted" &&
+            (r.isExpired ? (
+              <ExpiredNotice />
+            ) : r.host.phoneNumber || r.host.address ? (
+              <DetailList>
+                {r.host.phoneNumber && (
+                  <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+                    <a
+                      href={`tel:${r.host.phoneNumber}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
+                      {RPNInput.formatPhoneNumberIntl(r.host.phoneNumber) ||
+                        r.host.phoneNumber}
+                    </a>
+                  </DetailRow>
+                )}
+                {r.host.address && (
+                  <DetailRow icon={MapPin} tone="violet" label={t.form.address}>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.host.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
+                    >
+                      {r.host.address}
+                    </a>
+                    {(r.host.floor || r.host.entrance) && (
+                      <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                        {r.host.floor && `${t.form.floor} ${r.host.floor}`}
+                        {r.host.floor && r.host.entrance && " · "}
+                        {r.host.entrance &&
+                          `${t.form.entrance} ${r.host.entrance}`}
+                      </span>
+                    )}
+                  </DetailRow>
+                )}
+              </DetailList>
+            ) : null)}
 
           {r.status === "pending" && (
             <div className="flex items-center justify-end pt-1">
@@ -503,37 +474,55 @@ export default function RequestsPage() {
   const { user } = useAuth();
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
-  const isHost = user?.role === "host" || user?.role === "guest:host";
-  const defaultTab = useMemo(() => (isHost ? "received" : "sent"), [isHost]);
+  const role = user?.role;
+  const isHost = role === "host" || role === "guest:host";
+  const isGuest = role === "guest" || role === "guest:host";
+  // A host only receives requests; a guest only sends them. Only guest:host
+  // sees both. (A plain user with no role yet falls back to the sent view.)
+  const mode: "both" | "received" | "sent" =
+    isHost && isGuest ? "both" : isHost ? "received" : "sent";
+
+  const subtitle =
+    mode === "received"
+      ? t.requests.descReceived
+      : mode === "sent"
+        ? t.requests.descSent
+        : t.requests.desc;
 
   return (
     <div>
-      <PageHeader title={t.requests.title} subtitle={t.requests.desc} />
+      <PageHeader title={t.requests.title} subtitle={subtitle} />
 
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="received" className="gap-2">
-            <Inbox className="size-4" />
-            {t.requests.received}
-            {pendingCount != null && pendingCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
-                {pendingCount}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="sent" className="gap-2">
-            <SendHorizonal className="size-4" />
-            {t.requests.sent}
-          </TabsTrigger>
-        </TabsList>
+      {mode === "both" ? (
+        <Tabs defaultValue="received" className="w-full">
+          <TabsList>
+            <TabsTrigger value="received" className="gap-2">
+              <Inbox className="size-4" />
+              {t.requests.received}
+              {pendingCount != null && pendingCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="sent" className="gap-2">
+              <SendHorizonal className="size-4" />
+              {t.requests.sent}
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="received" className="mt-4">
-          <ReceivedList />
-        </TabsContent>
-        <TabsContent value="sent" className="mt-4">
-          <SentList />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="received" className="mt-4">
+            <ReceivedList />
+          </TabsContent>
+          <TabsContent value="sent" className="mt-4">
+            <SentList />
+          </TabsContent>
+        </Tabs>
+      ) : mode === "received" ? (
+        <ReceivedList />
+      ) : (
+        <SentList />
+      )}
     </div>
   );
 }

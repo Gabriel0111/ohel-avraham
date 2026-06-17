@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SearchBarTrigger } from "@/components/search/search-trigger";
 import { useT } from "@/lib/i18n/context";
+import { Sparkles } from "./sparkles";
 import type { ReactNode, CSSProperties } from "react";
 
 // Géométrie : triangle équilatéral inscrit dans le cercle (rayon 160px)
@@ -74,6 +75,18 @@ function HeroIllustration() {
       {/* Lueur centrale */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-64 rounded-full bg-primary/12 blur-3xl pointer-events-none" />
 
+      {/* Paillettes — quelques lueurs de bougie autour de l'anneau */}
+      <Sparkles
+        sparks={[
+          { top: "8%", left: "62%", size: 18, delay: 0, tone: "amber" },
+          { top: "20%", left: "22%", size: 12, delay: 1.2 },
+          { top: "46%", left: "88%", size: 14, delay: 0.6, tone: "amber" },
+          { top: "72%", left: "12%", size: 16, delay: 1.8, tone: "amber" },
+          { top: "82%", left: "70%", size: 11, delay: 0.3 },
+          { top: "38%", left: "4%", size: 10, delay: 2.4 },
+        ]}
+      />
+
       {/* Anneau extérieur statique (profondeur) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[440px] rounded-full border border-primary/6" />
 
@@ -115,7 +128,7 @@ function HeroIllustration() {
           <div className="flex items-center gap-1.5 mb-3">
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
               <Home className="size-2.5 text-primary" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-primary">{ill.hostLabel}</span>
+              <span className="text-[10px] font-semibold tracking-wide text-primary">{ill.hostLabel}</span>
             </div>
           </div>
 
@@ -202,7 +215,7 @@ function HeroIllustration() {
           <div className="flex items-center gap-1.5 mb-2.5">
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100/80 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-700/30">
               <User className="size-2.5 text-amber-600 dark:text-amber-400" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">{ill.guestLabel}</span>
+              <span className="text-[10px] font-semibold tracking-wide text-amber-600 dark:text-amber-400">{ill.guestLabel}</span>
             </div>
           </div>
 
@@ -255,7 +268,7 @@ export function HeroSection() {
               transition={{ duration: 0.5 }}
             >
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-4 py-1.5 text-sm font-medium text-primary">
-                <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="size-1.5 rounded-full bg-primary" />
                 {t.hero.badge}
               </span>
             </motion.div>
@@ -292,11 +305,11 @@ export function HeroSection() {
                 className={buttonVariants({
                   size: "lg",
                   className:
-                    "text-base px-8 h-12 gap-2 shadow-lg shadow-primary/25",
+                    "group text-base px-8 h-12 gap-2 shadow-lg shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30",
                 })}
               >
                 {t.hero.getStarted}
-                <ArrowRight className="size-4" />
+                <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/about"
