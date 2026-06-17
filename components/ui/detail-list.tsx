@@ -4,13 +4,7 @@ import { cn } from "@/lib/utils";
 // (admin people dialogs, accepted-request reveals). Tone lives on the icon
 // only; labels are sentence-case, values sit below in ink.
 
-export type FieldTone =
-  | "violet"
-  | "blue"
-  | "rose"
-  | "indigo"
-  | "amber"
-  | "emerald";
+export type FieldTone = "violet" | "blue" | "rose" | "indigo" | "amber";
 
 const FIELD_TONE: Record<FieldTone, string> = {
   violet: "text-violet-500",
@@ -18,7 +12,6 @@ const FIELD_TONE: Record<FieldTone, string> = {
   rose: "text-rose-500",
   indigo: "text-indigo-500",
   amber: "text-amber-600",
-  emerald: "text-emerald-500",
 };
 
 export function DetailList({

@@ -24,7 +24,6 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 
 export function NavUser({
   user,
@@ -97,7 +96,6 @@ export function NavUser({
               <div className="grid flex-1 text-start text-sm leading-tight ms-1">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate font-semibold">{user.name}</span>
-                  <RoleBadge role={user.role} />
                 </div>
                 <span className="text-muted-foreground truncate text-xs font-normal">
                   {user.email}

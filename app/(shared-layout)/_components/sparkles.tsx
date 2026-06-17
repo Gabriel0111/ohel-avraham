@@ -3,13 +3,21 @@
 import { Sparkle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Candlelight tones: violet (host / primary) + amber (guest / warmth).
+export type SparkTone = "violet" | "amber";
+
+const TONE_CLASS: Record<SparkTone, string> = {
+  violet: "text-violet-500",
+  amber: "text-amber-400",
+};
+
 export type Spark = {
   top: string;
   left: string;
   size: number;
   delay?: number;
   duration?: number;
-  tone?: "primary" | "amber";
+  tone?: SparkTone;
 };
 
 // A few candlelight motes scattered over a relative container. Decorative and
@@ -36,8 +44,10 @@ export function Sparkles({
           fill="currentColor"
           strokeWidth={0}
           className={cn(
-            "absolute animate-twinkle",
-            s.tone === "amber" ? "text-amber-400" : "text-primary",
+            TONE_CLASS[s.tone ?? "violet"],
+            "absolute animate-twinkle drop-shadow-2xl will-change-transform",
+            "drop-shadow-[0_0_6px_currentColor]",
+            TONE_CLASS[s.tone ?? "violet"],
           )}
           style={{
             top: s.top,

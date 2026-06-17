@@ -10,7 +10,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { EnumPill, genderColor, type PillColor } from "@/components/ui/enum-pill";
+import {
+  EnumPill,
+  genderColor,
+  type PillColor,
+} from "@/components/ui/enum-pill";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
 import {
@@ -157,9 +161,13 @@ function ReceivedList() {
     setBusy(requestId);
     try {
       await respond({ requestId, accept });
-      toast.success(accept ? t.requests.toastAccepted : t.requests.toastDeclined);
+      toast.success(
+        accept ? t.requests.toastAccepted : t.requests.toastDeclined,
+      );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.requests.toastRespondError);
+      toast.error(
+        err instanceof Error ? err.message : t.requests.toastRespondError,
+      );
     } finally {
       setBusy(null);
     }
@@ -173,9 +181,7 @@ function ReceivedList() {
     );
   }
   if (incoming.length === 0) {
-    return (
-      <EmptyState icon={Inbox} label={t.requests.noReceived} />
-    );
+    return <EmptyState icon={Inbox} label={t.requests.noReceived} />;
   }
 
   return (
@@ -189,7 +195,7 @@ function ReceivedList() {
             <div className="flex items-center gap-3 min-w-0">
               <Avatar className="size-10 border border-border/50">
                 <AvatarImage src={r.guest.image} />
-                <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
+                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-xs font-semibold">
                   {getInitials(r.guest.name)}
                 </AvatarFallback>
               </Avatar>
@@ -199,7 +205,9 @@ function ReceivedList() {
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5 mt-1">
                   {r.guest.sector && (
-                    <EnumPill color="emerald">{el.sector(r.guest.sector)}</EnumPill>
+                    <EnumPill color="amber">
+                      {el.sector(r.guest.sector)}
+                    </EnumPill>
                   )}
                   {r.guest.ethnicity && (
                     <EnumPill color="slate">
@@ -248,12 +256,20 @@ function ReceivedList() {
                   </DetailRow>
                 )}
                 {r.guest.dob != null && (
-                  <DetailRow icon={CalendarDays} tone="indigo" label={t.form.age}>
+                  <DetailRow
+                    icon={CalendarDays}
+                    tone="indigo"
+                    label={t.form.age}
+                  >
                     {computeAge(r.guest.dob)} {t.form.yearsOld}
                   </DetailRow>
                 )}
                 {r.guest.notes && (
-                  <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
+                  <DetailRow
+                    icon={StickyNote}
+                    tone="amber"
+                    label={t.form.notes}
+                  >
                     <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
                       {r.guest.notes}
                     </span>
@@ -310,7 +326,9 @@ function SentList() {
       await cancel({ requestId });
       toast.success(t.requests.toastCancelled);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t.requests.toastCancelError);
+      toast.error(
+        err instanceof Error ? err.message : t.requests.toastCancelError,
+      );
     } finally {
       setBusy(null);
     }
@@ -348,10 +366,14 @@ function SentList() {
                 </p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {r.host.sector && (
-                    <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
+                    <EnumPill color="violet">
+                      {el.sector(r.host.sector)}
+                    </EnumPill>
                   )}
                   {r.host.kashrout && (
-                    <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
+                    <EnumPill color="blue">
+                      {el.kashrout(r.host.kashrout)}
+                    </EnumPill>
                   )}
                 </div>
               </div>
@@ -374,7 +396,11 @@ function SentList() {
             ) : r.host.phoneNumber || r.host.address ? (
               <DetailList>
                 {r.host.phoneNumber && (
-                  <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+                  <DetailRow
+                    icon={Phone}
+                    tone="blue"
+                    label={t.form.phoneNumber}
+                  >
                     <a
                       href={`tel:${r.host.phoneNumber}`}
                       className="hover:text-blue-600 transition-colors"

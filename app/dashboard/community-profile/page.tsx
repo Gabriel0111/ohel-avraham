@@ -46,7 +46,7 @@ export default function CommunityProfilePage() {
               <TabsTrigger value="host" className="rounded-lg gap-2 data-[state=active]:text-violet-600">
                 <Home className="size-4" />{t.profile.hostProfile}
               </TabsTrigger>
-              <TabsTrigger value="guest" className="rounded-lg gap-2 data-[state=active]:text-emerald-600">
+              <TabsTrigger value="guest" className="rounded-lg gap-2 data-[state=active]:text-amber-600">
                 <User className="size-4" />{t.profile.guestProfile}
               </TabsTrigger>
             </TabsList>

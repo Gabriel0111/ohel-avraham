@@ -7,7 +7,7 @@ const ROLE_COLORS: Record<string, PillColor> = {
   admin: "red",
   host: "violet",
   "guest:host": "violet",
-  guest: "emerald",
+  guest: "amber",
 };
 
 export function RoleBadge({ role }: { role: string }) {

@@ -18,8 +18,8 @@ const theme = {
     sparks: ["#a78bfa", "#f59e0b", "#c4b5fd"],
   },
   guest: {
-    medallion: "from-emerald-500 to-emerald-600",
-    glow: "bg-emerald-500/25",
+    medallion: "from-amber-500 to-amber-600",
+    glow: "bg-amber-500/25",
     sparks: ["#34d399", "#f59e0b", "#6ee7b7"],
   },
 } as const;

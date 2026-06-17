@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import type { Doc } from "@/convex/_generated/dataModel";
 
-type Accent = "violet" | "emerald" | "slate";
+type Accent = "violet" | "amber" | "slate";
 
 // Full class strings (Tailwind can't see interpolated color names).
 const ACCENT: Record<Accent, { grad: string; ring: string; fallback: string }> =
@@ -25,10 +25,10 @@ const ACCENT: Record<Accent, { grad: string; ring: string; fallback: string }> =
       ring: "ring-violet-500/25",
       fallback: "bg-violet-500/10 text-violet-600",
     },
-    emerald: {
-      grad: "from-emerald-500/12",
-      ring: "ring-emerald-500/25",
-      fallback: "bg-emerald-500/10 text-emerald-600",
+    amber: {
+      grad: "from-amber-500/12",
+      ring: "ring-amber-500/25",
+      fallback: "bg-amber-500/10 text-amber-600",
     },
     slate: {
       grad: "from-slate-500/10",
@@ -60,7 +60,7 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
 
   const isHost = !!host;
   const isGuest = !!guest;
-  const accent: Accent = isHost ? "violet" : isGuest ? "emerald" : "slate";
+  const accent: Accent = isHost ? "violet" : isGuest ? "amber" : "slate";
   const a = ACCENT[accent];
 
   const location = host?.address ?? guest?.region;
@@ -90,7 +90,9 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
             )}
           >
             <AvatarImage src={user.image} alt={user.name ?? ""} />
-            <AvatarFallback className={cn("text-2xl font-semibold", a.fallback)}>
+            <AvatarFallback
+              className={cn("text-2xl font-semibold", a.fallback)}
+            >
               {initials(user.name)}
             </AvatarFallback>
           </Avatar>
@@ -129,11 +131,13 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
 
           <div className="flex flex-wrap gap-1.5">
             {sector && (
-              <EnumPill color={isHost ? "violet" : "emerald"}>
+              <EnumPill color={isHost ? "violet" : "amber"}>
                 {el.sector(sector)}
               </EnumPill>
             )}
-            {host && <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>}
+            {host && (
+              <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
+            )}
             {ethnicity && (
               <EnumPill color="slate">{el.ethnicity(ethnicity)}</EnumPill>
             )}

@@ -299,12 +299,12 @@ function GuestDetailDialog({
     <Dialog open={!!guest} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Header */}
-        <div className="relative bg-gradient-to-b from-emerald-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
+        <div className="relative bg-gradient-to-b from-amber-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
           <DialogHeader className="p-0">
             <div className="flex items-start gap-4">
-              <Avatar className="size-16 ring-2 ring-emerald-500/20 shadow-md shrink-0">
+              <Avatar className="size-16 ring-2 ring-amber-500/20 shadow-md shrink-0">
                 <AvatarImage src={guest.image} />
-                <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-lg font-bold">
+                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-lg font-bold">
                   {getInitials(guest.name)}
                 </AvatarFallback>
               </Avatar>
@@ -316,7 +316,7 @@ function GuestDetailDialog({
                   {guest.role && <RoleBadge role={guest.role} />}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  <EnumPill color="emerald">{el.sector(guest.sector)}</EnumPill>
+                  <EnumPill color="amber">{el.sector(guest.sector)}</EnumPill>
                   <EnumPill color="slate">
                     {el.ethnicity(guest.ethnicity)}
                   </EnumPill>
@@ -332,12 +332,12 @@ function GuestDetailDialog({
         {/* Body */}
         <div className="px-6 py-4">
           <DetailList>
-            <DetailRow icon={MapPin} tone="emerald" label={t.form.address}>
+            <DetailRow icon={MapPin} tone="amber" label={t.form.address}>
               <a
                 href={mapsUrl(guest.region)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-emerald-600 transition-colors underline-offset-4 hover:underline"
+                className="hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
               >
                 {guest.region}
               </a>
@@ -654,8 +654,8 @@ export default function PeoplePage() {
                   {allGuests?.length ?? 0}
                 </p>
               </div>
-              <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <Users className="size-5 text-emerald-600" />
+              <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                <Users className="size-5 text-amber-600" />
               </div>
             </div>
           </CardContent>
@@ -703,7 +703,7 @@ export default function PeoplePage() {
               className={cn(
                 "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
                 activeTab === "guests"
-                  ? "bg-emerald-500/10 text-emerald-600"
+                  ? "bg-amber-500/10 text-amber-600"
                   : "bg-muted-foreground/10 text-muted-foreground",
               )}
             >
@@ -1025,7 +1025,7 @@ export default function PeoplePage() {
                             <div className="relative shrink-0">
                               <Avatar className="size-9 border border-border/50">
                                 <AvatarImage src={guest.image} />
-                                <AvatarFallback className="text-xs bg-emerald-500/10 text-emerald-600 font-semibold">
+                                <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600 font-semibold">
                                   {getInitials(guest.name)}
                                 </AvatarFallback>
                               </Avatar>
@@ -1051,13 +1051,13 @@ export default function PeoplePage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-sm text-muted-foreground hover:text-emerald-600 transition-colors underline-offset-4 hover:underline"
+                            className="text-sm text-muted-foreground hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
                           >
                             {guest.region}
                           </a>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell py-3">
-                          <EnumPill color="emerald">
+                          <EnumPill color="amber">
                             {el.sector(guest.sector)}
                           </EnumPill>
                         </TableCell>
