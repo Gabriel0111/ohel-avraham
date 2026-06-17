@@ -53,3 +53,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useT() {
   return useContext(LanguageContext);
 }
+
+export function useEnumLabel() {
+  const { t } = useContext(LanguageContext);
+  return {
+    sector: (v: string) =>
+      (t.enums.sector as Record<string, string>)[v] ?? v,
+    ethnicity: (v: string) =>
+      (t.enums.ethnicity as Record<string, string>)[v] ?? v,
+    gender: (v: string) =>
+      (t.enums.gender as Record<string, string>)[v] ?? v,
+    kashrout: (v: string) =>
+      (t.enums.kashrout as Record<string, string>)[v] ?? v,
+  };
+}

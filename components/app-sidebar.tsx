@@ -2,10 +2,13 @@
 
 import {
   Icon,
-  IconDashboard,
+  IconBuildingCommunity,
+  IconMailForward,
   IconUserCircle,
   IconUsers,
 } from "@tabler/icons-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -21,6 +24,7 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import { ComponentProps } from "react";
 import Link from "next/link";
 import { RoleType } from "@/convex/enums";
+import { useT } from "@/lib/i18n/context";
 
 const hostname = "/dashboard";
 
@@ -28,37 +32,42 @@ interface NavItem {
   title: string;
   url: string;
   icon?: Icon;
-  minRole?: RoleType; // Utilise le type exact ici
+  minRole?: RoleType;
+  badge?: number;
 }
-
-const items: NavItem[] = [
-  {
-    title: "Dashboard",
-    url: hostname,
-    icon: IconDashboard,
-  },
-  {
-    title: "Account",
-    url: `${hostname}/profile`,
-    icon: IconUserCircle,
-  },
-  {
-    title: "People",
-    url: `${hostname}/people`,
-    icon: IconUsers,
-    minRole: "admin",
-  },
-];
-
-const data = {
-  navMain: items,
-} as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const { t, lang } = useT();
+  const pendingCount = useQuery(api.requests.getIncomingPendingCount);
+
+  const items: NavItem[] = [
+    {
+      title: t.nav.account,
+      url: `${hostname}/profile`,
+      icon: IconUserCircle,
+    },
+    {
+      title: t.nav.communityProfile,
+      url: `${hostname}/community-profile`,
+      icon: IconBuildingCommunity,
+    },
+    {
+      title: t.nav.requests,
+      url: `${hostname}/requests`,
+      icon: IconMailForward,
+      badge: pendingCount ?? 0,
+    },
+    {
+      title: t.nav.people,
+      url: `${hostname}/people`,
+      icon: IconUsers,
+      minRole: "admin",
+    },
+  ];
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" side={lang === "he" ? "right" : "left"} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="px-6 pt-2">
@@ -69,10 +78,10 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} pendingCount={pendingCount ?? 0} />
       </SidebarFooter>
     </Sidebar>
   );

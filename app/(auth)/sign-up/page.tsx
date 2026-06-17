@@ -26,8 +26,6 @@ import { useTransition } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { api } from "@/convex/_generated/api";
-import { useMutation } from "convex/react";
 import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import { useAuth } from "@/app/ConvexClientProvider";
@@ -42,8 +40,6 @@ const SignUpPage = () => {
   const { t } = useT();
 
   const router = useRouter();
-
-  const createNewUser = useMutation(api.users.createUser);
 
   const { isAuthenticated } = useAuth();
 
@@ -80,6 +76,7 @@ const SignUpPage = () => {
         name: `${firstName} ${lastName}`,
         password,
         image: `https://avatar.vercel.sh/${email}`,
+        callbackURL: "/login",
       });
 
       if (signup.error) {
@@ -87,26 +84,8 @@ const SignUpPage = () => {
         return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const signIn = await authClient.signIn.email({
-        email,
-        password,
-      });
-
-      if (signIn.error) {
-        toast.error(signIn.error.message);
-        return;
-      }
-
-      const result = await createNewUser();
-
-      if (result) {
-        router.push("/complete-registration");
-        toast.success(t.auth.signedUpSuccess);
-      } else {
-        toast.error(t.auth.errorCreating);
-      }
+      toast.success(t.auth.signedUpSuccess);
+      router.push("/");
     });
   };
 

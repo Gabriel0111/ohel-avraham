@@ -7,10 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
-import { InputGroup } from "@/components/ui/input-group";
-import { Input } from "@/components/ui/input";
-import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { guestSchema, guestSchemaDV, GuestType } from "@/app/schemas/guest";
 import {
@@ -21,23 +18,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GENDERS } from "@/app/enums/gender";
-import { SECTORS } from "@/app/enums/sector";
-import { ETHNICITIES } from "@/app/enums/ethnicity";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import AuthHeader from "@/app/(auth)/_components/auth-header";
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useT } from "@/lib/i18n/context";
+import { UserRound } from "lucide-react";
+import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const userType = searchParams.get("userType");
+  const [registered, setRegistered] = useState(false);
   const { t } = useT();
 
   const createGuest = useMutation(api.guests.createGuest);
@@ -48,9 +42,8 @@ const GuestForm = () => {
   });
 
   const handleSubmit = (values: GuestType) => {
-    console.log(values);
     startRegistering(async () => {
-      const { success, id } = await createGuest({
+      const { success } = await createGuest({
         data: {
           ...values,
           dob: values.dob.getTime(),
@@ -58,66 +51,57 @@ const GuestForm = () => {
       });
 
       if (success) {
-        toast.success(`Guest successfully created, id: ${id}`);
-        router.push("/");
+        setRegistered(true);
       } else {
         toast.error(t.auth.errorCreating);
       }
     });
   };
 
+  if (registered) return <RegistrationSuccess role="guest" />;
+
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <FieldGroup>
-        <div className="flex flex-col space-y-5 justify-between w-full">
-          <AuthHeader title={`${t.auth.welcomeNew} ${userType}`} />
+        <div className="flex flex-col gap-5 w-full">
 
-          <Controller
-            name="dob"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
+          {/* Welcome header */}
+          <div className="flex flex-col items-center gap-3 text-center py-2">
+            <div className="size-16 rounded-2xl bg-amber-500/10 flex items-center justify-center ring-4 ring-amber-500/5">
+              <UserRound className="size-7 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {t.auth.welcomeNewGuest}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                {t.auth.guestDesc}
+              </p>
+            </div>
+          </div>
 
-                <InputGroup>
-                  <Input
-                    type="date"
-                    {...field}
-                    value={(field.value as string) || ""}
-                    className="bg-transparent! border-transparent! shadow-none!"
-                  />
+          {/* Date of birth */}
+          <DobField control={form.control as never} />
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </InputGroup>
-              </Field>
-            )}
-          />
-
+          {/* Gender */}
           <Controller
             name="gender"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.gender}</FieldLabel>
-
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t.form.selectGender} />
-                    <SelectContent>
-                      {Object.values(GENDERS).map((gender, index) => (
-                        <SelectItem value={gender} key={gender}>
-                          {GENDERS[index]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
                   </SelectTrigger>
+                  <SelectContent>
+                    {GENDERS.map((gender) => (
+                      <SelectItem value={gender} key={gender}>
+                        {gender}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -125,18 +109,17 @@ const GuestForm = () => {
             )}
           />
 
+          {/* Region */}
           <Controller
             control={form.control}
             name="region"
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.region}</FieldLabel>
-
                 <AutocompleteAddress
                   defaultValue={field.value}
                   onPlaceSelect={(place) => field.onChange(place.address)}
                 />
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -144,88 +127,13 @@ const GuestForm = () => {
             )}
           />
 
-          <div className="flex space-x-5">
-            <Controller
-              name="sector"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>{t.form.sector}</FieldLabel>
+          {/* Sector + Ethnicity */}
+          <SectorEthnicityFields control={form.control as never} />
 
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t.form.selectSector} />
-                      <SelectContent>
-                        {Object.values(SECTORS).map((sector, index) => (
-                          <SelectItem value={sector} key={sector}>
-                            {SECTORS[index]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </SelectTrigger>
-                  </Select>
+          {/* Notes */}
+          <NotesField control={form.control as never} />
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="ethnicity"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>{t.form.ethnicity}</FieldLabel>
-
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t.form.selectEthnicity} />
-                      <SelectContent>
-                        {Object.values(ETHNICITIES).map((sector, index) => (
-                          <SelectItem value={sector} key={sector}>
-                            {ETHNICITIES[index]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </SelectTrigger>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-
-          <Controller
-            control={form.control}
-            name="notes"
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel>{t.form.notes}</FieldLabel>
-
-                <Textarea
-                  placeholder={t.form.notesPlaceholder}
-                  {...field}
-                />
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isRegistering}>
+          <Button type="submit" className="w-full" size="lg" disabled={isRegistering}>
             {isRegistering && <Spinner />}
             {t.common.continue}
           </Button>

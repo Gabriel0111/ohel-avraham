@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
         hostname: "avatar.vercel.sh",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "woozy-roadrunner-140.convex.cloud",
+      },
     ],
   },
 };

@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { ConvexReactClient, useQuery } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { authClient } from "@/lib/auth-client";
@@ -39,10 +45,6 @@ export function useAuth() {
   return context;
 }
 
-const convex = new ConvexReactClient(env.NEXT_PUBLIC_CONVEX_URL, {
-  expectAuth: true,
-});
-
 export function ConvexClientProvider({
   children,
   initialToken,
@@ -50,6 +52,18 @@ export function ConvexClientProvider({
   children: ReactNode;
   initialToken?: string | null;
 }) {
+  // `expectAuth: true` pauses the websocket until auth is attached. That's only
+  // ever resumed for authenticated users, so enabling it for a logged-out user
+  // leaves every query stuck loading. Only expect auth when we actually have a
+  // server token; logged-out visitors get an immediately-live socket so public
+  // queries (search dialog, etc.) resolve.
+  const [convex] = useState(
+    () =>
+      new ConvexReactClient(env.NEXT_PUBLIC_CONVEX_URL, {
+        expectAuth: Boolean(initialToken),
+      }),
+  );
+
   return (
     <ConvexBetterAuthProvider
       client={convex}

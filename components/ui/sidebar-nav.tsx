@@ -14,6 +14,7 @@ type SidebarNavProps = {
     url: string;
     icon?: Icon;
     minRole?: RoleType | undefined;
+    badge?: number;
   }[];
 };
 
@@ -61,6 +62,11 @@ export function SidebarNav({ items }: SidebarNavProps) {
               />
             )}
             <span className="transition-colors duration-200">{item.title}</span>
+            {item.badge != null && item.badge > 0 && (
+              <span className="ms-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

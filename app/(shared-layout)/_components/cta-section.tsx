@@ -5,6 +5,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
+import { Sparkles } from "./sparkles";
 
 export function CTASection() {
   const { ref, isVisible } = useScrollAnimation(0.2);
@@ -22,6 +23,16 @@ export function CTASection() {
         {/* Decorative circles */}
         <div className="absolute -top-20 -right-20 size-64 rounded-full bg-primary-foreground/10" />
         <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-primary-foreground/10" />
+
+        {/* Paillettes dorées — comme des flammes de bougie sur le violet */}
+        <Sparkles
+          sparks={[
+            { top: "16%", left: "12%", size: 16, delay: 0.5, tone: "amber" },
+            { top: "24%", left: "82%", size: 13, delay: 1.4, tone: "amber" },
+            { top: "70%", left: "20%", size: 12, delay: 0.9, tone: "amber" },
+            { top: "64%", left: "88%", size: 17, delay: 0.1, tone: "amber" },
+          ]}
+        />
 
         <h2 className="relative text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground text-balance max-w-2xl">
           {t.cta.title}
@@ -42,11 +53,11 @@ export function CTASection() {
             className={buttonVariants({
               variant: "secondary",
               size: "lg",
-              className: "text-base px-8 h-12 bg-primary-foreground text-primary hover:bg-primary-foreground/90",
+              className: "group text-base px-8 h-12 bg-primary-foreground text-primary hover:bg-primary-foreground/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/15",
             })}
           >
             {t.cta.joinAsHost}
-            <ArrowRight className="size-4" />
+            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
           <Link
             href="/sign-up"
@@ -54,7 +65,7 @@ export function CTASection() {
               variant: "outline",
               size: "lg",
               className:
-                "text-base px-8 h-12 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground bg-transparent",
+                "text-base px-8 h-12 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground bg-transparent transition-all duration-200 hover:-translate-y-0.5",
             })}
           >
             {t.cta.joinAsGuest}

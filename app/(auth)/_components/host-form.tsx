@@ -1,7 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,7 +9,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { InputGroup } from "@/components/ui/input-group";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,12 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SECTORS } from "@/app/enums/sector";
-import { ETHNICITIES } from "@/app/enums/ethnicity";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { hostSchema, hostSchemaDV, HostType } from "@/app/schemas/host";
-
 import * as RPNInput from "react-phone-number-input";
 import {
   CountrySelect,
@@ -32,20 +26,21 @@ import {
   PhoneInput,
 } from "@/app/(auth)/_components/phone-number-comps";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { KASHROUT } from "@/app/enums/kashrout";
-import AuthHeader from "@/app/(auth)/_components/auth-header";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useT } from "@/lib/i18n/context";
+import { Home, Accessibility } from "lucide-react";
+import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const userType = searchParams.get("userType");
+  const [registered, setRegistered] = useState(false);
   const { t } = useT();
 
   const createHost = useMutation(api.hosts.createHost);
@@ -57,58 +52,54 @@ const HostForm = () => {
 
   const handleSubmit = (values: HostType) => {
     startRegistering(async () => {
-      const { success, id } = await createHost({
+      const { success } = await createHost({
         data: {
           ...values,
           dob: values.dob.getTime(),
+          floor: String(values.floor),
         },
       });
 
       if (success) {
-        toast.success(`Guest successfully created, id: ${id}`);
-        router.push("/");
+        setRegistered(true);
       } else {
         toast.error(t.auth.errorCreating);
       }
     });
   };
 
+  if (registered) return <RegistrationSuccess role="host" />;
+
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <FieldGroup>
-        <div className="flex flex-col space-y-5 justify-between w-full mx-auto">
-          <AuthHeader title={`${t.auth.welcomeNew} ${userType}`} />
+        <div className="flex flex-col gap-5 w-full">
 
-          <Controller
-            name="dob"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
+          {/* Welcome header */}
+          <div className="flex flex-col items-center gap-3 text-center py-2">
+            <div className="size-16 rounded-2xl bg-violet-500/10 flex items-center justify-center ring-4 ring-violet-500/5">
+              <Home className="size-7 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {t.auth.welcomeNewHost}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                {t.auth.hostDesc}
+              </p>
+            </div>
+          </div>
 
-                <InputGroup>
-                  <Input
-                    type="date"
-                    {...field}
-                    className="bg-transparent! border-transparent!"
-                    value={(field.value as string) || ""}
-                  />
+          {/* Date of birth */}
+          <DobField control={form.control as never} />
 
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </InputGroup>
-              </Field>
-            )}
-          />
-
+          {/* Phone number */}
           <Controller
             name="phoneNumber"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.phoneNumber}</FieldLabel>
-
                 <RPNInput.default
                   defaultCountry="IL"
                   className="flex rounded-md shadow-xs"
@@ -120,7 +111,6 @@ const HostForm = () => {
                   value={field.value}
                   onChange={field.onChange}
                 />
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -128,6 +118,7 @@ const HostForm = () => {
             )}
           />
 
+          {/* Address */}
           <Controller
             control={form.control}
             name="address"
@@ -149,78 +140,22 @@ const HostForm = () => {
             )}
           />
 
-          <div className="flex space-x-5">
-            <Controller
-              name="sector"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>{t.form.sector}</FieldLabel>
-
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t.form.selectSector} />
-                      <SelectContent>
-                        {Object.values(SECTORS).map((sector, index) => (
-                          <SelectItem value={sector} key={sector}>
-                            {SECTORS[index]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </SelectTrigger>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="ethnicity"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>{t.form.ethnicity}</FieldLabel>
-
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t.form.selectEthnicity} />
-                      <SelectContent>
-                        {Object.values(ETHNICITIES).map((sector, index) => (
-                          <SelectItem value={sector} key={sector}>
-                            {ETHNICITIES[index]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </SelectTrigger>
-                  </Select>
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-
-          <div className="flex space-x-5 items-center">
+          {/* Floor + Disability */}
+          <div className="flex gap-4 items-end">
             <Controller
               name="floor"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field>
+                <Field className="w-28 shrink-0">
                   <FieldLabel>{t.form.floor}</FieldLabel>
-
-                  <Input type="string" {...field} />
-
+                  <Input
+                    type="number"
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    value={field.value as number}
+                    onChange={(e) => field.onChange(isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -231,46 +166,47 @@ const HostForm = () => {
             <Controller
               name="hasDisabilityAccess"
               control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>{t.form.disabilityAccess}</FieldLabel>
-
+              render={({ field }) => (
+                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
+                  <Label
+                    htmlFor="disability-switch"
+                    className="text-sm cursor-pointer leading-tight"
+                  >
+                    <Accessibility className="size-3.5 inline mr-1.5 text-muted-foreground" />
+                    {t.form.disabilityAccess}
+                  </Label>
                   <Switch
+                    id="disability-switch"
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
-
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
+                </div>
               )}
             />
           </div>
 
+          {/* Sector + Ethnicity */}
+          <SectorEthnicityFields control={form.control as never} />
+
+          {/* Kashrout */}
           <Controller
             name="kashrout"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.kashrout}</FieldLabel>
-
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={t.form.selectKashrout} />
-                    <SelectContent>
-                      {Object.values(KASHROUT).map((kashrout, index) => (
-                        <SelectItem value={kashrout} key={kashrout}>
-                          {KASHROUT[index]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
                   </SelectTrigger>
+                  <SelectContent>
+                    {KASHROUT.map((kashrout) => (
+                      <SelectItem value={kashrout} key={kashrout}>
+                        {kashrout}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
-
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -278,26 +214,10 @@ const HostForm = () => {
             )}
           />
 
-          <Controller
-            control={form.control}
-            name="notes"
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel>{t.form.notes}</FieldLabel>
+          {/* Notes */}
+          <NotesField control={form.control as never} />
 
-                <Textarea
-                  placeholder={t.form.notesPlaceholder}
-                  {...field}
-                />
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isRegistering}>
+          <Button type="submit" className="w-full" size="lg" disabled={isRegistering}>
             {isRegistering && <Spinner />}
             {t.common.continue}
           </Button>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { AtSignIcon, KeyRoundIcon } from "lucide-react";
+import { AtSignIcon, KeyRoundIcon, MailCheckIcon } from "lucide-react";
 import {
   InputGroup,
   InputGroupAddon,
@@ -12,10 +12,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
 import { FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { SignInSchema, signInSchema } from "@/app/schemas/sign-in-schema";
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useTransition } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
@@ -25,10 +27,29 @@ import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/context";
+import { useAuth } from "@/app/ConvexClientProvider";
+
+function VerifyEmailNotice() {
+  const { t } = useT();
+  const params = useSearchParams();
+  if (params.get("verify") !== "1") return null;
+  return (
+    <Alert className="border-primary/20 bg-primary/5">
+      <MailCheckIcon className="size-4 text-primary" />
+      <AlertTitle>{t.auth.verifyEmailTitle}</AlertTitle>
+      <AlertDescription>{t.auth.verifyEmailDesc}</AlertDescription>
+    </Alert>
+  );
+}
 
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
   const { t } = useT();
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    redirect("/");
+  }
 
   const router = useRouter();
 
@@ -77,6 +98,10 @@ const LoginPage = () => {
       <BackHomeButton />
 
       <div className="mx-auto space-y-8 sm:w-sm mt-10">
+        <Suspense>
+          <VerifyEmailNotice />
+        </Suspense>
+
         <AuthHeader
           title={t.auth.loginTitle}
           description={t.auth.loginDesc}

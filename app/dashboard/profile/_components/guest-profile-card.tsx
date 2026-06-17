@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { MapPin, User2 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { guestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
@@ -24,11 +24,11 @@ import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "../../_components/profile-ui/view-value";
-import { Badge } from "@/components/ui/badge";
+import { EnumPill, genderColor } from "@/components/ui/enum-pill";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useT } from "@/lib/i18n/context";
+import { useEnumLabel, useT } from "@/lib/i18n/context";
 
 export function GuestProfileCard({
   guestData,
@@ -39,6 +39,7 @@ export function GuestProfileCard({
   const [isSaving, startSaving] = useTransition();
   const upsertGuest = useMutation(api.guests.upsertGuest);
   const { t } = useT();
+  const el = useEnumLabel();
 
   const form = useForm({
     resolver: zodResolver(guestSchema),
@@ -75,15 +76,15 @@ export function GuestProfileCard({
     );
 
   return (
-    <div className="relative">
-      {/* Action Header Flottant */}
-      <div className="absolute -top-12 right-0">
+    <div className="space-y-2">
+      {/* Action Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-border">
+        <h3 className="text-base font-semibold">{t.profile.guestProfile}</h3>
         {!isEditing ? (
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsEditing(true)}
-            className="h-8 rounded-md shadow-xs bg-background"
           >
             {t.common.edit}
           </Button>
@@ -101,7 +102,6 @@ export function GuestProfileCard({
               size="sm"
               onClick={form.handleSubmit(handleSave)}
               disabled={isSaving}
-              className="h-8 rounded-md px-4 bg-foreground text-background hover:bg-foreground/90"
             >
               {isSaving && <Spinner className="mr-2 border-background/30" />}
               {t.common.save}
@@ -111,7 +111,7 @@ export function GuestProfileCard({
       </div>
 
       <div className="divide-y divide-border/20">
-        {/* LIGNE : REGION */}
+        {/* LIGNE : REGION — featured, the guest's key matching dimension */}
         <SettingsRow
           label={t.guestProfile.preferredRegion}
           description={t.guestProfile.preferredRegionDesc}
@@ -121,10 +121,12 @@ export function GuestProfileCard({
               name="region"
               control={form.control}
               render={({ field }) => (
-                <AutocompleteAddress
-                  defaultValue={field.value}
-                  onPlaceSelect={(place) => field.onChange(place.address)}
-                />
+                <div className="w-full">
+                  <AutocompleteAddress
+                    defaultValue={field.value}
+                    onPlaceSelect={(place) => field.onChange(place.address)}
+                  />
+                </div>
               )}
             />
           ) : (
@@ -145,17 +147,14 @@ export function GuestProfileCard({
               name="gender"
               control={form.control}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger className="h-9 w-full max-w-50 bg-muted/30 border-none shadow-none">
-                    <SelectValue />
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t.form.gender} />
                   </SelectTrigger>
                   <SelectContent>
                     {GENDERS.map((g) => (
                       <SelectItem key={g} value={g}>
-                        {g}
+                        {el.gender(g)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -163,10 +162,9 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <ViewValue
-              value={guestData.gender}
-              icon={<User2 className="size-4" />}
-            />
+            <EnumPill color={genderColor(guestData.gender)}>
+              {el.gender(guestData.gender)}
+            </EnumPill>
           )}
         </SettingsRow>
 
@@ -184,8 +182,8 @@ export function GuestProfileCard({
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.sector}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectSector} />
@@ -193,7 +191,7 @@ export function GuestProfileCard({
                       <SelectContent>
                         {SECTORS.map((s) => (
                           <SelectItem key={s} value={s}>
-                            {s}
+                            {el.sector(s)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -208,8 +206,8 @@ export function GuestProfileCard({
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.ethnicity}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectEthnicity} />
@@ -217,7 +215,7 @@ export function GuestProfileCard({
                       <SelectContent>
                         {ETHNICITIES.map((e) => (
                           <SelectItem key={e} value={e}>
-                            {e}
+                            {el.ethnicity(e)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -230,11 +228,15 @@ export function GuestProfileCard({
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <Badge variant="secondary">{guestData.sector}</Badge>
+                <EnumPill color="amber">
+                  {el.sector(guestData.sector)}
+                </EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <Badge variant="secondary">{guestData.ethnicity}</Badge>
+                <EnumPill color="slate">
+                  {el.ethnicity(guestData.ethnicity)}
+                </EnumPill>
               </div>
             </div>
           )}
@@ -242,7 +244,7 @@ export function GuestProfileCard({
 
         {/* LIGNE : NOTES */}
         <SettingsRow
-          label={t.guestProfile.bioNotes}
+          label={t.form.notes}
           description={t.guestProfile.bioNotesDesc}
         >
           {isEditing ? (
@@ -258,9 +260,7 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <ViewValue
-              value={guestData.notes ?? t.guestProfile.noNotes}
-            />
+            <ViewValue value={guestData.notes} />
           )}
         </SettingsRow>
       </div>

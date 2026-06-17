@@ -25,7 +25,8 @@ import { navigationData } from "@/lib/navigation-data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
 import { Logo } from "@/components/icons/logo";
@@ -54,6 +55,7 @@ const Navbar = () => {
   const router = useRouter();
   const { user } = useAuth();
   const { t, lang, setLang } = useT();
+  const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const currentLang = LANGUAGES.find((l) => l.value === lang) ?? LANGUAGES[0];
 
@@ -85,7 +87,7 @@ const Navbar = () => {
           : "bg-transparent",
       )}
     >
-      <nav className="relative mx-auto flex h-16 max-w-7xl items-center w-full px-4 md:px-6 lg:px-8">
+      <nav className="relative mx-auto flex h-16 max-w-7xl items-center w-full px-4 md:px-8 lg:px-12">
         {/* Logo — left */}
         <Link href="/" className="shrink-0">
           <Logo />
@@ -157,6 +159,8 @@ const Navbar = () => {
               name={user?.name}
               email={user?.email}
               imageSrc={user?.image}
+              pendingCount={pendingCount ?? 0}
+              requestsLabel={t.nav.requests}
               items={[
                 {
                   icon: <UserIcon />,

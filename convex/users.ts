@@ -1,7 +1,7 @@
 import { SystemRole } from "./enums";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
+import { api, components } from "./_generated/api";
 import { canAccess } from "./helpers/canAccessRole";
 import { authComponent } from "./auth";
 
@@ -14,6 +14,16 @@ export const getCurrentUser = query({
     return await ctx.db
       .query("users")
       .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+  },
+});
+
+export const getUserByAuthId = internalQuery({
+  args: { authUserId: v.string() },
+  handler: async (ctx, { authUserId }) => {
+    return ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
       .unique();
   },
 });
@@ -129,10 +139,10 @@ export const assignSystemRole = mutation({
       throw new Error("Target user not found");
     }
 
-    const currentRole = targetUser.role || "user";
+    const currentRole = currentUser.role || "user";
     const targetCurrentRole = targetUser.role || "user";
 
-    // // L'acteur doit pouvoir modifier le rôle actuel ET le nouveau rôle
+    // L'acteur doit pouvoir modifier le rôle actuel ET le nouveau rôle
     if (!canAccess(currentRole, targetCurrentRole)) {
       throw new Error(
         `Insufficient permissions: ${currentRole} cannot modify ${targetCurrentRole}`,
@@ -145,7 +155,7 @@ export const assignSystemRole = mutation({
       );
     }
 
-    await ctx.db.patch("users", targetUser._id, {
+    await ctx.db.patch(targetUser._id, {
       role: args.role,
     });
 
@@ -171,8 +181,119 @@ export const verifyUser = mutation({
 
     if (caller?.role !== "admin") throw new Error("Forbidden");
 
-    await ctx.db.patch(userId, { isVerified: true });
+    await ctx.db.patch(userId, {
+      isVerified: true,
+      verifiedBy: caller.name ?? identity.subject,
+      verifiedAt: Date.now(),
+    });
     return { success: true };
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const updateUserProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
+  },
+  handler: async (ctx, { name, storageId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const updates: { name?: string; image?: string } = {};
+    if (name !== undefined) updates.name = name;
+    if (storageId !== undefined) {
+      const url = await ctx.storage.getUrl(storageId);
+      if (url) updates.image = url;
+    }
+
+    await ctx.db.patch(user._id, updates);
+  },
+});
+
+export const blockUser = mutation({
+  args: { userId: v.id("users"), blocked: v.boolean() },
+  handler: async (ctx, { userId, blocked }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const caller = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+
+    if (caller?.role !== "admin") throw new Error("Forbidden");
+
+    await ctx.db.patch(userId, { isBlocked: blocked });
+    return { success: true };
+  },
+});
+
+export const deleteUserAsAdmin = mutation({
+  args: { authUserId: v.string() },
+  handler: async (ctx, { authUserId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const caller = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+
+    if (caller?.role !== "admin") throw new Error("Forbidden");
+
+    const [targetUser, host, guest] = await Promise.all([
+      ctx.db
+        .query("users")
+        .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
+        .unique(),
+      ctx.db
+        .query("hosts")
+        .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
+        .unique(),
+      ctx.db
+        .query("guests")
+        .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
+        .unique(),
+    ]);
+
+    if (!targetUser) throw new Error("User not found");
+
+    await Promise.all([
+      ctx.db.delete(targetUser._id),
+      host ? ctx.db.delete(host._id) : Promise.resolve(),
+      guest ? ctx.db.delete(guest._id) : Promise.resolve(),
+    ]);
+
+    // Delete from Better Auth tables: sessions, accounts, and user record
+    await ctx.runMutation(components.betterAuth.adapter.deleteMany, {
+      input: { model: "session", where: [{ field: "userId", value: authUserId }] },
+      paginationOpts: { numItems: 100, cursor: null },
+    });
+    await ctx.runMutation(components.betterAuth.adapter.deleteMany, {
+      input: { model: "account", where: [{ field: "userId", value: authUserId }] },
+      paginationOpts: { numItems: 100, cursor: null },
+    });
+    await ctx.runMutation(components.betterAuth.adapter.deleteOne, {
+      input: { model: "user", where: [{ field: "_id", value: authUserId }] },
+    });
+
+    return { deleted: true };
   },
 });
 
@@ -184,14 +305,18 @@ export const deleteUser = mutation({
 
     const authUserId = identity.subject;
 
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
-      .unique();
+    const [user, host, guest] = await Promise.all([
+      ctx.db.query("users").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+      ctx.db.query("hosts").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+      ctx.db.query("guests").withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId)).unique(),
+    ]);
 
-    if (!user) return { deleted: false };
+    await Promise.all([
+      user && ctx.db.delete(user._id),
+      host && ctx.db.delete(host._id),
+      guest && ctx.db.delete(guest._id),
+    ]);
 
-    await ctx.db.delete(user._id);
     return { deleted: true };
   },
 });

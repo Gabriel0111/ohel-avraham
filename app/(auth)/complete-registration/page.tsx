@@ -52,9 +52,9 @@ const CompleteRegistration = () => {
   return (
     <div className="relative flex flex-col py-10 px-4 min-h-screen overflow-y-auto">
       <BackHomeButton />
-      <AnimatedThemeToggler />
+      <AnimatedThemeToggler className="absolute top-7 right-5" />
 
-      <div className="mx-auto space-y-5 sm:w-sm mt-10">
+      <div className="mx-auto space-y-5 w-full max-w-md px-2 mt-10">
         <AnimatePresence mode="wait">
           {!userType && (
             <motion.div

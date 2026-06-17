@@ -16,6 +16,7 @@ interface Props {
     url: string;
     icon?: Icon;
     minRole?: RoleType | undefined;
+    badge?: number;
   }[];
 }
 

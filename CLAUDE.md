@@ -28,7 +28,7 @@ No test runner is configured. If adding tests, use `convex-test` with Vitest and
 | Styling | Tailwind CSS v4 | 4.2.2 |
 | UI Components | shadcn/ui (Radix UI) | — |
 | Backend/DB | Convex | 1.35.1 |
-| Auth | Better Auth + `@convex-dev/better-auth` | 1.4.9 |
+| Auth | `better-auth` 1.4.9 + `@convex-dev/better-auth` 0.10.13 | — |
 | Forms | React Hook Form + Yup/Zod | — |
 | State | Zustand | 5.0.12 |
 | Maps | `@vis.gl/react-google-maps`, Leaflet | — |
@@ -37,7 +37,7 @@ No test runner is configured. If adding tests, use `convex-test` with Vitest and
 
 ## Architecture
 
-**Frontend**: Next.js 15 App Router (`app/`), React 19, TypeScript, Tailwind CSS v4, shadcn/ui (Radix UI).
+**Frontend**: Next.js 16 App Router (`app/`), React 19, TypeScript, Tailwind CSS v4, shadcn/ui (Radix UI).
 
 **Backend**: Convex — all DB, auth logic, and server-side code lives in `convex/`. No traditional REST API layer.
 
@@ -57,7 +57,8 @@ No test runner is configured. If adding tests, use `convex-test` with Vitest and
 | `app/(redirection)/account/` | Account redirect page |
 | `app/(shared-layout)/` | Public/marketing landing page (hero, features, stats, testimonials, etc.) |
 | `app/dashboard/` | Protected dashboard: profile, people browsing |
-| `app/dashboard/profile/` | Profile cards for host and guest views |
+| `app/dashboard/profile/` | Own profile cards/editing for host and guest views |
+| `app/dashboard/community-profile/` | Public-facing view of a community member's profile |
 | `app/enums/` | Shared TypeScript enum arrays (sector, ethnicity, gender, kashrout) |
 | `app/schemas/` | Client-side Zod/Yup validation schemas for all forms |
 | `app/api/auth/[...all]/` | Better Auth Next.js HTTP catch-all route |
@@ -83,6 +84,7 @@ Schema imports field definitions from `convex/validators/` via spread (`...HostF
 | `authUserId` | `string` | Indexed (`by_authUserId`); equals `identity.subject` from Better Auth |
 | `role` | `SystemRole` | `"user" \| "guest" \| "host" \| "guest:host" \| "admin"` |
 | `isVerified` | `boolean` | Admin-controlled verification status |
+| `isBlocked` | `boolean?` | Admin-controlled block flag; gated UI uses `app/dashboard/_components/blocked-guard.tsx` |
 | `email` | `string?` | |
 | `name` | `string?` | |
 | `image` | `string?` | Avatar URL |
@@ -150,12 +152,17 @@ All functions are in `convex/`. Reference pattern: `api.<module>.<function>`.
 | Function | Type | Description |
 |----------|------|-------------|
 | `getCurrentUser` | `query` | Returns current `users` doc via `identity.subject` or `null` |
+| `getUserByAuthId` | `internalQuery` | Internal lookup of a `users` doc by `authUserId` |
 | `getFullProfile` | `query` | Returns `{ user, host, guest }` for current user |
 | `getPeopleDashboard` | `query` | Returns `{ hosts, guests, permissions }` based on caller's role |
 | `createUser` | `mutation` | Creates user doc on first auth; uses `authComponent.getAuthUser(ctx)` |
 | `addRoleToMe` | `mutation` | Sets caller's role; args: `{ role: SystemRole }` |
 | `assignSystemRole` | `mutation` | Admin mutation to change any user's role |
 | `verifyUser` | `mutation` | Admin-only; sets `isVerified: true`; args: `{ userId }` |
+| `blockUser` | `mutation` | Admin-only; sets `isBlocked`; args: `{ userId, blocked }` |
+| `generateUploadUrl` | `mutation` | Returns a Convex storage upload URL (avatar uploads) |
+| `updateUserProfile` | `mutation` | Patches caller's own `name`/`image`/profile fields |
+| `deleteUserAsAdmin` | `mutation` | Admin-only; deletes another user's doc; args: `{ userId }` |
 | `deleteUser` | `mutation` | Deletes caller's own user doc |
 
 ### `convex/hosts.ts`

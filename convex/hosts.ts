@@ -1,7 +1,8 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { HostFields } from "./validators/host";
 import { api } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
 
 export const getAllHosts = query({
   args: {},
@@ -12,7 +13,7 @@ export const getAllHosts = query({
     const hosts = await ctx.db.query("hosts").collect();
     // const guests = await ctx.db.query("guests").collect();
 
-    return await Promise.all(
+    const results = await Promise.all(
       hosts.map(async (host) => {
         const user = await ctx.db
           .query("users")
@@ -21,13 +22,23 @@ export const getAllHosts = query({
           )
           .first();
 
+        if (!user) return null;
+
         return {
-          ...user!,
           ...host,
-          userId: user!._id,
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: user.role,
+          isVerified: user.isVerified,
+          isBlocked: user.isBlocked ?? false,
+          verifiedBy: user.verifiedBy,
+          verifiedAt: user.verifiedAt,
         };
       }),
     );
+    return results.filter((r) => r !== null);
   },
 });
 
@@ -81,41 +92,137 @@ export const upsertHost = mutation({
   },
 });
 
-function extractCity(address: string): string {
-  const parts = address.split(", ");
-  const filtered = parts.filter((p) => p !== "Israel" && p !== "ישראל");
-  return filtered.length > 0 ? filtered[filtered.length - 1] : address;
+// Parse a Google `formattedAddress` into city + neighborhood.
+// Format is typically: "<street> <number>, [neighborhood,] <city>[, postal], <country>"
+function extractLocation(address: string): {
+  city: string;
+  neighborhood?: string;
+} {
+  let parts = address
+    .split(", ")
+    .map((p) => p.trim())
+    .filter(Boolean)
+    // Drop pure-numeric postal codes.
+    .filter((p) => !/^\d[\d\s-]*$/.test(p));
+
+  if (parts.length === 0) return { city: address };
+
+  // The last segment of a Google formatted address is the country — drop it
+  // generically so we never surface it as a city (handles "Israel", "Israël",
+  // "ישראל", etc.). Keep it only if it's the sole segment.
+  if (parts.length > 1) parts = parts.slice(0, -1);
+
+  const city = parts[parts.length - 1];
+  // The segment just before the city (when there's also a street part) is the neighborhood.
+  const neighborhood = parts.length >= 3 ? parts[parts.length - 2] : undefined;
+
+  return { city, neighborhood };
 }
 
-export const getPublicHosts = query({
-  args: {},
-  handler: async (ctx) => {
-    const hosts = await ctx.db.query("hosts").collect();
+// Max public hosts returned when no search query is provided (bounds the map view).
+const PUBLIC_HOSTS_LIMIT = 200;
+// Max results returned for a full-text search query.
+const SEARCH_RESULTS_LIMIT = 50;
 
-    return await Promise.all(
-      hosts.map(async (host) => {
-        const user = await ctx.db
-          .query("users")
-          .withIndex("by_authUserId", (q) =>
-            q.eq("authUserId", host.authUserId),
+type HostDoc = Doc<"hosts">;
+
+// A host is listed unless they've switched themselves off. A return date
+// (`unavailableUntil`) auto-restores them once it's passed.
+function isHostAvailable(host: HostDoc) {
+  if (host.isAvailable !== false) return true;
+  return host.unavailableUntil != null && host.unavailableUntil <= Date.now();
+}
+
+async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_authUserId", (q) => q.eq("authUserId", host.authUserId))
+    .first();
+
+  const { city, neighborhood } = extractLocation(host.address);
+
+  return {
+    _id: host._id,
+    name: user?.name ?? "Host",
+    image: user?.image,
+    address: host.address,
+    city,
+    neighborhood,
+    lat: host.lat,
+    lng: host.lng,
+    sector: host.sector,
+    ethnicity: host.ethnicity,
+    kashrout: host.kashrout,
+    hasDisabilityAccess: host.hasDisabilityAccess,
+  };
+}
+
+// Public, sanitized host list for the search dialog / map.
+// When `query` is provided, results are narrowed server-side via the
+// `search_address` full-text index instead of shipping the whole table.
+export const searchPublicHosts = query({
+  args: { query: v.optional(v.string()) },
+  handler: async (ctx, { query }) => {
+    const trimmed = query?.trim();
+
+    const hosts = trimmed
+      ? await ctx.db
+          .query("hosts")
+          .withSearchIndex("search_address", (q) =>
+            q.search("address", trimmed),
           )
-          .first();
+          .take(SEARCH_RESULTS_LIMIT)
+      : await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
 
-        return {
-          _id: host._id,
-          name: user?.name ?? "Host",
-          image: user?.image,
-          address: host.address,
-          city: extractCity(host.address),
-          lat: host.lat,
-          lng: host.lng,
-          sector: host.sector,
-          ethnicity: host.ethnicity,
-          kashrout: host.kashrout,
-          hasDisabilityAccess: host.hasDisabilityAccess,
-        };
-      }),
+    // Hosts who switched themselves off don't appear in the public list/map.
+    const available = hosts.filter(isHostAvailable);
+    return await Promise.all(available.map((host) => toPublicHost(ctx, host)));
+  },
+});
+
+// Distinct cities where available hosts are present, with counts — powers the
+// "pick a city" step in the search dialog.
+export const getHostCities = query({
+  args: {},
+  returns: v.array(v.object({ city: v.string(), count: v.number() })),
+  handler: async (ctx) => {
+    const hosts = await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
+    const counts = new Map<string, number>();
+    for (const host of hosts) {
+      if (!isHostAvailable(host)) continue;
+      const { city } = extractLocation(host.address);
+      if (!city) continue;
+      counts.set(city, (counts.get(city) ?? 0) + 1);
+    }
+    return Array.from(counts, ([city, count]) => ({ city, count })).sort(
+      (a, b) => b.count - a.count,
     );
+  },
+});
+
+// Host toggles their own availability. Turning available back on clears any
+// return date; turning off optionally schedules an automatic return.
+export const setHostAvailability = mutation({
+  args: {
+    available: v.boolean(),
+    unavailableUntil: v.optional(v.number()),
+  },
+  returns: v.object({ updated: v.boolean() }),
+  handler: async (ctx, { available, unavailableUntil }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const host = await ctx.db
+      .query("hosts")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+    if (!host) throw new Error("Profil hôte introuvable.");
+
+    await ctx.db.patch(host._id, {
+      isAvailable: available,
+      unavailableUntil: available ? undefined : unavailableUntil,
+    });
+    return { updated: true };
   },
 });
 

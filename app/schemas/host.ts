@@ -13,7 +13,7 @@ export const hostSchema = z.object({
   address: z.string({ message: "Address must be defined" }).min(5),
   lat: z.number().optional(),
   lng: z.number().optional(),
-  floor: z.string(),
+  floor: z.coerce.number().int().min(-5).max(100),
 
   hasDisabilityAccess: z.boolean({
     message: "Disability access must be defined",
@@ -34,7 +34,7 @@ export const hostSchemaDV: HostType = {
 
   phoneNumber: "",
   address: "",
-  floor: "0",
+  floor: 0,
 
   hasDisabilityAccess: false,
 

@@ -1,180 +1,217 @@
 "use client";
 
+import { useEffect, useState, useTransition } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CheckCircle2, Home, Mail, ShieldCheck, User } from "lucide-react";
-import { HostProfileCard } from "./_components/host-profile-card";
-import { GuestProfileCard } from "./_components/guest-profile-card";
-import { Badge } from "@/components/ui/badge";
+import { Calendar, CheckCircle2, Mail, MailCheck, Pencil } from "lucide-react";
 import Image from "next/image";
-import { AdminNotice } from "@/app/dashboard/_components/profile-ui";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { PageSection } from "@/app/dashboard/_components/dashboard-page-ui/page-section";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
-import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
 import { useT } from "@/lib/i18n/context";
+import { LinkedAccounts } from "./_components/linked-accounts";
+import { DeleteAccount } from "./_components/delete-account";
+import { VerificationStatus } from "@/app/dashboard/_components/profile-ui/verification-status";
+import { EditIdentity } from "./_components/edit-identity";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { t, lang } = useT();
   const data = useQuery(api.users.getFullProfile);
+  const session = authClient.useSession();
+  const [isEditingIdentity, setIsEditingIdentity] = useState(false);
+  const [isSendingVerif, startSendingVerif] = useTransition();
+  const [hasPasswordAccount, setHasPasswordAccount] = useState<boolean | null>(
+    null,
+  );
+
+  useEffect(() => {
+    authClient.listAccounts().then((res) => {
+      if (res.data) {
+        setHasPasswordAccount(
+          (res.data as { providerId: string }[]).some(
+            (a) => a.providerId === "credential",
+          ),
+        );
+      } else {
+        setHasPasswordAccount(false);
+      }
+    });
+  }, []);
 
   if (data === undefined) return <ProfileLoading />;
   if (!data) return <ProfileError />;
 
-  const { user, host, guest } = data;
-  const role = user.role;
-  const isBoth = role === "guest:host";
-  const isHost = role === "host" || isBoth;
-  const isGuest = role === "guest" || isBoth;
-  const isAdmin = role === "admin";
+  const { user } = data;
+  const emailVerified = session.data?.user.emailVerified ?? false;
 
   const joinDate = new Date(user._creationTime).toLocaleDateString(
     lang === "he" ? "he-IL" : lang === "fr" ? "fr-FR" : "en-GB",
-    { month: "long", year: "numeric" }
+    { month: "long", year: "numeric" },
   );
+
+  const handleSendVerification = () => {
+    if (!user.email) return;
+    startSendingVerif(async () => {
+      const { error } = await authClient.sendVerificationEmail({
+        email: user.email!,
+        callbackURL: "/dashboard/profile",
+      });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success(t.profile.verifyEmailSent);
+      }
+    });
+  };
 
   return (
     <div>
-      <PageHeader
-        title={t.profile.title}
-        subtitle={t.profile.subtitle}
-      />
+      <PageHeader title={t.profile.title} subtitle={t.profile.subtitle} />
 
       <div className="space-y-2">
+
+        {/* IDENTITÉ PERSONNELLE */}
         <PageSection
           title={t.profile.personalIdentity}
           description={t.profile.personalIdentityDesc}
         >
-          <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-            {/* Avatar avec anneau de vérification */}
-            <div className="relative shrink-0">
-              <div
-                className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}
+          {isEditingIdentity ? (
+            <EditIdentity
+              user={user}
+              onDone={() => setIsEditingIdentity(false)}
+              onCancel={() => setIsEditingIdentity(false)}
+            />
+          ) : (
+            <div className="flex gap-4 items-start">
+              {/* Avatar cliquable */}
+              <button
+                type="button"
+                onClick={() => setIsEditingIdentity(true)}
+                className="relative shrink-0 group focus:outline-none cursor-pointer"
+                title={t.profile.uploadImage}
               >
-                {user.image ? (
-                  <Image
-                    src={user.image}
-                    alt={user.name || ""}
-                    fill
-                    className="object-cover"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
-                    {user.name?.[0].toUpperCase()}
+                <div className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}>
+                  {user.image ? (
+                    <Image src={user.image} alt={user.name || ""} fill className="object-cover" draggable={false} />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
+                      {user.name?.[0]?.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Pencil className="size-4 text-white" />
+                </div>
+                {user.isVerified && (
+                  <div className="absolute bottom-0 right-0 size-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-background">
+                    <CheckCircle2 className="size-3 text-white" />
                   </div>
                 )}
-              </div>
-              {user.isVerified && (
-                <div className="absolute bottom-0 right-0 size-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-background">
-                  <CheckCircle2 className="size-3 text-white" />
-                </div>
-              )}
-            </div>
+              </button>
 
-            {/* Identité */}
-            <div className="flex-1 min-w-0 space-y-3 text-center sm:text-start">
-              <div className="space-y-0.5">
-                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                  <h3 className="text-xl font-bold tracking-tight text-foreground">
-                    {user.name}
-                  </h3>
-                  <RoleBadge role={role} />
+              {/* Infos */}
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-lg font-bold tracking-tight text-foreground leading-tight">{user.name}</h3>
+                  <RoleBadge role={user.role} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingIdentity(true)}
+                    className="ml-auto h-8 gap-1.5 rounded-lg border-violet-500/30 text-violet-700 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:border-violet-500/30 dark:hover:bg-violet-500/15"
+                  >
+                    <Pencil className="size-3.5" />
+                    {t.profile.editIdentity}
+                  </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {t.profile.communityMember}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
-                  <Mail className="size-3.5 shrink-0" />
-                  <span className="truncate">{user.email}</span>
-                </div>
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
-                  <Calendar className="size-3.5 shrink-0" />
-                  <span>{t.profile.joined} {joinDate}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Mail className="size-3.5 shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="size-3.5 shrink-0" />
+                    <span>{t.profile.joined} {joinDate}</span>
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
-        </PageSection>
-
-        {/* SECTION : COMMUNITY PROFILES */}
-        <PageSection
-          title={t.profile.communityProfiles}
-          description={t.profile.communityProfilesDesc}
-          className="flex-col!"
-          childrenClassName="w-full! pt-5"
-        >
-          {isBoth ? (
-            <Tabs defaultValue="host" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl mb-6">
-                <TabsTrigger value="host" className="rounded-lg gap-2">
-                  <Home className="size-4" /> {t.profile.hostProfile}
-                </TabsTrigger>
-                <TabsTrigger value="guest" className="rounded-lg gap-2">
-                  <User className="size-4" /> {t.profile.guestProfile}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent
-                value="host"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <HostProfileCard hostData={host} />
-              </TabsContent>
-              <TabsContent
-                value="guest"
-                className="mt-0 focus-visible:outline-none"
-              >
-                <GuestProfileCard guestData={guest} />
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <>
-              {isHost && <HostProfileCard hostData={host} />}
-              {isGuest && <GuestProfileCard guestData={guest} />}
-              {isAdmin && <AdminNotice role={role} />}
-              {!isHost && !isGuest && !isAdmin && <EmptyProfile />}
-            </>
           )}
         </PageSection>
 
-        {/* SECTION : VERIFICATION */}
+        {/* STATUT DE VÉRIFICATION */}
         <PageSection
           title={t.profile.verificationStatus}
           description={t.profile.verificationStatusDesc}
         >
-          <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div
-                className={`p-2 rounded-full ${user.isVerified ? "bg-green-500/10 text-green-600" : "bg-amber-500/10 text-amber-600"}`}
-              >
-                <ShieldCheck className="size-5" />
+          <div className="space-y-3">
+            {user.role !== "admin" && (
+              <VerificationStatus
+                isVerified={user.isVerified}
+                verifiedBy={user.verifiedBy}
+                verifiedAt={user.verifiedAt}
+              />
+            )}
+
+            {/* Email vérifié — uniquement si compte email/password */}
+            {hasPasswordAccount && (
+              <div className={`flex items-center justify-between p-4 rounded-xl border ${emailVerified ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent" : "border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent"}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${emailVerified ? "bg-green-500/15 text-green-600" : "bg-amber-500/15 text-amber-600"}`}>
+                    <MailCheck className="size-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {emailVerified ? t.profile.emailVerifiedTitle : t.profile.emailNotVerifiedTitle}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {emailVerified ? t.profile.emailVerifiedDesc : t.profile.emailNotVerifiedDesc}
+                    </p>
+                  </div>
+                </div>
+                {!emailVerified && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSendVerification}
+                    disabled={isSendingVerif}
+                    className="gap-2 shrink-0"
+                  >
+                    {isSendingVerif ? (
+                      <><Spinner className="size-3" />{t.profile.verifyEmailSending}</>
+                    ) : (
+                      t.profile.verifyEmail
+                    )}
+                  </Button>
+                )}
               </div>
-              <div>
-                <p className="text-sm font-medium">
-                  {user.isVerified ? t.profile.verifiedAccount : t.profile.identityPending}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t.profile.manualReview}
-                </p>
-              </div>
-            </div>
-            {!user.isVerified && (
-              <Badge
-                variant="outline"
-                className="text-amber-600 border-amber-500/30"
-              >
-                {t.profile.actionRequired}
-              </Badge>
             )}
           </div>
         </PageSection>
+
+        {/* COMPTES CONNECTÉS */}
+        <PageSection
+          title={t.profile.linkedAccounts}
+          description={t.profile.linkedAccountsDesc}
+        >
+          <LinkedAccounts />
+        </PageSection>
+
+        {/* ZONE DE DANGER */}
+        <PageSection
+          title={t.profile.dangerZone}
+          description={t.profile.dangerZoneDesc}
+        >
+          <DeleteAccount />
+        </PageSection>
+
       </div>
     </div>
   );
