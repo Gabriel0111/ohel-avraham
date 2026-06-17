@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { CheckCircle2, Clock, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { EnumPill } from "@/components/ui/enum-pill";
 import { useT } from "@/lib/i18n/context";
 
 interface VerificationStatusProps {
@@ -108,12 +108,9 @@ export const VerificationStatus = ({
         </div>
       </div>
       {!isVerified && (
-        <Badge
-          variant="outline"
-          className="relative text-amber-600 border-amber-500/30 shrink-0 text-xs"
-        >
+        <EnumPill color="amber" className="relative shrink-0">
           {t.profile.actionRequired}
-        </Badge>
+        </EnumPill>
       )}
     </div>
   );

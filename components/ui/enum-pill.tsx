@@ -7,7 +7,8 @@ export type PillColor =
   | "pink"
   | "slate"
   | "green"
-  | "amber";
+  | "amber"
+  | "red";
 
 const PILL_COLORS: Record<PillColor, string> = {
   violet:
@@ -22,6 +23,7 @@ const PILL_COLORS: Record<PillColor, string> = {
     "bg-green-500/10 text-green-700 border-green-500/15 dark:text-green-300",
   amber:
     "bg-amber-500/10 text-amber-700 border-amber-500/15 dark:text-amber-300",
+  red: "bg-red-500/10 text-red-700 border-red-500/15 dark:text-red-300",
 };
 
 export function EnumPill({

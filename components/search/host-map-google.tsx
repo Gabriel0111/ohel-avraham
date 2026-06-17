@@ -21,10 +21,14 @@ interface HostMapProps {
 const ISRAEL_CENTER = { lat: 31.5, lng: 34.8 };
 // Padding (px) kept around the markers when fitting bounds.
 const FIT_PADDING = 56;
+// Privacy: never let the map zoom past neighbourhood level, so a guest can see
+// roughly where a host is without pinpointing the building. This is the hard
+// cap applied to the map itself (manual zoom included).
+const PRIVACY_MAX_ZOOM = 14;
 // Don't zoom in further than this when results are tightly clustered.
-const MAX_FIT_ZOOM = 14;
-// Zoom used to focus a single selected host.
-const FOCUS_ZOOM = 15;
+const MAX_FIT_ZOOM = 13;
+// Zoom used to focus a single selected host (kept at/under the privacy cap).
+const FOCUS_ZOOM = 14;
 
 // Keeps the viewport framed on the current results: fits all markers into view
 // when the host list changes, and pans/zooms onto a host when one is selected.
@@ -115,6 +119,7 @@ export function HostMapGoogle({
       <Map
         defaultCenter={ISRAEL_CENTER}
         defaultZoom={8}
+        maxZoom={PRIVACY_MAX_ZOOM}
         mapId="DEMO_MAP_ID"
         className="size-full rounded-lg overflow-hidden"
         gestureHandling="greedy"

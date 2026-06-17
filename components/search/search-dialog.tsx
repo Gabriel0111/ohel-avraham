@@ -24,6 +24,8 @@ import {
   Lock,
   SearchX,
   Send,
+  ArrowLeft,
+  Globe,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
@@ -43,6 +45,9 @@ const HostMapGoogle = dynamic(
   },
 );
 
+// Sentinel for the "all cities" choice in the city step.
+const ALL_CITIES = "__all__";
+
 interface SearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -54,6 +59,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedHost, setSelectedHost] = useState<PublicHost | null>(null);
   const [requestHost, setRequestHost] = useState<PublicHost | null>(null);
+  // City step: null = the picker is showing; a value (or ALL_CITIES) = chosen.
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   // Debounce the term sent to Convex so we hit the search index per pause,
   // not per keystroke.
@@ -63,6 +70,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const hostsResult = useQuery(api.hosts.searchPublicHosts, {
     query: debouncedQuery || undefined,
   }) as PublicHost[] | undefined;
+
+  // Distinct cities with hosts, for the picker step.
+  const cities = useQuery(api.hosts.getHostCities);
 
   // Keep the previous results visible while a new search is in flight, so the
   // list/map don't flash to a loader on every keystroke. Adjusting state during
@@ -78,26 +88,59 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const isAuthenticated = currentUser !== null && currentUser !== undefined;
   const isLoading = hosts === undefined || currentUser === undefined;
 
-  const filteredHosts = hosts ?? [];
+  const allHosts = useMemo(() => hosts ?? [], [hosts]);
 
-  // Results are already narrowed server-side; just group them by city.
+  const cityOf = useCallback((h: PublicHost) => h.city || h.address, []);
+
+  // Step 2 list, narrowed to the chosen city (unless "all").
+  const filteredHosts = useMemo(() => {
+    if (!selectedCity || selectedCity === ALL_CITIES) return allHosts;
+    return allHosts.filter((h) => cityOf(h) === selectedCity);
+  }, [allHosts, selectedCity, cityOf]);
+
+  // City list for the picker, filtered live by the search box.
+  const visibleCities = useMemo(() => {
+    if (!cities) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return q
+      ? cities.filter((c) => c.city.toLowerCase().includes(q))
+      : cities;
+  }, [cities, searchQuery]);
+
+  const totalHostCount = useMemo(
+    () => (cities ?? []).reduce((sum, c) => sum + c.count, 0),
+    [cities],
+  );
+
+  // Unauthenticated preview: group the (already sanitized) results by city.
   const cityGroups = useMemo(() => {
-    if (!hosts) return {};
-    return hosts.reduce<Record<string, number>>((acc, h) => {
-      const city = h.city || h.address;
+    return allHosts.reduce<Record<string, number>>((acc, h) => {
+      const city = cityOf(h);
       acc[city] = (acc[city] || 0) + 1;
       return acc;
     }, {});
-  }, [hosts]);
+  }, [allHosts, cityOf]);
 
   const handleSelectHost = useCallback((host: PublicHost) => {
     setSelectedHost((prev) => (prev?._id === host._id ? null : host));
+  }, []);
+
+  const pickCity = useCallback((city: string) => {
+    setSelectedCity(city);
+    setSelectedHost(null);
+  }, []);
+
+  const backToCities = useCallback(() => {
+    setSelectedCity(null);
+    setSelectedHost(null);
   }, []);
 
   const resultsLabel =
     filteredHosts.length === 1
       ? t.search.hostsInCity
       : t.search.hostsInCityPlural;
+
+  const inCityStep = isAuthenticated && selectedCity === null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,7 +161,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               <DialogDescription className="sr-only">
                 {t.search.searchBarPlaceholder}
               </DialogDescription>
-              {!isLoading && isAuthenticated && (
+              {!isLoading && isAuthenticated && !inCityStep && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   <span className="font-semibold text-foreground tabular-nums">
                     {filteredHosts.length}
@@ -126,17 +169,44 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   {resultsLabel}
                 </p>
               )}
+              {!isLoading && inCityStep && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t.search.chooseCityHint}
+                </p>
+              )}
             </div>
           </div>
+
           <div className="relative mt-4">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder={t.search.placeholder}
+              placeholder={
+                inCityStep ? t.search.cityPlaceholder : t.search.placeholder
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="ps-9 h-11 rounded-xl bg-background/80 border-border/60 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20 transition-colors"
             />
           </div>
+
+          {/* Selected-city chip — appears in step 2, lets you change city */}
+          {isAuthenticated && selectedCity !== null && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={backToCities}
+                className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 ps-2.5 pe-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-500/15 transition-colors"
+              >
+                <ArrowLeft className="size-3.5" />
+                {selectedCity === ALL_CITIES
+                  ? t.search.allCities
+                  : selectedCity}
+                <span className="text-violet-700/60 dark:text-violet-300/60">
+                  · {t.search.changeCity}
+                </span>
+              </button>
+            </div>
+          )}
         </DialogHeader>
 
         {/* Body */}
@@ -145,74 +215,127 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
           </div>
         ) : isAuthenticated ? (
-          /* Authenticated: host list + map */
-          <>
-          <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
-            <ScrollArea className="w-full sm:w-[38%] shrink-0">
-              <div className="p-4 flex flex-col gap-2">
-                {filteredHosts.length === 0 ? (
+          inCityStep ? (
+            /* Step 1 — pick a city among those with hosts */
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-4 flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => pickCity(ALL_CITIES)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl border border-border/60 bg-card hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Globe className="size-4 text-violet-500 shrink-0" />
+                    <span className="text-sm font-semibold truncate">
+                      {t.search.allCities}
+                    </span>
+                  </div>
+                  <span className="shrink-0 ms-2 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300 tabular-nums">
+                    <Users className="size-3" />
+                    {totalHostCount}
+                  </span>
+                </button>
+
+                {visibleCities.map(({ city, count }) => (
+                  <button
+                    key={city}
+                    type="button"
+                    onClick={() => pickCity(city)}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-violet-500/5 border border-transparent hover:border-violet-500/15 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <MapPin className="size-3.5 text-muted-foreground group-hover:text-violet-500 shrink-0 transition-colors" />
+                      <span className="text-sm font-medium truncate">
+                        {city}
+                      </span>
+                    </div>
+                    <span className="shrink-0 ms-2 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300 tabular-nums">
+                      <Users className="size-3" />
+                      {count}
+                    </span>
+                  </button>
+                ))}
+
+                {visibleCities.length === 0 && (
                   <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
                     <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
                       <SearchX className="size-5" />
                     </div>
                     <p className="text-sm">{t.search.noResults}</p>
                   </div>
-                ) : (
-                  filteredHosts.map((host) => (
-                    <HostListCard
-                      key={host._id}
-                      host={host}
-                      isSelected={selectedHost?._id === host._id}
-                      onSelect={handleSelectHost}
-                    />
-                  ))
                 )}
               </div>
             </ScrollArea>
+          ) : (
+            /* Step 2 — host list + map for the chosen city */
+            <>
+              <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
+                <ScrollArea className="w-full sm:w-[38%] shrink-0">
+                  <div className="p-4 flex flex-col gap-2">
+                    {filteredHosts.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
+                        <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
+                          <SearchX className="size-5" />
+                        </div>
+                        <p className="text-sm">{t.search.noResults}</p>
+                      </div>
+                    ) : (
+                      filteredHosts.map((host) => (
+                        <HostListCard
+                          key={host._id}
+                          host={host}
+                          isSelected={selectedHost?._id === host._id}
+                          onSelect={handleSelectHost}
+                        />
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
 
-            <Separator orientation="vertical" className="hidden sm:block" />
+                <Separator orientation="vertical" className="hidden sm:block" />
 
-            <div className="flex-1 min-h-[250px] sm:min-h-0 p-4">
-              <div className="size-full rounded-xl overflow-hidden border border-border/60">
-                <HostMapGoogle
-                  hosts={filteredHosts}
-                  selectedHost={selectedHost}
-                  onSelectHost={handleSelectHost}
-                />
+                <div className="flex-1 min-h-[250px] sm:min-h-0 p-4">
+                  <div className="size-full rounded-xl overflow-hidden border border-border/60">
+                    <HostMapGoogle
+                      hosts={filteredHosts}
+                      selectedHost={selectedHost}
+                      onSelectHost={handleSelectHost}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Action bar — appears when a host is selected */}
-          {selectedHost && (
-            <div className="shrink-0 border-t border-border/50 bg-background/95 px-4 py-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">
-                  {selectedHost.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {selectedHost.neighborhood
-                    ? `${selectedHost.neighborhood}${selectedHost.city ? ` · ${selectedHost.city}` : ""}`
-                    : selectedHost.city || selectedHost.address}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                className="gap-2 shrink-0"
-                onClick={() => setRequestHost(selectedHost)}
-              >
-                <Send className="size-4" />
-                {t.requests.sendRequest}
-              </Button>
-            </div>
-          )}
-          </>
+              {/* Action bar — appears when a host is selected */}
+              {selectedHost && (
+                <div className="shrink-0 border-t border-border/50 bg-background/95 px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">
+                      {selectedHost.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {selectedHost.neighborhood
+                        ? `${selectedHost.neighborhood}${selectedHost.city ? ` · ${selectedHost.city}` : ""}`
+                        : selectedHost.city || selectedHost.address}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="gap-2 shrink-0"
+                    onClick={() => setRequestHost(selectedHost)}
+                  >
+                    <Send className="size-4" />
+                    {t.requests.sendRequest}
+                  </Button>
+                </div>
+              )}
+            </>
+          )
         ) : (
           /* Unauthenticated: city list + sign-in prompt */
           <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
             <ScrollArea className="w-full sm:w-[45%] shrink-0">
               <div className="p-4 space-y-3">
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+                <p className="text-xs font-semibold text-muted-foreground">
                   {t.search.availableCities}
                 </p>
                 <div className="space-y-1">

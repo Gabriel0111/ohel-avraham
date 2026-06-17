@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { EnumPill } from "@/components/ui/enum-pill";
 import GoogleIcon from "@/components/icons/google";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -111,10 +111,9 @@ export function LinkedAccounts() {
         {isLoading ? (
           <Skeleton className="h-7 w-20 rounded-full" />
         ) : isGoogleLinked ? (
-          <Badge variant="outline" className="gap-1.5 text-green-600 border-green-500/30">
-            <CheckCircle2 className="size-3" />
+          <EnumPill color="green" icon={CheckCircle2}>
             {t.profile.linked}
-          </Badge>
+          </EnumPill>
         ) : (
           <Button size="sm" variant="outline" onClick={handleLinkGoogle} disabled={isPending} className="gap-2">
             {isPending ? (

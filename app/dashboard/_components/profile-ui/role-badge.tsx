@@ -1,14 +1,13 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { EnumPill, type PillColor } from "@/components/ui/enum-pill";
 import { useT } from "@/lib/i18n/context";
 
-const ROLE_STYLES: Record<string, string> = {
-  admin: "bg-red-500/10 text-red-600 border-red-500/20",
-  host: "bg-violet-500/10 text-violet-600 border-violet-500/20",
-  rabbi: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  guest: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  "guest:host": "bg-violet-500/10 text-violet-600 border-violet-500/20",
+const ROLE_COLORS: Record<string, PillColor> = {
+  admin: "red",
+  host: "violet",
+  "guest:host": "violet",
+  guest: "emerald",
 };
 
 export function RoleBadge({ role }: { role: string }) {
@@ -22,15 +21,9 @@ export function RoleBadge({ role }: { role: string }) {
     user: t.roles.user,
   };
 
-  const style = ROLE_STYLES[role] ?? "bg-gray-500/10 text-gray-600 border-gray-500/20";
-  const label = roleLabels[role] ?? role;
-
   return (
-    <Badge
-      variant="outline"
-      className={`px-1.5 py-0 text-[9px] uppercase tracking-tighter font-bold border ${style}`}
-    >
-      {label}
-    </Badge>
+    <EnumPill color={ROLE_COLORS[role] ?? "slate"}>
+      {roleLabels[role] ?? role}
+    </EnumPill>
   );
 }

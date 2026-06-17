@@ -110,15 +110,13 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
             <RoleBadge role={user.role} />
             {showVerification &&
               (user.isVerified ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-green-500/25 bg-green-500/10 px-2 py-0.5 text-[11px] font-semibold text-green-700 dark:text-green-300">
-                  <ShieldCheck className="size-3" />
+                <EnumPill color="green" icon={ShieldCheck}>
                   {t.profile.verifiedAccount}
-                </span>
+                </EnumPill>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
-                  <Clock className="size-3" />
+                <EnumPill color="amber" icon={Clock}>
                   {t.profile.identityPending}
-                </span>
+                </EnumPill>
               ))}
           </div>
 

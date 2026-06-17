@@ -126,15 +126,24 @@ export function RequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
-        <DialogHeader>
-          <DialogTitle>{t.requests.dialogTitle}</DialogTitle>
-          <DialogDescription>
-            {t.requests.dialogDesc.replace("{name}", hostName)}
-          </DialogDescription>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogHeader className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-4 text-start border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0 ring-1 ring-violet-500/15">
+              <Send className="size-5 text-violet-600 dark:text-violet-400" />
+            </div>
+            <div className="min-w-0">
+              <DialogTitle className="text-base font-bold tracking-tight">
+                {t.requests.dialogTitle}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5 text-pretty">
+                {t.requests.dialogDesc.replace("{name}", hostName)}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="px-6 py-5 space-y-4">
           {/* Date */}
           <div className="space-y-1.5">
             <Label>{t.requests.date}</Label>
@@ -203,7 +212,7 @@ export function RequestDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 border-t border-border/50 bg-muted/20 gap-2">
           <Button
             type="button"
             variant="outline"

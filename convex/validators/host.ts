@@ -27,4 +27,11 @@ export const HostFields = {
   ethnicity: EthnicityV,
 
   notes: v.optional(v.string()),
+
+  // Availability. Absent / true = the host is open to guests and listed.
+  // false = the host has marked themselves unavailable and is hidden from the
+  // public lists/map. `unavailableUntil` (ms) optionally auto-restores them on
+  // that date; absent means indefinitely until they switch back on.
+  isAvailable: v.optional(v.boolean()),
+  unavailableUntil: v.optional(v.number()),
 };

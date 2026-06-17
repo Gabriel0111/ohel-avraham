@@ -858,19 +858,13 @@ export default function PeoplePage() {
                         {isAdmin && (
                           <TableCell className="py-3">
                             {host.isVerified ? (
-                              <div className="flex items-center gap-1.5 text-green-600">
-                                <CheckCircle2 className="size-3.5" />
-                                <span className="text-xs hidden sm:inline font-medium">
-                                  {t.people.confirmed}
-                                </span>
-                              </div>
+                              <EnumPill color="green" icon={CheckCircle2}>
+                                {t.people.confirmed}
+                              </EnumPill>
                             ) : (
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-700 dark:text-amber-400 w-fit">
-                                <Clock className="size-2.5 shrink-0" />
-                                <span className="text-[10px] font-semibold whitespace-nowrap">
-                                  {t.people.unverified}
-                                </span>
-                              </div>
+                              <EnumPill color="amber" icon={Clock}>
+                                {t.people.unverified}
+                              </EnumPill>
                             )}
                           </TableCell>
                         )}

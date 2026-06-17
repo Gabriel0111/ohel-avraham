@@ -8,7 +8,6 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { EnumPill } from "@/components/ui/enum-pill";
 import {
   Select,
@@ -18,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Accessibility, MapPin, Phone, X } from "lucide-react";
+import { Accessibility, ArrowUpRight, MapPin, Phone, X } from "lucide-react";
 import { hostSchema, HostType } from "@/app/schemas/host";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
@@ -29,6 +28,7 @@ import {
   PhoneInput,
 } from "@/app/(auth)/_components/phone-number-comps";
 import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
+import { HostAvailability } from "./host-availability";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "@/app/dashboard/_components/profile-ui/view-value";
 import { SECTORS } from "@/app/enums/sector";
@@ -86,6 +86,11 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
 
   return (
     <div className="space-y-2">
+      {/* Availability — host can take themselves off the lists */}
+      <div className="pb-4">
+        <HostAvailability host={hostData} />
+      </div>
+
       {/* Action Header */}
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <h3 className="text-base font-semibold">{t.hostProfile.title}</h3>
@@ -165,14 +170,27 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-6 w-full">
-              <ViewValue
-                value={hostData.address}
-                icon={<MapPin className="size-4" />}
-              />
-
-              <ViewValue value={hostData.floor} title={t.form.floor} />
-            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hostData.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex w-full items-center gap-3.5 rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3.5 transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
+            >
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 transition-transform group-hover:scale-105">
+                <MapPin className="size-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-lg font-semibold leading-tight text-foreground transition-colors group-hover:text-violet-700 dark:group-hover:text-violet-300">
+                  {hostData.address}
+                </p>
+                {hostData.floor && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t.form.floor} {hostData.floor}
+                  </p>
+                )}
+              </div>
+              <ArrowUpRight className="size-4 shrink-0 text-violet-600/0 transition-all group-hover:text-violet-600" />
+            </a>
           )}
         </SettingsRow>
 
@@ -226,8 +244,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.kashrout}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectKashrout} />
@@ -250,8 +268,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.sector}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectSector} />
@@ -274,8 +292,8 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.ethnicity}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectEthnicity} />
@@ -296,15 +314,21 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.kashrout}</Label>
-                <EnumPill color="blue">{el.kashrout(hostData.kashrout)}</EnumPill>
+                <EnumPill color="blue">
+                  {el.kashrout(hostData.kashrout)}
+                </EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <EnumPill color="violet">{el.sector(hostData.sector)}</EnumPill>
+                <EnumPill color="violet">
+                  {el.sector(hostData.sector)}
+                </EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color="slate">{el.ethnicity(hostData.ethnicity)}</EnumPill>
+                <EnumPill color="slate">
+                  {el.ethnicity(hostData.ethnicity)}
+                </EnumPill>
               </div>
             </div>
           )}
@@ -337,10 +361,9 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 {t.hostProfile.stepFreeAccess}
               </EnumPill>
             ) : (
-              <Badge variant="outline" className="text-muted-foreground gap-1.5 font-normal">
-                <X className="size-3.5" />
+              <EnumPill color="slate" icon={X}>
                 {t.hostProfile.noSpecializedAccess}
-              </Badge>
+              </EnumPill>
             )
           )}
         </SettingsRow>
@@ -362,7 +385,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               )}
             />
           ) : (
-            <ViewValue value={hostData.notes || t.common.noAdditionalNotes} />
+            <ViewValue value={hostData.notes} />
           )}
         </SettingsRow>
       </div>

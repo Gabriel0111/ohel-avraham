@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { EnumPill, genderColor, type PillColor } from "@/components/ui/enum-pill";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
 import {
@@ -65,39 +65,24 @@ function formatDate(ms: number, lang: string) {
 
 function StatusBadge({ status }: { status: Status }) {
   const { t } = useT();
-  const map = {
-    pending: {
-      label: t.requests.statusPending,
-      icon: Clock,
-      cls: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
-    },
+  const map: Record<
+    Status,
+    { label: string; icon: typeof Clock; color: PillColor }
+  > = {
+    pending: { label: t.requests.statusPending, icon: Clock, color: "amber" },
     accepted: {
       label: t.requests.statusAccepted,
       icon: CheckCircle2,
-      cls: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30",
+      color: "green",
     },
-    declined: {
-      label: t.requests.statusDeclined,
-      icon: XCircle,
-      cls: "bg-destructive/10 text-destructive border-destructive/30",
-    },
-    cancelled: {
-      label: t.requests.statusCancelled,
-      icon: Ban,
-      cls: "bg-muted text-muted-foreground border-border",
-    },
-  } as const;
-  const { label, icon: Icon, cls } = map[status];
+    declined: { label: t.requests.statusDeclined, icon: XCircle, color: "red" },
+    cancelled: { label: t.requests.statusCancelled, icon: Ban, color: "slate" },
+  };
+  const { label, icon, color } = map[status];
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap",
-        cls,
-      )}
-    >
-      <Icon className="size-3" />
+    <EnumPill color={color} icon={icon}>
       {label}
-    </span>
+    </EnumPill>
   );
 }
 
@@ -121,11 +106,7 @@ function PartyDateRow({
         <span className={cn(expired && "line-through decoration-1")}>
           {formatDate(date, lang)}
         </span>
-        {expired && (
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {t.requests.expired}
-          </span>
-        )}
+        {expired && <EnumPill color="slate">{t.requests.expired}</EnumPill>}
       </span>
       <span className="inline-flex items-center gap-1.5">
         <Users className="size-3.5" />
@@ -475,7 +456,8 @@ export default function RequestsPage() {
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const role = user?.role;
-  const isHost = role === "host" || role === "guest:host";
+  // Admins are treated as hosts (they receive requests like one).
+  const isHost = role === "host" || role === "guest:host" || role === "admin";
   const isGuest = role === "guest" || role === "guest:host";
   // A host only receives requests; a guest only sends them. Only guest:host
   // sees both. (A plain user with no role yet falls back to the sent view.)

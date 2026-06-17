@@ -111,7 +111,7 @@ export function GuestProfileCard({
       </div>
 
       <div className="divide-y divide-border/20">
-        {/* LIGNE : REGION */}
+        {/* LIGNE : REGION — featured, the guest's key matching dimension */}
         <SettingsRow
           label={t.guestProfile.preferredRegion}
           description={t.guestProfile.preferredRegionDesc}
@@ -121,10 +121,12 @@ export function GuestProfileCard({
               name="region"
               control={form.control}
               render={({ field }) => (
-                <AutocompleteAddress
-                  defaultValue={field.value}
-                  onPlaceSelect={(place) => field.onChange(place.address)}
-                />
+                <div className="w-full">
+                  <AutocompleteAddress
+                    defaultValue={field.value}
+                    onPlaceSelect={(place) => field.onChange(place.address)}
+                  />
+                </div>
               )}
             />
           ) : (
@@ -145,12 +147,9 @@ export function GuestProfileCard({
               name="gender"
               control={form.control}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger className="h-9 w-full max-w-50 bg-muted/30 border-none shadow-none">
-                    <SelectValue />
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t.form.gender} />
                   </SelectTrigger>
                   <SelectContent>
                     {GENDERS.map((g) => (
@@ -183,8 +182,8 @@ export function GuestProfileCard({
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.sector}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectSector} />
@@ -207,8 +206,8 @@ export function GuestProfileCard({
                   <div className="flex items-center justify-between">
                     <FieldLabel>{t.form.ethnicity}</FieldLabel>
                     <Select
+                      value={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.form.selectEthnicity} />
@@ -229,11 +228,15 @@ export function GuestProfileCard({
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <EnumPill color="emerald">{el.sector(guestData.sector)}</EnumPill>
+                <EnumPill color="emerald">
+                  {el.sector(guestData.sector)}
+                </EnumPill>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color="slate">{el.ethnicity(guestData.ethnicity)}</EnumPill>
+                <EnumPill color="slate">
+                  {el.ethnicity(guestData.ethnicity)}
+                </EnumPill>
               </div>
             </div>
           )}
@@ -241,7 +244,7 @@ export function GuestProfileCard({
 
         {/* LIGNE : NOTES */}
         <SettingsRow
-          label={t.guestProfile.bioNotes}
+          label={t.form.notes}
           description={t.guestProfile.bioNotesDesc}
         >
           {isEditing ? (
@@ -257,9 +260,7 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <ViewValue
-              value={guestData.notes ?? t.guestProfile.noNotes}
-            />
+            <ViewValue value={guestData.notes} />
           )}
         </SettingsRow>
       </div>

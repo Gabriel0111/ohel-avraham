@@ -126,6 +126,13 @@ const SEARCH_RESULTS_LIMIT = 50;
 
 type HostDoc = Doc<"hosts">;
 
+// A host is listed unless they've switched themselves off. A return date
+// (`unavailableUntil`) auto-restores them once it's passed.
+function isHostAvailable(host: HostDoc) {
+  if (host.isAvailable !== false) return true;
+  return host.unavailableUntil != null && host.unavailableUntil <= Date.now();
+}
+
 async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
   const user = await ctx.db
     .query("users")
@@ -167,7 +174,55 @@ export const searchPublicHosts = query({
           .take(SEARCH_RESULTS_LIMIT)
       : await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
 
-    return await Promise.all(hosts.map((host) => toPublicHost(ctx, host)));
+    // Hosts who switched themselves off don't appear in the public list/map.
+    const available = hosts.filter(isHostAvailable);
+    return await Promise.all(available.map((host) => toPublicHost(ctx, host)));
+  },
+});
+
+// Distinct cities where available hosts are present, with counts — powers the
+// "pick a city" step in the search dialog.
+export const getHostCities = query({
+  args: {},
+  returns: v.array(v.object({ city: v.string(), count: v.number() })),
+  handler: async (ctx) => {
+    const hosts = await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
+    const counts = new Map<string, number>();
+    for (const host of hosts) {
+      if (!isHostAvailable(host)) continue;
+      const { city } = extractLocation(host.address);
+      if (!city) continue;
+      counts.set(city, (counts.get(city) ?? 0) + 1);
+    }
+    return Array.from(counts, ([city, count]) => ({ city, count })).sort(
+      (a, b) => b.count - a.count,
+    );
+  },
+});
+
+// Host toggles their own availability. Turning available back on clears any
+// return date; turning off optionally schedules an automatic return.
+export const setHostAvailability = mutation({
+  args: {
+    available: v.boolean(),
+    unavailableUntil: v.optional(v.number()),
+  },
+  returns: v.object({ updated: v.boolean() }),
+  handler: async (ctx, { available, unavailableUntil }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const host = await ctx.db
+      .query("hosts")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+    if (!host) throw new Error("Profil hôte introuvable.");
+
+    await ctx.db.patch(host._id, {
+      isAvailable: available,
+      unavailableUntil: available ? undefined : unavailableUntil,
+    });
+    return { updated: true };
   },
 });
 
