@@ -31,9 +31,9 @@ No test runner is configured. If adding tests, use `convex-test` with Vitest and
 | Auth | `better-auth` 1.4.9 + `@convex-dev/better-auth` 0.10.13 | — |
 | Forms | React Hook Form + Yup/Zod | — |
 | State | Zustand | 5.0.12 |
-| Maps | `@vis.gl/react-google-maps`, Leaflet | — |
+| Maps | `@vis.gl/react-google-maps` | — |
 | Email | Resend | 6.11.0 |
-| Animations | Framer Motion / Motion | 12.x |
+| Animations | Motion | 12.x |
 
 ## Architecture
 
@@ -45,7 +45,7 @@ No test runner is configured. If adding tests, use `convex-test` with Vitest and
 
 **Data flow**: Client components call Convex via `useQuery` / `useMutation` hooks from `convex/react`. The `ConvexClientProvider` in `app/ConvexClientProvider.tsx` wraps `ConvexBetterAuthProvider` and exposes a `useAuth()` hook backed by `api.users.getCurrentUser`.
 
-**Maps**: Dual map support — Google Maps (`@vis.gl/react-google-maps`) for full-featured geocoding and Leaflet (`react-leaflet`) for open-source rendering. Geocoding helpers in `lib/google-maps.ts`. Address autocomplete component at `components/layout/autocomplete-address.tsx`.
+**Maps**: Google Maps via `@vis.gl/react-google-maps`. Geocoding helpers in `lib/google-maps.ts`. Address autocomplete component at `components/layout/autocomplete-address.tsx`.
 
 **i18n**: Lightweight custom solution in `lib/i18n/` (`context.tsx` + `translations.ts`).
 
@@ -152,9 +152,7 @@ All functions are in `convex/`. Reference pattern: `api.<module>.<function>`.
 | Function | Type | Description |
 |----------|------|-------------|
 | `getCurrentUser` | `query` | Returns current `users` doc via `identity.subject` or `null` |
-| `getUserByAuthId` | `internalQuery` | Internal lookup of a `users` doc by `authUserId` |
 | `getFullProfile` | `query` | Returns `{ user, host, guest }` for current user |
-| `getPeopleDashboard` | `query` | Returns `{ hosts, guests, permissions }` based on caller's role |
 | `createUser` | `mutation` | Creates user doc on first auth; uses `authComponent.getAuthUser(ctx)` |
 | `addRoleToMe` | `mutation` | Sets caller's role; args: `{ role: SystemRole }` |
 | `assignSystemRole` | `mutation` | Admin mutation to change any user's role |
@@ -168,26 +166,37 @@ All functions are in `convex/`. Reference pattern: `api.<module>.<function>`.
 ### `convex/hosts.ts`
 | Function | Type | Description |
 |----------|------|-------------|
-| `getAllHosts` | `query` | Returns all hosts joined with user data (auth required) |
-| `getPublicHosts` | `query` | Returns sanitized host list for map/search (no auth required) |
-| `getMyHost` | `query` | Returns current user's host doc |
+| `getAllHosts` | `query` | Returns all hosts joined with user data (auth required); enriched via the shared `attachUsers` helper |
+| `searchPublicHosts` | `query` | Returns a sanitized host list for map/search (no auth required) |
+| `getHostCities` | `query` | Returns the distinct list of host cities for search filters |
 | `createHost` | `mutation` | Inserts host doc + calls `addRoleToMe({ role: "host" })` |
 | `upsertHost` | `mutation` | Insert or patch host doc |
+| `setHostAvailability` | `mutation` | Sets the caller's host availability flag |
 | `deleteHost` | `mutation` | Deletes caller's host doc |
 
 ### `convex/guests.ts`
 | Function | Type | Description |
 |----------|------|-------------|
-| `getAllGuests` | `query` | Returns all guests joined with user data (auth required) |
-| `getMyGuest` | `query` | Returns current user's guest doc |
+| `getAllGuests` | `query` | Returns all guests joined with user data (auth required); enriched via the shared `attachUsers` helper |
 | `createGuest` | `mutation` | Inserts guest doc + calls `addRoleToMe({ role: "guest" })` |
 | `upsertGuest` | `mutation` | Insert or patch guest doc |
 | `deleteGuest` | `mutation` | Deletes caller's guest doc |
 
-### `convex/dashboard.ts`
+### `convex/requests.ts`
+Shabbat hosting requests between guests and hosts.
+
 | Function | Type | Description |
 |----------|------|-------------|
-| `getDashboardData` | `query` | Returns aggregated dashboard data |
+| `createRequest` | `mutation` | Guest sends a request to a host; schedules `sendEmail` |
+| `respondToRequest` | `mutation` | Host accepts/declines a request; schedules `sendEmail` |
+| `cancelRequest` | `mutation` | Caller cancels their own pending request |
+| `getMyIncomingRequests` | `query` | Requests addressed to the current host |
+| `getMyOutgoingRequests` | `query` | Requests sent by the current guest |
+| `getIncomingPendingCount` | `query` | Count of pending incoming requests (nav badge) |
+| `sendEmail` | `internalAction` | Sends a Resend notification email; invoked via the scheduler |
+
+### `convex/helpers/attachUsers.ts`
+`attachUsers(ctx, rows)` — loads all users once into a `Map` keyed by `authUserId` and enriches host/guest rows with their owner's public fields, avoiding an N+1. Shared by `getAllHosts` and `getAllGuests`.
 
 ## Authentication Flow
 
@@ -217,7 +226,7 @@ Forms use **React Hook Form** with **`@hookform/resolvers`**. Validation schemas
 ## Key Component Patterns
 
 - **shadcn/ui** components are in `components/ui/` — extend but do not replace; add new primitives by running `npx shadcn add <name>`.
-- **Search / maps**: `components/search/` contains `SearchDialog`, `SearchTrigger`, `HostListCard`, `HostMapGoogle` (Google Maps), and `HostMap` (Leaflet).
+- **Search / maps**: `components/search/` contains `SearchDialog`, `SearchTrigger`, `HostListCard`, and `HostMapGoogle` (Google Maps).
 - **Dashboard UI**: `app/dashboard/_components/` holds page-level layout pieces (`PageHeader`, `PageSection`, `DashboardUI`, profile sub-components).
 - **Auth forms**: `app/(auth)/_components/` has `GuestForm`, `HostForm`, `PhoneNumberComps`, and reusable auth page wrappers.
 - **`useAuth()` hook**: exported from `app/ConvexClientProvider.tsx`; provides `{ user, isLoading, isAuthenticated }`.
