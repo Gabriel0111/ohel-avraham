@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { HostFields } from "./validators/host";
 import { api } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
+import { attachUsers } from "./helpers/attachUsers";
 
 export const getAllHosts = query({
   args: {},
@@ -11,34 +12,7 @@ export const getAllHosts = query({
     if (!identity) return null;
 
     const hosts = await ctx.db.query("hosts").collect();
-    // const guests = await ctx.db.query("guests").collect();
-
-    const results = await Promise.all(
-      hosts.map(async (host) => {
-        const user = await ctx.db
-          .query("users")
-          .withIndex("by_authUserId", (q) =>
-            q.eq("authUserId", host.authUserId),
-          )
-          .first();
-
-        if (!user) return null;
-
-        return {
-          ...host,
-          userId: user._id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-          isVerified: user.isVerified,
-          isBlocked: user.isBlocked ?? false,
-          verifiedBy: user.verifiedBy,
-          verifiedAt: user.verifiedAt,
-        };
-      }),
-    );
-    return results.filter((r) => r !== null);
+    return attachUsers(ctx, hosts);
   },
 });
 

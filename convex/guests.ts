@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { GuestFields } from "./validators/guest";
 import { api } from "./_generated/api";
+import { attachUsers } from "./helpers/attachUsers";
 
 export const getAllGuests = query({
   args: {},
@@ -10,33 +11,7 @@ export const getAllGuests = query({
     if (!identity) return null;
 
     const guests = await ctx.db.query("guests").collect();
-
-    const results = await Promise.all(
-      guests.map(async (guest) => {
-        const user = await ctx.db
-          .query("users")
-          .withIndex("by_authUserId", (q) =>
-            q.eq("authUserId", guest.authUserId),
-          )
-          .first();
-
-        if (!user) return null;
-
-        return {
-          ...guest,
-          userId: user._id,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          role: user.role,
-          isVerified: user.isVerified,
-          isBlocked: user.isBlocked ?? false,
-          verifiedBy: user.verifiedBy,
-          verifiedAt: user.verifiedAt,
-        };
-      }),
-    );
-    return results.filter((r) => r !== null);
+    return attachUsers(ctx, guests);
   },
 });
 
