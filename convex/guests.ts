@@ -40,19 +40,6 @@ export const getAllGuests = query({
   },
 });
 
-export const getMyGuest = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-
-    return await ctx.db
-      .query("guests")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
-      .unique();
-  },
-});
-
 export const createGuest = mutation({
   args: {
     data: v.object(GuestFields),

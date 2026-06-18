@@ -226,19 +226,6 @@ export const setHostAvailability = mutation({
   },
 });
 
-export const getMyHost = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-
-    return await ctx.db
-      .query("hosts")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
-      .unique();
-  },
-});
-
 export const deleteHost = mutation({
   args: {},
   handler: async (ctx) => {

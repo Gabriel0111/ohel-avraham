@@ -1,5 +1,5 @@
 import { SystemRole } from "./enums";
-import { internalQuery, mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { api, components } from "./_generated/api";
 import { canAccess } from "./helpers/canAccessRole";
@@ -14,16 +14,6 @@ export const getCurrentUser = query({
     return await ctx.db
       .query("users")
       .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
-      .unique();
-  },
-});
-
-export const getUserByAuthId = internalQuery({
-  args: { authUserId: v.string() },
-  handler: async (ctx, { authUserId }) => {
-    return ctx.db
-      .query("users")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
       .unique();
   },
 });
@@ -124,16 +114,11 @@ export const assignSystemRole = mutation({
   handler: async (ctx, args) => {
     const currentUser = await ctx.runQuery(api.users.getCurrentUser);
 
-    console.log("assignSystemRole:currentUser", currentUser);
-
     if (!currentUser) {
       throw new Error("Unauthorized: You must be logged in");
     }
 
-    const targetUser = await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("_id"), args.userId))
-      .first();
+    const targetUser = await ctx.db.get(args.userId);
 
     if (!targetUser) {
       throw new Error("Target user not found");
@@ -318,41 +303,5 @@ export const deleteUser = mutation({
     ]);
 
     return { deleted: true };
-  },
-});
-
-export const getPeopleDashboard = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const authUserId = identity.subject;
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_authUserId", (q) => q.eq("authUserId", authUserId))
-      .unique();
-
-    if (!user) return null;
-
-    const isAdmin = user.role === "admin";
-    const isHost = user.role === "host" || user.role === "guest:host";
-    const isGuest = user.role === "guest" || user.role === "guest:host";
-
-    const [hosts, guests] = await Promise.all([
-      isGuest || isAdmin
-        ? ctx.db.query("hosts").collect()
-        : Promise.resolve([]),
-      isHost || isAdmin
-        ? ctx.db.query("guests").collect()
-        : Promise.resolve([]),
-    ]);
-
-    return {
-      hosts,
-      guests,
-      permissions: { isAdmin, isHost, isGuest },
-    };
   },
 });
