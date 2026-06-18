@@ -3,16 +3,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Spinner } from "@/components/ui/spinner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,42 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Home,
-  Users,
-  Search,
-  MapPin,
-  Phone,
-  Mail,
-  StickyNote,
-  Accessibility,
-  Calendar,
-  CheckCircle2,
-  ShieldCheck,
-  ShieldAlert,
-  Clock,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Ban,
-  ShieldOff,
-  Trash2,
-} from "lucide-react";
+import { Home, Users, ShieldAlert, Clock, Trash2 } from "lucide-react";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   useReactTable,
@@ -67,367 +23,19 @@ import {
   type ColumnDef,
   type PaginationState,
 } from "@tanstack/react-table";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
-import * as RPNInput from "react-phone-number-input";
+import { useT } from "@/lib/i18n/context";
 import { toast } from "sonner";
 import { type Id } from "@/convex/_generated/dataModel";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { EnumPill, genderColor } from "@/components/ui/enum-pill";
-import { DetailList, DetailRow } from "@/components/ui/detail-list";
-
-function getInitials(name?: string) {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function mapsUrl(address: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-}
-
-function computeAge(dobMs: number): number {
-  const dob = new Date(dobMs);
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const m = today.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-  return age;
-}
-
-type HostData = NonNullable<
-  ReturnType<typeof useQuery<typeof api.hosts.getAllHosts>>
->[number];
-type GuestData = NonNullable<
-  ReturnType<typeof useQuery<typeof api.guests.getAllGuests>>
->[number];
-
-// ─── Host Detail Dialog ───────────────────────────────────────────────────────
-
-function HostDetailDialog({
-  host,
-  isAdmin,
-  verifying,
-  onConfirm,
-  onClose,
-}: {
-  host: HostData | null;
-  isAdmin: boolean;
-  verifying: string | null;
-  onConfirm: (userId: Id<"users">) => void;
-  onClose: () => void;
-}) {
-  const { t } = useT();
-  const el = useEnumLabel();
-  if (!host) return null;
-  const isVerified = host.isVerified;
-
-  return (
-    <Dialog open={!!host} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
-        {/* Header */}
-        <div className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
-          <DialogHeader className="p-0">
-            <div className="flex items-start gap-4">
-              <div className="relative shrink-0">
-                <Avatar className="size-16 ring-2 ring-violet-500/20 shadow-md">
-                  <AvatarImage src={host.image} />
-                  <AvatarFallback className="bg-violet-500/10 text-violet-600 text-lg font-bold">
-                    {getInitials(host.name)}
-                  </AvatarFallback>
-                </Avatar>
-                {isVerified && (
-                  <span className="absolute -bottom-1 -right-1 size-5 flex items-center justify-center rounded-full bg-green-500 ring-2 ring-background shadow-sm">
-                    <CheckCircle2 className="size-3 text-white" />
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-2.5">
-                  <DialogTitle className="text-base font-bold leading-tight tracking-tight">
-                    {host.name || t.people.unknown}
-                  </DialogTitle>
-                  {host.role && <RoleBadge role={host.role} />}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
-                  <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-                  <EnumPill color="slate">
-                    {el.ethnicity(host.ethnicity)}
-                  </EnumPill>
-                  {host.hasDisabilityAccess && (
-                    <EnumPill color="green" icon={Accessibility}>
-                      {t.people.access}
-                    </EnumPill>
-                  )}
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-4">
-          <DetailList>
-            <DetailRow icon={MapPin} tone="violet" label={t.form.address}>
-              <a
-                href={mapsUrl(host.address)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
-              >
-                {host.address}
-              </a>
-              {(host.floor || host.entrance) && (
-                <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                  {host.floor && `${t.form.floor} ${host.floor}`}
-                  {host.floor && host.entrance && " · "}
-                  {host.entrance && `${t.form.entrance} ${host.entrance}`}
-                </span>
-              )}
-            </DetailRow>
-            <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
-              <a
-                href={`tel:${host.phoneNumber}`}
-                className="hover:text-blue-600 transition-colors"
-              >
-                {RPNInput.formatPhoneNumberIntl(host.phoneNumber) ||
-                  host.phoneNumber}
-              </a>
-            </DetailRow>
-            {host.email && (
-              <DetailRow icon={Mail} tone="rose" label={t.form.email}>
-                <a
-                  href={`mailto:${host.email}`}
-                  className="hover:text-rose-600 transition-colors break-all"
-                >
-                  {host.email}
-                </a>
-              </DetailRow>
-            )}
-            <DetailRow icon={Calendar} tone="indigo" label={t.form.dateOfBirth}>
-              {formatDate(host.dob)}
-              <span className="text-muted-foreground font-normal">
-                {" "}
-                · {computeAge(host.dob)} {t.form.yearsOld}
-              </span>
-            </DetailRow>
-            {host.notes && (
-              <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
-                <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                  {host.notes}
-                </span>
-              </DetailRow>
-            )}
-          </DetailList>
-        </div>
-
-        {/* Admin footer */}
-        {isAdmin && (
-          <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-between gap-3">
-            {isVerified ? (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/30 bg-gradient-to-br from-green-500/20 to-green-500/10">
-                <ShieldCheck className="size-3.5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                  {t.people.confirmed}
-                </span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/30 bg-gradient-to-br from-amber-500/20 to-amber-500/10">
-                <span className="relative flex size-2">
-                  <span className="absolute inset-0 inline-flex rounded-full bg-amber-500 opacity-75 animate-ping" />
-                  <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
-                </span>
-                <Clock className="size-3.5 text-amber-600" />
-                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
-                  {t.people.unverified}
-                </span>
-              </div>
-            )}
-            {!isVerified && (
-              <Button
-                onClick={() => onConfirm(host.userId as Id<"users">)}
-                disabled={verifying === host.userId}
-                size="sm"
-                className="gap-2 rounded-xl"
-              >
-                {verifying === host.userId ? (
-                  <Spinner className="size-3.5" />
-                ) : (
-                  <ShieldCheck className="size-3.5" />
-                )}
-                {t.people.confirm}
-              </Button>
-            )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─── Guest Detail Dialog ──────────────────────────────────────────────────────
-
-function GuestDetailDialog({
-  guest,
-  onClose,
-}: {
-  guest: GuestData | null;
-  onClose: () => void;
-}) {
-  const { t } = useT();
-  const el = useEnumLabel();
-  if (!guest) return null;
-
-  return (
-    <Dialog open={!!guest} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
-        {/* Header */}
-        <div className="relative bg-gradient-to-b from-amber-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
-          <DialogHeader className="p-0">
-            <div className="flex items-start gap-4">
-              <Avatar className="size-16 ring-2 ring-amber-500/20 shadow-md shrink-0">
-                <AvatarImage src={guest.image} />
-                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-lg font-bold">
-                  {getInitials(guest.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-2.5">
-                  <DialogTitle className="text-base font-bold leading-tight tracking-tight">
-                    {guest.name || t.people.unknown}
-                  </DialogTitle>
-                  {guest.role && <RoleBadge role={guest.role} />}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  <EnumPill color="amber">{el.sector(guest.sector)}</EnumPill>
-                  <EnumPill color="slate">
-                    {el.ethnicity(guest.ethnicity)}
-                  </EnumPill>
-                  <EnumPill color={genderColor(guest.gender)}>
-                    {el.gender(guest.gender)}
-                  </EnumPill>
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-4">
-          <DetailList>
-            <DetailRow icon={MapPin} tone="amber" label={t.form.address}>
-              <a
-                href={mapsUrl(guest.region)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
-              >
-                {guest.region}
-              </a>
-            </DetailRow>
-            {guest.email && (
-              <DetailRow icon={Mail} tone="rose" label={t.form.email}>
-                <a
-                  href={`mailto:${guest.email}`}
-                  className="hover:text-rose-600 transition-colors break-all"
-                >
-                  {guest.email}
-                </a>
-              </DetailRow>
-            )}
-            <DetailRow icon={Calendar} tone="indigo" label={t.form.dateOfBirth}>
-              {formatDate(guest.dob)}
-              <span className="text-muted-foreground font-normal">
-                {" "}
-                · {computeAge(guest.dob)} {t.form.yearsOld}
-              </span>
-            </DetailRow>
-            {guest.notes && (
-              <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
-                <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                  {guest.notes}
-                </span>
-              </DetailRow>
-            )}
-          </DetailList>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─── Pagination Controls ──────────────────────────────────────────────────────
-
-function PaginationBar({
-  pageIndex,
-  pageCount,
-  total,
-  label,
-  canPrev,
-  canNext,
-  onPrev,
-  onNext,
-}: {
-  pageIndex: number;
-  pageCount: number;
-  total: number;
-  label: string;
-  canPrev: boolean;
-  canNext: boolean;
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  if (pageCount <= 1) return null;
-  return (
-    <div className="flex items-center justify-between px-5 py-3 border-t border-border/40 bg-muted/20">
-      <p className="text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">{total}</span> {label} ·
-        page{" "}
-        <span className="font-medium text-foreground">{pageIndex + 1}</span> /{" "}
-        {pageCount}
-      </p>
-      <div className="flex items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPrev}
-          disabled={!canPrev}
-          className="h-7 w-7 p-0"
-        >
-          <ChevronLeft className="size-3.5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onNext}
-          disabled={!canNext}
-          className="h-7 w-7 p-0"
-        >
-          <ChevronRight className="size-3.5" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
+import type { HostData, GuestData } from "./_lib/types";
+import { HostDetailDialog } from "./_components/host-detail-dialog";
+import { GuestDetailDialog } from "./_components/guest-detail-dialog";
+import { HostsTable } from "./_components/hosts-table";
+import { GuestsTable } from "./_components/guests-table";
 
 export default function PeoplePage() {
   const { t } = useT();
@@ -462,7 +70,6 @@ export default function PeoplePage() {
   });
 
   const isAdmin = currentUser?.role === "admin";
-  const el = useEnumLabel();
 
   const filteredHosts = useMemo(() => {
     if (!allHosts) return [];
@@ -616,605 +223,197 @@ export default function PeoplePage() {
 
       <div className="flex flex-col gap-6">
         {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="border-border/60">
-          <CardContent>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">
-                  {t.people.totalHosts}
-                </p>
-                <p className="text-3xl font-bold text-foreground tabular-nums">
-                  {allHosts?.length ?? 0}
-                </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="border-border/60">
+            <CardContent>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    {t.people.totalHosts}
+                  </p>
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
+                    {allHosts?.length ?? 0}
+                  </p>
+                </div>
+                <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
+                  <Home className="size-5 text-violet-600" />
+                </div>
               </div>
-              <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                <Home className="size-5 text-violet-600" />
-              </div>
-            </div>
-            {unverifiedCount > 0 && (
-              <div className="mt-2 flex items-center gap-1.5">
-                <Clock className="size-3 text-amber-500" />
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                  {unverifiedCount} {t.people.unverified.toLowerCase()}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/60">
-          <CardContent>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1">
-                  {t.people.totalGuests}
-                </p>
-                <p className="text-3xl font-bold text-foreground tabular-nums">
-                  {allGuests?.length ?? 0}
-                </p>
-              </div>
-              <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                <Users className="size-5 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Controls row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* Segment control */}
-        <div className="inline-flex items-center rounded-xl border border-border bg-muted/50 p-1 gap-0.5 self-start">
-          <button
-            onClick={() => setActiveTab("hosts")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
-              activeTab === "hosts"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Home className="size-3.5" />
-            {t.people.hosts}
-            <span
-              className={cn(
-                "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
-                activeTab === "hosts"
-                  ? "bg-violet-500/10 text-violet-600"
-                  : "bg-muted-foreground/10 text-muted-foreground",
+              {unverifiedCount > 0 && (
+                <div className="mt-2 flex items-center gap-1.5">
+                  <Clock className="size-3 text-amber-500" />
+                  <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                    {unverifiedCount} {t.people.unverified.toLowerCase()}
+                  </span>
+                </div>
               )}
-            >
-              {allHosts?.length ?? 0}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveTab("guests")}
-            className={cn(
-              "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
-              activeTab === "guests"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Users className="size-3.5" />
-            {t.people.guests}
-            <span
-              className={cn(
-                "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
-                activeTab === "guests"
-                  ? "bg-amber-500/10 text-amber-600"
-                  : "bg-muted-foreground/10 text-muted-foreground",
-              )}
-            >
-              {allGuests?.length ?? 0}
-            </span>
-          </button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60">
+            <CardContent>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    {t.people.totalGuests}
+                  </p>
+                  <p className="text-3xl font-bold text-foreground tabular-nums">
+                    {allGuests?.length ?? 0}
+                  </p>
+                </div>
+                <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <Users className="size-5 text-amber-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Unverified filter */}
-        {isAdmin && activeTab === "hosts" && (
-          <div className="flex items-center gap-2">
-            <Switch
-              id="unverified-filter"
-              checked={showUnverifiedOnly}
-              onCheckedChange={setShowUnverifiedOnly}
-            />
-            <Label
-              htmlFor="unverified-filter"
-              className="text-sm cursor-pointer"
+        {/* Controls row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Segment control */}
+          <div className="inline-flex items-center rounded-xl border border-border bg-muted/50 p-1 gap-0.5 self-start">
+            <button
+              onClick={() => setActiveTab("hosts")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
+                activeTab === "hosts"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              {t.people.showUnverifiedOnly}
-            </Label>
-          </div>
-        )}
-      </div>
-
-      {/* Hosts table */}
-      {activeTab === "hosts" && (
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle className="text-base text-foreground">
-                {t.people.hosts}
-              </CardTitle>
-              <div className="relative w-full max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder={t.people.searchHosts}
-                  value={hostSearch}
-                  onChange={(e) => setHostSearch(e.target.value)}
-                  className="pl-9 h-9"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {allHosts === undefined ? (
-              <div className="flex justify-center py-10">
-                <Spinner className="size-6" />
-              </div>
-            ) : filteredHosts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
-                <Home className="size-8 opacity-40" />
-                <p className="text-sm">{t.people.noHostsFound}</p>
-              </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b border-border/60">
-                      <TableHead className="pl-5">{t.people.host}</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {t.form.address}
-                      </TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        {t.form.sector}
-                      </TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        {t.form.kashrout}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        {t.form.ethnicity}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        {t.people.access}
-                      </TableHead>
-                      {isAdmin && <TableHead>{t.people.status}</TableHead>}
-                      {isAdmin && (
-                        <TableHead className="pr-5 text-right">
-                          {t.people.actions}
-                        </TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedHosts.map((host) => (
-                      <TableRow
-                        key={host._id}
-                        onClick={() => setSelectedHost(host)}
-                        className="cursor-pointer transition-colors hover:bg-accent/60 active:bg-accent border-b border-border/40 last:border-0"
-                      >
-                        <TableCell className="pl-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="relative shrink-0">
-                              <Avatar className="size-9 border border-border/50">
-                                <AvatarImage src={host.image} />
-                                <AvatarFallback className="text-xs bg-violet-500/10 text-violet-600 font-semibold">
-                                  {getInitials(host.name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {host.isBlocked && (
-                                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 flex items-center justify-center rounded-full bg-destructive ring-1 ring-background">
-                                  <Ban className="size-2 text-white" />
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-medium text-foreground text-sm truncate">
-                                {host.name || t.people.unknown}
-                              </span>
-                              <span className="text-xs text-muted-foreground md:hidden truncate">
-                                {host.address}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-3">
-                          <a
-                            href={mapsUrl(host.address)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline truncate max-w-[180px] block"
-                          >
-                            {host.address}
-                          </a>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell py-3">
-                          <EnumPill color="violet">
-                            {el.sector(host.sector)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell py-3">
-                          <EnumPill color="blue">
-                            {el.kashrout(host.kashrout)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell py-3">
-                          <EnumPill color="slate">
-                            {el.ethnicity(host.ethnicity)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell py-3">
-                          {host.hasDisabilityAccess ? (
-                            <Accessibility className="size-4 text-green-600" />
-                          ) : (
-                            <span className="text-xs text-muted-foreground/40">
-                              —
-                            </span>
-                          )}
-                        </TableCell>
-                        {isAdmin && (
-                          <TableCell className="py-3">
-                            {host.isVerified ? (
-                              <EnumPill color="green" icon={CheckCircle2}>
-                                {t.people.confirmed}
-                              </EnumPill>
-                            ) : (
-                              <EnumPill color="amber" icon={Clock}>
-                                {t.people.unverified}
-                              </EnumPill>
-                            )}
-                          </TableCell>
-                        )}
-                        {isAdmin && (
-                          <TableCell
-                            className="pr-5 py-3 text-right"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-muted"
-                                  disabled={blocking === host.userId}
-                                >
-                                  {blocking === host.userId ? (
-                                    <Spinner className="size-3" />
-                                  ) : (
-                                    <MoreHorizontal className="size-4" />
-                                  )}
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
-                                {host.isBlocked ? (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleBlock(
-                                        host.userId as Id<"users">,
-                                        false,
-                                      )
-                                    }
-                                    className="gap-2 cursor-pointer"
-                                  >
-                                    <ShieldOff className="size-3.5 text-green-600" />
-                                    {t.people.unblock}
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleBlock(
-                                        host.userId as Id<"users">,
-                                        true,
-                                      )
-                                    }
-                                    className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20"
-                                  >
-                                    <Ban className="size-3.5 text-amber-600" />
-                                    {t.people.block}
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    setConfirmDelete({
-                                      authUserId: host.authUserId,
-                                      name: host.name || t.people.unknown,
-                                    })
-                                  }
-                                  className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                >
-                                  <Trash2 className="size-3.5 text-destructive" />
-                                  {t.people.deleteUser}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <PaginationBar
-                  pageIndex={hostTable.getState().pagination.pageIndex}
-                  pageCount={hostTable.getPageCount()}
-                  total={filteredHosts.length}
-                  label={t.people.hosts.toLowerCase()}
-                  canPrev={hostTable.getCanPreviousPage()}
-                  canNext={hostTable.getCanNextPage()}
-                  onPrev={() => hostTable.previousPage()}
-                  onNext={() => hostTable.nextPage()}
-                />
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Guests table */}
-      {activeTab === "guests" && (
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-4">
-              <CardTitle className="text-base text-foreground">
-                {t.people.guests}
-              </CardTitle>
-              <div className="relative w-full max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder={t.people.searchGuests}
-                  value={guestSearch}
-                  onChange={(e) => setGuestSearch(e.target.value)}
-                  className="pl-9 h-9"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {allGuests === undefined ? (
-              <div className="flex justify-center py-10">
-                <Spinner className="size-6" />
-              </div>
-            ) : filteredGuests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
-                <Users className="size-8 opacity-40" />
-                <p className="text-sm">{t.people.noGuestsFound}</p>
-              </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b border-border/60">
-                      <TableHead className="pl-5">{t.people.guest}</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        {t.form.address}
-                      </TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        {t.form.sector}
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {t.form.ethnicity}
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        {t.form.gender}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        {t.form.dateOfBirth}
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        {t.form.age}
-                      </TableHead>
-                      {isAdmin && (
-                        <TableHead className="pr-5 text-right">
-                          {t.people.actions}
-                        </TableHead>
-                      )}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedGuests.map((guest) => (
-                      <TableRow
-                        key={guest._id}
-                        onClick={() => setSelectedGuest(guest)}
-                        className="cursor-pointer transition-colors hover:bg-accent/60 active:bg-accent border-b border-border/40 last:border-0"
-                      >
-                        <TableCell className="pl-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="relative shrink-0">
-                              <Avatar className="size-9 border border-border/50">
-                                <AvatarImage src={guest.image} />
-                                <AvatarFallback className="text-xs bg-amber-500/10 text-amber-600 font-semibold">
-                                  {getInitials(guest.name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {guest.isBlocked && (
-                                <span className="absolute -bottom-0.5 -right-0.5 size-3.5 flex items-center justify-center rounded-full bg-destructive ring-1 ring-background">
-                                  <Ban className="size-2 text-white" />
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-medium text-foreground text-sm truncate">
-                                {guest.name || t.people.unknown}
-                              </span>
-                              <span className="text-xs text-muted-foreground sm:hidden truncate">
-                                {guest.region}
-                              </span>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell py-3">
-                          <a
-                            href={mapsUrl(guest.region)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-sm text-muted-foreground hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
-                          >
-                            {guest.region}
-                          </a>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell py-3">
-                          <EnumPill color="amber">
-                            {el.sector(guest.sector)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-3">
-                          <EnumPill color="slate">
-                            {el.ethnicity(guest.ethnicity)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell py-3">
-                          <EnumPill color={genderColor(guest.gender)}>
-                            {el.gender(guest.gender)}
-                          </EnumPill>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell py-3">
-                          <div className="flex items-center gap-1.5 text-muted-foreground">
-                            <Calendar className="size-3.5" />
-                            <span className="text-xs">
-                              {formatDate(guest.dob)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell py-3">
-                          <span className="text-sm font-medium text-foreground tabular-nums">
-                            {computeAge(guest.dob)}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            {t.form.yearsOld}
-                          </span>
-                        </TableCell>
-                        {isAdmin && (
-                          <TableCell
-                            className="pr-5 py-3 text-right"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-muted"
-                                  disabled={blocking === guest.userId}
-                                >
-                                  {blocking === guest.userId ? (
-                                    <Spinner className="size-3" />
-                                  ) : (
-                                    <MoreHorizontal className="size-4" />
-                                  )}
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
-                                {guest.isBlocked ? (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleBlock(
-                                        guest.userId as Id<"users">,
-                                        false,
-                                      )
-                                    }
-                                    className="gap-2 cursor-pointer"
-                                  >
-                                    <ShieldOff className="size-3.5 text-green-600" />
-                                    {t.people.unblock}
-                                  </DropdownMenuItem>
-                                ) : (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleBlock(
-                                        guest.userId as Id<"users">,
-                                        true,
-                                      )
-                                    }
-                                    className="gap-2 cursor-pointer text-amber-600 focus:text-amber-600 focus:bg-amber-50 dark:focus:bg-amber-950/20"
-                                  >
-                                    <Ban className="size-3.5 text-amber-600" />
-                                    {t.people.block}
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    setConfirmDelete({
-                                      authUserId: guest.authUserId,
-                                      name: guest.name || t.people.unknown,
-                                    })
-                                  }
-                                  className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-                                >
-                                  <Trash2 className="size-3.5 text-destructive" />
-                                  {t.people.deleteUser}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <PaginationBar
-                  pageIndex={guestTable.getState().pagination.pageIndex}
-                  pageCount={guestTable.getPageCount()}
-                  total={filteredGuests.length}
-                  label={t.people.guests.toLowerCase()}
-                  canPrev={guestTable.getCanPreviousPage()}
-                  canNext={guestTable.getCanNextPage()}
-                  onPrev={() => guestTable.previousPage()}
-                  onNext={() => guestTable.nextPage()}
-                />
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Host detail dialog */}
-      <HostDetailDialog
-        host={selectedHost}
-        isAdmin={isAdmin}
-        verifying={verifying}
-        onConfirm={handleVerify}
-        onClose={() => setSelectedHost(null)}
-      />
-
-      {/* Guest detail dialog */}
-      <GuestDetailDialog
-        guest={selectedGuest}
-        onClose={() => setSelectedGuest(null)}
-      />
-
-      {/* Delete confirmation */}
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={() => setConfirmDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t.people.deleteConfirmTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span className="font-medium text-foreground">
-                {confirmDelete?.name}
+              <Home className="size-3.5" />
+              {t.people.hosts}
+              <span
+                className={cn(
+                  "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
+                  activeTab === "hosts"
+                    ? "bg-violet-500/10 text-violet-600"
+                    : "bg-muted-foreground/10 text-muted-foreground",
+                )}
+              >
+                {allHosts?.length ?? 0}
               </span>
-              {" — "}
-              {t.people.deleteConfirmDesc}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirmed}
-              className="bg-destructive text-white hover:bg-destructive/90"
+            </button>
+            <button
+              onClick={() => setActiveTab("guests")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
+                activeTab === "guests"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              <Trash2 className="size-4 mr-2" />
-              {t.people.deleteUser}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <Users className="size-3.5" />
+              {t.people.guests}
+              <span
+                className={cn(
+                  "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
+                  activeTab === "guests"
+                    ? "bg-amber-500/10 text-amber-600"
+                    : "bg-muted-foreground/10 text-muted-foreground",
+                )}
+              >
+                {allGuests?.length ?? 0}
+              </span>
+            </button>
+          </div>
+
+          {/* Unverified filter */}
+          {isAdmin && activeTab === "hosts" && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="unverified-filter"
+                checked={showUnverifiedOnly}
+                onCheckedChange={setShowUnverifiedOnly}
+              />
+              <Label
+                htmlFor="unverified-filter"
+                className="text-sm cursor-pointer"
+              >
+                {t.people.showUnverifiedOnly}
+              </Label>
+            </div>
+          )}
+        </div>
+
+        {/* Hosts table */}
+        {activeTab === "hosts" && (
+          <HostsTable
+            table={hostTable}
+            rows={paginatedHosts}
+            isLoading={allHosts === undefined}
+            total={filteredHosts.length}
+            search={hostSearch}
+            onSearchChange={setHostSearch}
+            isAdmin={isAdmin}
+            onRowClick={setSelectedHost}
+            blocking={blocking}
+            onBlock={handleBlock}
+            onDelete={setConfirmDelete}
+          />
+        )}
+
+        {/* Guests table */}
+        {activeTab === "guests" && (
+          <GuestsTable
+            table={guestTable}
+            rows={paginatedGuests}
+            isLoading={allGuests === undefined}
+            total={filteredGuests.length}
+            search={guestSearch}
+            onSearchChange={setGuestSearch}
+            isAdmin={isAdmin}
+            onRowClick={setSelectedGuest}
+            blocking={blocking}
+            onBlock={handleBlock}
+            onDelete={setConfirmDelete}
+          />
+        )}
+
+        {/* Host detail dialog */}
+        <HostDetailDialog
+          host={selectedHost}
+          isAdmin={isAdmin}
+          verifying={verifying}
+          onConfirm={handleVerify}
+          onClose={() => setSelectedHost(null)}
+        />
+
+        {/* Guest detail dialog */}
+        <GuestDetailDialog
+          guest={selectedGuest}
+          onClose={() => setSelectedGuest(null)}
+        />
+
+        {/* Delete confirmation */}
+        <AlertDialog
+          open={!!confirmDelete}
+          onOpenChange={() => setConfirmDelete(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t.people.deleteConfirmTitle}</AlertDialogTitle>
+              <AlertDialogDescription>
+                <span className="font-medium text-foreground">
+                  {confirmDelete?.name}
+                </span>
+                {" — "}
+                {t.people.deleteConfirmDesc}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteConfirmed}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                <Trash2 className="size-4 mr-2" />
+                {t.people.deleteUser}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
