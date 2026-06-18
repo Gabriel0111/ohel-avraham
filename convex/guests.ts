@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { GuestFields } from "./validators/guest";
 import { api } from "./_generated/api";
 import { attachUsers } from "./helpers/attachUsers";
@@ -21,7 +21,7 @@ export const createGuest = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const authUserId = identity.subject;
 

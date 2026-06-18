@@ -35,7 +35,7 @@ const BackHomeButton = () => {
         href="/"
         className={buttonVariants({
           variant: "ghost",
-          className: "absolute top-7 left-5",
+          className: "absolute top-7 start-5",
         })}
       >
         <ChevronLeftIcon />
@@ -49,7 +49,7 @@ const BackHomeButton = () => {
       type="button"
       onClick={onBack}
       variant="ghost"
-      className="absolute top-7 left-5"
+      className="absolute top-7 start-5"
     >
       <ChevronLeftIcon />
       {t.common.back}

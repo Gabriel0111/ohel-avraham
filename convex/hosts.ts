@@ -1,5 +1,5 @@
 import { mutation, query, type QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { HostFields } from "./validators/host";
 import { api } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
@@ -22,7 +22,7 @@ export const createHost = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const authUserId = identity.subject;
 

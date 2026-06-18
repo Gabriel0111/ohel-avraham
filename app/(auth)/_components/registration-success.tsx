@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 
-const REDIRECT_MS = 4600;
+const REDIRECT_MS = 9000;
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
 const theme = {
@@ -160,6 +160,23 @@ export function RegistrationSuccess({ role }: { role: "host" | "guest" }) {
           {t.celebrate.continue}
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
+
+        {/* Countdown bar — fills over REDIRECT_MS then triggers the redirect */}
+        <div className="w-full overflow-hidden rounded-full bg-muted h-1">
+          <motion.div
+            className={cn(
+              "h-full rounded-full",
+              role === "host" ? "bg-violet-400/70" : "bg-amber-400/70",
+            )}
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{
+              duration: REDIRECT_MS / 1000,
+              ease: "linear",
+              delay: reduce ? 0 : 0.5,
+            }}
+          />
+        </div>
       </motion.div>
     </motion.div>
   );

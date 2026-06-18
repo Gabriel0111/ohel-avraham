@@ -24,7 +24,7 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { UserRound } from "lucide-react";
 import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
@@ -33,6 +33,7 @@ const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
   const { t } = useT();
+  const getErrorMessage = useErrorMessage();
 
   const createGuest = useMutation(api.guests.createGuest);
 
@@ -43,17 +44,16 @@ const GuestForm = () => {
 
   const handleSubmit = (values: GuestType) => {
     startRegistering(async () => {
-      const { success } = await createGuest({
-        data: {
-          ...values,
-          dob: values.dob.getTime(),
-        },
-      });
-
-      if (success) {
+      try {
+        await createGuest({
+          data: {
+            ...values,
+            dob: values.dob.getTime(),
+          },
+        });
         setRegistered(true);
-      } else {
-        toast.error(t.auth.errorCreating);
+      } catch (e) {
+        toast.error(getErrorMessage(e, "profileCreateFailed"));
       }
     });
   };

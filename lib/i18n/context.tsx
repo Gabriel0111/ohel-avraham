@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { translations, type Language } from "./translations";
+import { parseError, type ErrorKey } from "@/lib/errors";
 
 type T = (typeof translations)[Language];
 
@@ -52,6 +53,30 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useT() {
   return useContext(LanguageContext);
+}
+
+/**
+ * Returns a parser that turns any Better Auth / Convex error into a clean,
+ * localized string ready to hand straight to `toast.error(...)`. Unknown
+ * codes fall back to `fallbackKey` (default `unexpected`) so a call site can
+ * supply a more specific default, e.g. `profileCreateFailed`. Mirrors the
+ * `useEnumLabel` idiom (reads `useT()`, returns a mapper).
+ */
+export function useErrorMessage() {
+  const { t } = useContext(LanguageContext);
+  return (e: unknown, fallbackKey: ErrorKey = "unexpected"): string => {
+    const parsed = parseError(e);
+    const key = parsed.key === "unexpected" ? fallbackKey : parsed.key;
+    const data = parsed.data;
+    const entry = (
+      t.errors as Record<
+        string,
+        string | ((d?: Record<string, unknown>) => string)
+      >
+    )[key];
+    const resolved = entry ?? t.errors.unexpected;
+    return typeof resolved === "function" ? resolved(data) : resolved;
+  };
 }
 
 export function useEnumLabel() {

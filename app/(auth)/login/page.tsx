@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
-import { FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { PasswordField } from "@/app/(auth)/_components/password-field";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -26,7 +32,7 @@ import AuthHeader from "@/app/(auth)/_components/auth-header";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { useAuth } from "@/app/ConvexClientProvider";
 
 function VerifyEmailNotice() {
@@ -45,6 +51,7 @@ function VerifyEmailNotice() {
 const LoginPage = () => {
   const [isRegistering, startRegistering] = useTransition();
   const { t } = useT();
+  const getErrorMessage = useErrorMessage();
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
@@ -67,8 +74,8 @@ const LoginPage = () => {
           onSuccess: async () => {
             toast.success(t.auth.signedInWithGoogle);
           },
-          onError: () => {
-            toast.error("Internal Server Error");
+          onError: (ctx) => {
+            toast.error(getErrorMessage(ctx.error));
           },
         },
       });
@@ -85,8 +92,8 @@ const LoginPage = () => {
             router.push("/");
             toast.success(t.auth.loginSuccess);
           },
-          onError: (error) => {
-            toast.error(error.error.message);
+          onError: (ctx) => {
+            toast.error(getErrorMessage(ctx.error));
           },
         },
       });
@@ -94,22 +101,20 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="relative flex flex-col py-10 px-4 min-h-screen justify-center overflow-y-auto">
+    <div className="relative flex min-h-screen flex-col justify-center overflow-y-auto px-4 py-16">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-8 sm:w-sm mt-10">
+      <div className="mx-auto w-full max-w-sm space-y-8">
         <Suspense>
           <VerifyEmailNotice />
         </Suspense>
 
-        <AuthHeader
-          title={t.auth.loginTitle}
-          description={t.auth.loginDesc}
-        />
+        <AuthHeader title={t.auth.loginTitle} description={t.auth.loginDesc} />
 
         <Button
+          variant="outline"
           className="w-full"
-          type="submit"
+          type="button"
           disabled={isRegistering}
           onClick={signInWithGoogle}
         >
@@ -121,95 +126,54 @@ const LoginPage = () => {
 
         <form onSubmit={form.handleSubmit(handleSubmit)}>
           <FieldGroup>
-            <div className="flex flex-col space-y-5 justify-between">
-              <Controller
-                name="email"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <>
-                    <FieldLabel>{t.form.email}</FieldLabel>
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel htmlFor="email">{t.form.email}</FieldLabel>
 
-                    <InputGroup aria-invalid={fieldState.invalid}>
-                      <InputGroupInput
-                        placeholder="avraham.avinu@gmail.com"
-                        type="email"
-                        dir="ltr"
-                        aria-invalid={fieldState.invalid}
+                  <InputGroup aria-invalid={fieldState.invalid}>
+                    <InputGroupInput
+                      id="email"
+                      placeholder="avraham.avinu@gmail.com"
+                      type="email"
+                      dir="ltr"
+                      autoComplete="email"
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    <InputGroupAddon align="inline-start">
+                      <AtSignIcon
                         className={cn(fieldState.invalid && "text-destructive")}
-                        {...field}
                       />
-                      <InputGroupAddon align="inline-start">
-                        <AtSignIcon
-                          className={cn(
-                            fieldState.invalid && "text-destructive",
-                          )}
-                        />
-                      </InputGroupAddon>
-                    </InputGroup>
+                    </InputGroupAddon>
+                  </InputGroup>
 
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </>
-                )}
-              />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <>
-                    <FieldLabel>{t.form.password}</FieldLabel>
+            <PasswordField
+              control={form.control}
+              name="password"
+              label={t.form.password}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              icon={KeyRoundIcon}
+            />
 
-                    <InputGroup aria-invalid={fieldState.invalid}>
-                      <InputGroupAddon>
-                        <KeyRoundIcon
-                          className={cn(
-                            fieldState.invalid && "text-destructive",
-                          )}
-                        />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        type="password"
-                        aria-invalid={fieldState.invalid}
-                        className={cn(fieldState.invalid && "text-destructive")}
-                        {...field}
-                      />
-                    </InputGroup>
-
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </>
-                )}
-              />
-
-              <Button className="w-full" type="submit" disabled={isRegistering}>
-                {isRegistering && <Spinner />}
-                {t.auth.continueWithEmail}
-              </Button>
-            </div>
+            <Button className="w-full" type="submit" disabled={isRegistering}>
+              {isRegistering && <Spinner />}
+              {t.auth.continueWithEmail}
+            </Button>
           </FieldGroup>
         </form>
-        {/*<p className="mt-8 text-muted-foreground text-sm">*/}
-        {/*  By clicking continue, you agree to our{" "}*/}
-        {/*  <a*/}
-        {/*    className="underline underline-offset-4 hover:text-primary"*/}
-        {/*    href="#"*/}
-        {/*  >*/}
-        {/*    Terms of Service*/}
-        {/*  </a>{" "}*/}
-        {/*  and{" "}*/}
-        {/*  <a*/}
-        {/*    className="underline underline-offset-4 hover:text-primary"*/}
-        {/*    href="#"*/}
-        {/*  >*/}
-        {/*    Privacy Policy*/}
-        {/*  </a>*/}
-        {/*  .*/}
-        {/*</p>*/}
 
-        <p className="flex justify-center items-center mt-8 text-muted-foreground text-sm">
+        <p className="flex justify-center items-center text-muted-foreground text-sm">
           <span>{t.auth.noAccount}</span>
           <Link
             href="/sign-up"

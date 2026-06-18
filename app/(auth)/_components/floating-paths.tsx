@@ -1,6 +1,8 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 export function FloatingPaths({ position }: { position: number }) {
+  const reduceMotion = useReducedMotion();
+
   const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
     d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
@@ -50,25 +52,37 @@ export function FloatingPaths({ position }: { position: number }) {
         </defs>
         {paths.map((path) => (
           <motion.path
-            animate={{
-              pathLength: 1,
-              opacity: [
-                path.opacity * 0.6,
-                path.opacity * 1.2,
-                path.opacity * 0.6,
-              ],
-              pathOffset: [0, 1, 0],
-            }}
+            animate={
+              reduceMotion
+                ? undefined
+                : {
+                    pathLength: 1,
+                    opacity: [
+                      path.opacity * 0.6,
+                      path.opacity * 1.2,
+                      path.opacity * 0.6,
+                    ],
+                    pathOffset: [0, 1, 0],
+                  }
+            }
             d={path.d}
-            initial={{ pathLength: 0.3, opacity: path.opacity }}
+            initial={
+              reduceMotion
+                ? { pathLength: 1, opacity: path.opacity }
+                : { pathLength: 0.3, opacity: path.opacity }
+            }
             key={path.id}
             stroke={`url(#gradient-${path.id})`}
             strokeWidth={path.width}
-            transition={{
-              duration: 20 + Math.random() * 10,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "linear",
-            }}
+            transition={
+              reduceMotion
+                ? undefined
+                : {
+                    duration: 20 + (path.id % 10),
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "linear",
+                  }
+            }
           />
         ))}
       </svg>

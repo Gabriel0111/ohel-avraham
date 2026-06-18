@@ -55,6 +55,8 @@ export const translations = {
       email: "Email",
       password: "Password",
       confirmPassword: "Confirm Password",
+      showPassword: "Show password",
+      hidePassword: "Hide password",
     },
     address: {
       searchPlaceholder: "e.g. 12 Bayit Vagan, Jerusalem...",
@@ -115,7 +117,8 @@ export const translations = {
       submit: "Send request",
       people: "people",
       on: "on",
-      contactHidden: "The host's contact details will appear here once accepted.",
+      contactHidden:
+        "The host's contact details will appear here once accepted.",
       contactRevealed: "Contact details",
       guestDetailsRevealed: "Guest details",
       toastSent: "Request sent.",
@@ -274,7 +277,18 @@ export const translations = {
       errorCreating: "Error creating profile",
       verifyEmailSent: "Verification email sent! Please check your inbox.",
       verifyEmailTitle: "Check your inbox",
-      verifyEmailDesc: "We sent you a verification link. Please verify your email before signing in.",
+      verifyEmailDesc:
+        "We sent you a verification link. Please verify your email before signing in.",
+    },
+    errors: {
+      invalidCredentials: "Incorrect email or password.",
+      userAlreadyExists: "An account with this email already exists.",
+      emailNotVerified: "Please verify your email before signing in.",
+      invalidEmail: "Please enter a valid email address.",
+      passwordLength: "Your password doesn't meet the length requirements.",
+      unauthorized: "You need to be signed in to do this.",
+      profileCreateFailed: "We couldn't create your profile. Please try again.",
+      unexpected: "An unexpected error occurred, please try again.",
     },
     celebrate: {
       hostTitle: "Your tent is open",
@@ -400,7 +414,8 @@ export const translations = {
       deleteUserSuccess: "Account deleted.",
       deleteUserError: "Failed to delete account.",
       deleteConfirmTitle: "Delete this account?",
-      deleteConfirmDesc: "This action is irreversible. The profile and all associated data will be permanently deleted.",
+      deleteConfirmDesc:
+        "This action is irreversible. The profile and all associated data will be permanently deleted.",
     },
     blocked: {
       title: "Account suspended",
@@ -422,7 +437,8 @@ export const translations = {
       verificationStatus: "Verification Status",
       verificationStatusDesc: "Your current trust level on the platform.",
       emailVerification: "Email Verification",
-      emailVerificationDesc: "Confirm your email address to secure your account.",
+      emailVerificationDesc:
+        "Confirm your email address to secure your account.",
       verifiedAccount: "Verified Account",
       identityPending: "Identity Pending",
       manualReview: "Manual review by community admins.",
@@ -431,7 +447,8 @@ export const translations = {
       adminNoticePost:
         ", you have platform-wide access. No specific host or guest profiles are needed.",
       linkedAccounts: "Linked Accounts",
-      linkedAccountsDesc: "Manage the sign-in methods connected to your account.",
+      linkedAccountsDesc:
+        "Manage the sign-in methods connected to your account.",
       emailPassword: "Email & Password",
       googleAccount: "Google Account",
       linked: "Linked",
@@ -446,8 +463,10 @@ export const translations = {
       dangerZone: "Danger Zone",
       dangerZoneDesc: "Irreversible actions — proceed with caution.",
       deleteAccount: "Delete Account",
-      deleteAccountDesc: "Permanently delete your account and all associated data.",
-      deleteAccountWarning: "This action is irreversible. Your profile, host and guest data will be permanently deleted.",
+      deleteAccountDesc:
+        "Permanently delete your account and all associated data.",
+      deleteAccountWarning:
+        "This action is irreversible. Your profile, host and guest data will be permanently deleted.",
       deleteAccountConfirm: "Yes, delete my account",
       deleteAccountCancel: "Cancel",
       deleteAccountDeleting: "Deleting...",
@@ -553,9 +572,11 @@ export const translations = {
       notesPlaceholder: "Notes pour des précisions supplémentaires",
       firstName: "Prénom",
       lastName: "Nom de famille",
-      email: "E-mail",
+      email: "Email",
       password: "Mot de passe",
       confirmPassword: "Confirmer le mot de passe",
+      showPassword: "Afficher le mot de passe",
+      hidePassword: "Masquer le mot de passe",
     },
     address: {
       searchPlaceholder: "Ex : 12 Bayit Vagan, Jérusalem...",
@@ -620,7 +641,8 @@ export const translations = {
       submit: "Envoyer la demande",
       people: "personnes",
       on: "le",
-      contactHidden: "Les coordonnées de l'hôte apparaîtront ici une fois la demande acceptée.",
+      contactHidden:
+        "Les coordonnées de l'hôte apparaîtront ici une fois la demande acceptée.",
       contactRevealed: "Coordonnées",
       guestDetailsRevealed: "Détails de l'invité",
       toastSent: "Demande envoyée.",
@@ -758,7 +780,7 @@ export const translations = {
       loginDesc:
         "Connectez-vous à votre compte pour commencer votre expérience de partage",
       continueWithGoogle: "Continuer avec Google",
-      continueWithEmail: "Continuer avec l'e-mail",
+      continueWithEmail: "Continuer avec l'email",
       register: "S'inscrire",
       alreadyHaveAccount: "Vous avez déjà un compte ?",
       clickToLogin: "Cliquez ici pour vous connecter",
@@ -782,9 +804,23 @@ export const translations = {
       signedUpSuccess: "Inscription réussie.",
       loginSuccess: "Connexion réussie.",
       errorCreating: "Erreur lors de la création du profil",
-      verifyEmailSent: "Email de vérification envoyé ! Vérifiez votre boîte de réception.",
+      verifyEmailSent:
+        "Email de vérification envoyé ! Vérifiez votre boîte de réception.",
       verifyEmailTitle: "Vérifiez votre boîte de réception",
-      verifyEmailDesc: "Nous vous avons envoyé un lien de vérification. Veuillez vérifier votre e-mail avant de vous connecter.",
+      verifyEmailDesc:
+        "Nous vous avons envoyé un lien de vérification. Veuillez vérifier votre email avant de vous connecter.",
+    },
+    errors: {
+      invalidCredentials: "Email ou mot de passe incorrect.",
+      userAlreadyExists: "Un compte existe déjà avec cet email.",
+      emailNotVerified:
+        "Veuillez vérifier votre email avant de vous connecter.",
+      invalidEmail: "Veuillez saisir une adresse email valide.",
+      passwordLength: "Votre mot de passe ne respecte pas la longueur requise.",
+      unauthorized: "Vous devez être connecté pour effectuer cette action.",
+      profileCreateFailed:
+        "Impossible de créer votre profil. Veuillez réessayer.",
+      unexpected: "Une erreur inattendue est survenue, veuillez réessayer.",
     },
     celebrate: {
       hostTitle: "Votre tente est ouverte",
@@ -913,7 +949,8 @@ export const translations = {
       deleteUserSuccess: "Compte supprimé.",
       deleteUserError: "Erreur lors de la suppression.",
       deleteConfirmTitle: "Supprimer ce compte ?",
-      deleteConfirmDesc: "Cette action est irréversible. Le profil et toutes les données associées seront définitivement supprimés.",
+      deleteConfirmDesc:
+        "Cette action est irréversible. Le profil et toutes les données associées seront définitivement supprimés.",
     },
     blocked: {
       title: "Compte suspendu",
@@ -948,14 +985,16 @@ export const translations = {
       adminNoticePost:
         " vous avez un accès à toute la plateforme. Aucun profil hôte ou invité spécifique n'est nécessaire.",
       linkedAccounts: "Comptes connectés",
-      linkedAccountsDesc: "Gérez les méthodes de connexion liées à votre compte.",
+      linkedAccountsDesc:
+        "Gérez les méthodes de connexion liées à votre compte.",
       emailPassword: "Email & Mot de passe",
       googleAccount: "Compte Google",
       linked: "Connecté",
       notLinked: "Non connecté",
       linkGoogle: "Connecter Google",
       linkingGoogle: "Connexion...",
-      linkGoogleError: "Échec de la connexion au compte Google. Veuillez réessayer.",
+      linkGoogleError:
+        "Échec de la connexion au compte Google. Veuillez réessayer.",
       linkGoogleSuccess: "Compte Google connecté avec succès.",
       tabProfile: "Profil",
       tabCommunity: "Communauté",
@@ -963,12 +1002,15 @@ export const translations = {
       dangerZone: "Zone de danger",
       dangerZoneDesc: "Actions irréversibles — procédez avec précaution.",
       deleteAccount: "Supprimer le compte",
-      deleteAccountDesc: "Supprimez définitivement votre compte et toutes les données associées.",
-      deleteAccountWarning: "Cette action est irréversible. Votre profil, vos données d'hôte et d'invité seront définitivement supprimés.",
+      deleteAccountDesc:
+        "Supprimez définitivement votre compte et toutes les données associées.",
+      deleteAccountWarning:
+        "Cette action est irréversible. Votre profil, vos données d'hôte et d'invité seront définitivement supprimés.",
       deleteAccountConfirm: "Oui, supprimer mon compte",
       deleteAccountCancel: "Annuler",
       deleteAccountDeleting: "Suppression...",
-      deleteAccountError: "Échec de la suppression du compte. Veuillez réessayer.",
+      deleteAccountError:
+        "Échec de la suppression du compte. Veuillez réessayer.",
       editIdentity: "Modifier",
       saveIdentity: "Sauvegarder",
       firstLastName: "Nom complet",
@@ -976,7 +1018,8 @@ export const translations = {
       uploadImage: "Choisir une photo",
       verifyEmail: "Envoyer l'email de vérification",
       verifyEmailSending: "Envoi...",
-      verifyEmailSent: "Email de vérification envoyé ! Vérifiez votre boîte mail.",
+      verifyEmailSent:
+        "Email de vérification envoyé ! Vérifiez votre boîte mail.",
       emailAlreadyVerified: "Email déjà vérifié.",
       emailVerifiedTitle: "Email vérifié",
       emailVerifiedDesc: "Votre adresse email a été confirmée.",
@@ -1073,6 +1116,8 @@ export const translations = {
       email: 'דוא"ל',
       password: "סיסמה",
       confirmPassword: "אישור סיסמה",
+      showPassword: "הצג סיסמה",
+      hidePassword: "הסתר סיסמה",
     },
     address: {
       searchPlaceholder: "לדוגמה: בית וגן 12, ירושלים...",
@@ -1289,15 +1334,25 @@ export const translations = {
       errorCreating: "שגיאה ביצירת הפרופיל",
       verifyEmailSent: "אימייל אימות נשלח! בדוק את תיבת הדואר שלך.",
       verifyEmailTitle: "בדוק את תיבת הדואר שלך",
-      verifyEmailDesc: "שלחנו לך קישור אימות. אנא אמת את האימייל שלך לפני ההתחברות.",
+      verifyEmailDesc:
+        "שלחנו לך קישור אימות. אנא אמת את האימייל שלך לפני ההתחברות.",
+    },
+    errors: {
+      invalidCredentials: "אימייל או סיסמה שגויים.",
+      userAlreadyExists: "כבר קיים חשבון עם אימייל זה.",
+      emailNotVerified: "יש לאמת את האימייל לפני ההתחברות.",
+      invalidEmail: "נא להזין כתובת אימייל תקינה.",
+      passwordLength: "הסיסמה אינה עומדת בדרישות האורך.",
+      unauthorized: "עליך להתחבר כדי לבצע פעולה זו.",
+      profileCreateFailed: "לא הצלחנו ליצור את הפרופיל שלך. נסה שוב.",
+      unexpected: "אירעה שגיאה בלתי צפויה, נסה שוב.",
     },
     celebrate: {
       hostTitle: "האוהל שלך פתוח",
       hostDesc:
         "ברוך הבא, מארח. השולחן שלך הוא כעת חלק מאוהל אברהם — אורחים בקרבתך יכולים למצוא מקום חם לשבת.",
       guestTitle: "המקום שלך שמור",
-      guestDesc:
-        "ברוך הבא, אורח. אתה על המפה — התחל לחפש שולחן חם לשבת.",
+      guestDesc: "ברוך הבא, אורח. אתה על המפה — התחל לחפש שולחן חם לשבת.",
       pendingNote: "מנהל יאמת את הפרופיל שלך בקרוב.",
       continue: "מעבר ללוח הבקרה",
       verifiedTitle: "אומתת בהצלחה",
@@ -1411,7 +1466,8 @@ export const translations = {
       deleteUserSuccess: "חשבון נמחק.",
       deleteUserError: "שגיאה במחיקה.",
       deleteConfirmTitle: "מחוק חשבון זה?",
-      deleteConfirmDesc: "פעולה זו בלתי הפיכה. הפרופיל וכל הנתונים הקשורים יימחקו לצמיתות.",
+      deleteConfirmDesc:
+        "פעולה זו בלתי הפיכה. הפרופיל וכל הנתונים הקשורים יימחקו לצמיתות.",
     },
     blocked: {
       title: "חשבון מושעה",
@@ -1443,7 +1499,7 @@ export const translations = {
         " יש לך גישה לכל הפלטפורמה. אין צורך בפרופילי מארח או אורח ספציפיים.",
       linkedAccounts: "חשבונות מקושרים",
       linkedAccountsDesc: "נהל את שיטות ההתחברות המקושרות לחשבון שלך.",
-      emailPassword: 'אימייל וסיסמה',
+      emailPassword: "אימייל וסיסמה",
       googleAccount: "חשבון Google",
       linked: "מקושר",
       notLinked: "לא מקושר",
@@ -1458,7 +1514,8 @@ export const translations = {
       dangerZoneDesc: "פעולות בלתי הפיכות — המשך בזהירות.",
       deleteAccount: "מחק חשבון",
       deleteAccountDesc: "מחק לצמיתות את חשבונך וכל הנתונים הקשורים אליו.",
-      deleteAccountWarning: "פעולה זו בלתי הפיכה. הפרופיל, נתוני המארח והאורח שלך יימחקו לצמיתות.",
+      deleteAccountWarning:
+        "פעולה זו בלתי הפיכה. הפרופיל, נתוני המארח והאורח שלך יימחקו לצמיתות.",
       deleteAccountConfirm: "כן, מחק את חשבוני",
       deleteAccountCancel: "ביטול",
       deleteAccountDeleting: "מוחק...",

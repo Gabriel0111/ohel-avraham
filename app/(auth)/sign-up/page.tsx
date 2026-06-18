@@ -28,16 +28,18 @@ import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
+import { PasswordField } from "@/app/(auth)/_components/password-field";
 import { useAuth } from "@/app/ConvexClientProvider";
 import OrDivider from "@/app/(auth)/_components/or-divider";
 import GoogleIcon from "@/components/icons/google";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 
 const SignUpPage = () => {
   const [isRegistering, startRegistering] = useTransition();
   const { t } = useT();
+  const getErrorMessage = useErrorMessage();
 
   const router = useRouter();
 
@@ -56,8 +58,8 @@ const SignUpPage = () => {
           onSuccess: async () => {
             toast.success(t.auth.signedInWithGoogle);
           },
-          onError: () => {
-            toast.error("Internal Server Error");
+          onError: (ctx) => {
+            toast.error(getErrorMessage(ctx.error));
           },
         },
       });
@@ -80,7 +82,7 @@ const SignUpPage = () => {
       });
 
       if (signup.error) {
-        toast.error(signup.error.message);
+        toast.error(getErrorMessage(signup.error));
         return;
       }
 
@@ -90,18 +92,16 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center py-10 px-4">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-16">
       <BackHomeButton />
 
-      <div className="mx-auto space-y-8 md:w-sm w-sm mt-10">
-        <AuthHeader
-          title={t.auth.signUpTitle}
-          description={t.auth.signUpDesc}
-        />
+      <div className="mx-auto w-full max-w-sm space-y-8">
+        <AuthHeader title={t.auth.signUpTitle} description={t.auth.signUpDesc} />
 
         <Button
+          variant="outline"
           className="w-full"
-          type="submit"
+          type="button"
           disabled={isRegistering}
           onClick={signInWithGoogle}
         >
@@ -113,17 +113,20 @@ const SignUpPage = () => {
 
         <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <div className="flex flex-col md:flex-row gap-5 justify-between">
+            <div className="flex flex-col sm:flex-row gap-5">
               <Controller
                 name="firstName"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>{t.form.firstName}</FieldLabel>
+                    <FieldLabel htmlFor="firstName">
+                      {t.form.firstName}
+                    </FieldLabel>
                     <Input
+                      id="firstName"
                       placeholder="Avraham"
+                      autoComplete="given-name"
                       aria-invalid={fieldState.invalid}
-                      className={cn(fieldState.invalid && "text-destructive")}
                       {...field}
                     />
 
@@ -139,11 +142,14 @@ const SignUpPage = () => {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field>
-                    <FieldLabel>{t.form.lastName}</FieldLabel>
+                    <FieldLabel htmlFor="lastName">
+                      {t.form.lastName}
+                    </FieldLabel>
                     <Input
+                      id="lastName"
                       placeholder="Avinu"
+                      autoComplete="family-name"
                       aria-invalid={fieldState.invalid}
-                      className={cn(fieldState.invalid && "text-destructive")}
                       {...field}
                     />
 
@@ -160,15 +166,16 @@ const SignUpPage = () => {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field>
-                  <FieldLabel>{t.form.email}</FieldLabel>
+                  <FieldLabel htmlFor="email">{t.form.email}</FieldLabel>
 
-                  <InputGroup>
+                  <InputGroup aria-invalid={fieldState.invalid}>
                     <InputGroupInput
+                      id="email"
                       placeholder="avraham.avinu@gmail.com"
                       type="email"
                       dir="ltr"
+                      autoComplete="email"
                       aria-invalid={fieldState.invalid}
-                      className={cn(fieldState.invalid && "text-destructive")}
                       {...field}
                     />
                     <InputGroupAddon align="inline-start">
@@ -185,47 +192,21 @@ const SignUpPage = () => {
               )}
             />
 
-            <div className="flex flex-col md:flex-row gap-5 justify-between">
-              <Controller
-                name="password"
+            <div className="flex flex-col sm:flex-row gap-5">
+              <PasswordField
                 control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>{t.form.password}</FieldLabel>
-
-                    <Input
-                      type="password"
-                      aria-invalid={fieldState.invalid}
-                      className={cn(fieldState.invalid && "text-destructive")}
-                      {...field}
-                    />
-
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
+                name="password"
+                label={t.form.password}
+                placeholder="••••••••"
+                autoComplete="new-password"
               />
 
-              <Controller
-                name="confirmPassword"
+              <PasswordField
                 control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field>
-                    <FieldLabel>{t.form.confirmPassword}</FieldLabel>
-
-                    <Input
-                      type="password"
-                      aria-invalid={fieldState.invalid}
-                      className={cn(fieldState.invalid && "text-destructive")}
-                      {...field}
-                    />
-
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
+                name="confirmPassword"
+                label={t.form.confirmPassword}
+                placeholder="••••••••"
+                autoComplete="new-password"
               />
             </div>
 
@@ -235,25 +216,8 @@ const SignUpPage = () => {
             </Button>
           </FieldGroup>
         </form>
-        {/*<p className="mt-8 text-muted-foreground text-sm">*/}
-        {/*  By clicking continue, you agree to our{" "}*/}
-        {/*  <a*/}
-        {/*    className="underline underline-offset-4 hover:text-primary"*/}
-        {/*    href="#"*/}
-        {/*  >*/}
-        {/*    Terms of Service*/}
-        {/*  </a>{" "}*/}
-        {/*  and{" "}*/}
-        {/*  <a*/}
-        {/*    className="underline underline-offset-4 hover:text-primary"*/}
-        {/*    href="#"*/}
-        {/*  >*/}
-        {/*    Privacy Policy*/}
-        {/*  </a>*/}
-        {/*  .*/}
-        {/*</p>*/}
 
-        <p className="flex justify-center items-center mt-2 text-muted-foreground text-sm">
+        <p className="flex justify-center items-center text-muted-foreground text-sm">
           <span>{t.auth.alreadyHaveAccount}</span>
           <Link
             href="/login"

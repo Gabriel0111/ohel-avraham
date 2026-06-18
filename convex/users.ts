@@ -1,6 +1,6 @@
 import { SystemRole } from "./enums";
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { api, components } from "./_generated/api";
 import { canAccess } from "./helpers/canAccessRole";
 import { authComponent } from "./auth";
@@ -83,7 +83,7 @@ export const addRoleToMe = mutation({
   args: { role: SystemRole },
   handler: async (ctx, { role }) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
     const authUserId = identity.subject;
 
     const user = await ctx.db

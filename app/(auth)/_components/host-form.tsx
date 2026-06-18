@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { Home, Accessibility } from "lucide-react";
 import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
@@ -42,6 +42,7 @@ const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
   const { t } = useT();
+  const getErrorMessage = useErrorMessage();
 
   const createHost = useMutation(api.hosts.createHost);
 
@@ -52,18 +53,17 @@ const HostForm = () => {
 
   const handleSubmit = (values: HostType) => {
     startRegistering(async () => {
-      const { success } = await createHost({
-        data: {
-          ...values,
-          dob: values.dob.getTime(),
-          floor: String(values.floor),
-        },
-      });
-
-      if (success) {
+      try {
+        await createHost({
+          data: {
+            ...values,
+            dob: values.dob.getTime(),
+            floor: String(values.floor),
+          },
+        });
         setRegistered(true);
-      } else {
-        toast.error(t.auth.errorCreating);
+      } catch (e) {
+        toast.error(getErrorMessage(e, "profileCreateFailed"));
       }
     });
   };
