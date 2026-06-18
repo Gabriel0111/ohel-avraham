@@ -421,6 +421,8 @@ export const translations = {
       guestProfile: "Guest Profile",
       verificationStatus: "Verification Status",
       verificationStatusDesc: "Your current trust level on the platform.",
+      emailVerification: "Email Verification",
+      emailVerificationDesc: "Confirm your email address to secure your account.",
       verifiedAccount: "Verified Account",
       identityPending: "Identity Pending",
       manualReview: "Manual review by community admins.",
@@ -934,6 +936,9 @@ export const translations = {
       verificationStatus: "Statut de vérification",
       verificationStatusDesc:
         "Votre niveau de confiance actuel sur la plateforme.",
+      emailVerification: "Vérification de l'email",
+      emailVerificationDesc:
+        "Confirmez votre adresse email pour sécuriser votre compte.",
       verifiedAccount: "Compte vérifié",
       identityPending: "Identité en attente",
       manualReview:
@@ -1427,6 +1432,8 @@ export const translations = {
       guestProfile: "פרופיל אורח",
       verificationStatus: "סטטוס אימות",
       verificationStatusDesc: "רמת האמון הנוכחית שלך בפלטפורמה.",
+      emailVerification: "אימות אימייל",
+      emailVerificationDesc: "אשר את כתובת האימייל שלך כדי לאבטח את חשבונך.",
       verifiedAccount: "חשבון מאומת",
       identityPending: "זהות ממתינה",
       manualReview: "בדיקה ידנית על ידי מנהלי הקהילה.",

@@ -15,6 +15,7 @@ import { LinkedAccounts } from "./_components/linked-accounts";
 import { DeleteAccount } from "./_components/delete-account";
 import { VerificationStatus } from "@/app/dashboard/_components/profile-ui/verification-status";
 import { EditIdentity } from "./_components/edit-identity";
+import { EmailVerificationSkeleton } from "./_components/email-verification-skeleton";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
@@ -49,6 +50,9 @@ export default function ProfilePage() {
 
   const { user } = data;
   const emailVerified = session.data?.user.emailVerified ?? false;
+  // Both the session and the linked-accounts lookup resolve asynchronously;
+  // until they do we show a skeleton instead of letting the card pop in.
+  const emailInfoLoading = session.isPending || hasPasswordAccount === null;
 
   const joinDate = new Date(user._creationTime).toLocaleDateString(
     lang === "he" ? "he-IL" : lang === "fr" ? "fr-FR" : "en-GB",
@@ -75,7 +79,6 @@ export default function ProfilePage() {
       <PageHeader title={t.profile.title} subtitle={t.profile.subtitle} />
 
       <div className="space-y-2">
-
         {/* IDENTITÉ PERSONNELLE */}
         <PageSection
           title={t.profile.personalIdentity}
@@ -96,9 +99,17 @@ export default function ProfilePage() {
                 className="relative shrink-0 group focus:outline-none cursor-pointer"
                 title={t.profile.uploadImage}
               >
-                <div className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}>
+                <div
+                  className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}
+                >
                   {user.image ? (
-                    <Image src={user.image} alt={user.name || ""} fill className="object-cover" draggable={false} />
+                    <Image
+                      src={user.image}
+                      alt={user.name || ""}
+                      fill
+                      className="object-cover"
+                      draggable={false}
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
                       {user.name?.[0]?.toUpperCase()}
@@ -118,7 +129,9 @@ export default function ProfilePage() {
               {/* Infos */}
               <div className="flex-1 min-w-0 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-lg font-bold tracking-tight text-foreground leading-tight">{user.name}</h3>
+                  <h3 className="text-lg font-bold tracking-tight text-foreground leading-tight">
+                    {user.name}
+                  </h3>
                   <RoleBadge role={user.role} />
                   <Button
                     type="button"
@@ -138,7 +151,9 @@ export default function ProfilePage() {
                   </span>
                   <span className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="size-3.5 shrink-0" />
-                    <span>{t.profile.joined} {joinDate}</span>
+                    <span>
+                      {t.profile.joined} {joinDate}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -159,21 +174,38 @@ export default function ProfilePage() {
                 verifiedAt={user.verifiedAt}
               />
             )}
+          </div>
+        </PageSection>
 
-            {/* Email vérifié — uniquement si compte email/password */}
-            {hasPasswordAccount && (
-              <div className={`flex items-center justify-between p-4 rounded-xl border ${emailVerified ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent" : "border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent"}`}>
+        {/* VÉRIFICATION DE L'EMAIL */}
+        {(emailInfoLoading || hasPasswordAccount) && (
+          <PageSection
+            title={t.profile.emailVerification}
+            description={t.profile.emailVerificationDesc}
+          >
+            {emailInfoLoading ? (
+              <EmailVerificationSkeleton />
+            ) : (
+              <div
+                className={`flex items-center justify-between p-4 rounded-xl border ${emailVerified ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent" : "border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-transparent"}`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${emailVerified ? "bg-green-500/15 text-green-600" : "bg-amber-500/15 text-amber-600"}`}>
+                  <div
+                    className={`p-2 rounded-full ${emailVerified ? "bg-green-500/15 text-green-600" : "bg-amber-500/15 text-amber-600"}`}
+                  >
                     <MailCheck className="size-4" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {emailVerified ? t.profile.emailVerifiedTitle : t.profile.emailNotVerifiedTitle}
+                      {emailVerified
+                        ? t.profile.emailVerifiedTitle
+                        : t.profile.emailNotVerifiedTitle}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {emailVerified ? t.profile.emailVerifiedDesc : t.profile.emailNotVerifiedDesc}
-                    </p>
+                    {emailVerified && (
+                      <p className="text-xs text-muted-foreground">
+                        {t.profile.emailVerifiedDesc}
+                      </p>
+                    )}
                   </div>
                 </div>
                 {!emailVerified && (
@@ -185,7 +217,10 @@ export default function ProfilePage() {
                     className="gap-2 shrink-0"
                   >
                     {isSendingVerif ? (
-                      <><Spinner className="size-3" />{t.profile.verifyEmailSending}</>
+                      <>
+                        <Spinner className="size-3" />
+                        {t.profile.verifyEmailSending}
+                      </>
                     ) : (
                       t.profile.verifyEmail
                     )}
@@ -193,8 +228,8 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
-          </div>
-        </PageSection>
+          </PageSection>
+        )}
 
         {/* COMPTES CONNECTÉS */}
         <PageSection
@@ -211,7 +246,6 @@ export default function ProfilePage() {
         >
           <DeleteAccount />
         </PageSection>
-
       </div>
     </div>
   );
