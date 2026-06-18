@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import BackHomeButton from "@/app/(auth)/_components/back-home-button";
 import RadioSelect, { RadioGroupItem } from "@/components/ui/radio-select";
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import HostForm from "@/app/(auth)/_components/host-form";
 import GuestForm from "@/app/(auth)/_components/guest-form";
 import { useRouter, useSearchParams } from "next/navigation";
