@@ -37,7 +37,8 @@ import { cn } from "@/lib/utils";
 import { useErrorMessage, useT } from "@/lib/i18n/context";
 
 const SignUpPage = () => {
-  const [isRegistering, startRegistering] = useTransition();
+  const [isGoogleLoading, startGoogle] = useTransition();
+  const [isEmailLoading, startEmail] = useTransition();
   const { t } = useT();
   const getErrorMessage = useErrorMessage();
 
@@ -50,7 +51,7 @@ const SignUpPage = () => {
   }
 
   async function signInWithGoogle() {
-    startRegistering(async () => {
+    startGoogle(async () => {
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/",
@@ -72,7 +73,7 @@ const SignUpPage = () => {
   });
 
   const onSubmit = ({ firstName, lastName, email, password }: SignUpSchema) => {
-    startRegistering(async () => {
+    startEmail(async () => {
       const signup = await authClient.signUp.email({
         email,
         name: `${firstName} ${lastName}`,
@@ -102,10 +103,10 @@ const SignUpPage = () => {
           variant="outline"
           className="w-full"
           type="button"
-          disabled={isRegistering}
+          disabled={isGoogleLoading || isEmailLoading}
           onClick={signInWithGoogle}
         >
-          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          {isGoogleLoading ? <Spinner /> : <GoogleIcon />}
           {t.auth.continueWithGoogle}
         </Button>
 
@@ -210,8 +211,12 @@ const SignUpPage = () => {
               />
             </div>
 
-            <Button className="w-full" type="submit" disabled={isRegistering}>
-              {isRegistering && <Spinner />}
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isGoogleLoading || isEmailLoading}
+            >
+              {isEmailLoading && <Spinner />}
               {t.auth.register}
             </Button>
           </FieldGroup>

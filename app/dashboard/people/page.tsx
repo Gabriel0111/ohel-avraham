@@ -81,7 +81,9 @@ export default function PeoplePage() {
         host.address?.toLowerCase().includes(search) ||
         host.sector?.toLowerCase().includes(search) ||
         host.kashrout?.toLowerCase().includes(search);
-      const matchesVerified = !showUnverifiedOnly || !host.isVerified;
+      // Admins are implicitly trusted and never count as "unverified".
+      const matchesVerified =
+        !showUnverifiedOnly || (!host.isVerified && host.role !== "admin");
       return matchesSearch && matchesVerified;
     });
   }, [allHosts, hostSearch, showUnverifiedOnly]);
@@ -215,7 +217,8 @@ export default function PeoplePage() {
     );
   }
 
-  const unverifiedCount = allHosts?.filter((h) => !h.isVerified).length ?? 0;
+  const unverifiedCount =
+    allHosts?.filter((h) => !h.isVerified && h.role !== "admin").length ?? 0;
 
   return (
     <div>

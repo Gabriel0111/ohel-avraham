@@ -10,7 +10,10 @@ export const getAllGuests = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    const guests = await ctx.db.query("guests").collect();
+    // Exclude the viewer's own guest entry from the members list.
+    const guests = (await ctx.db.query("guests").collect()).filter(
+      (g) => g.authUserId !== identity.subject,
+    );
     return attachUsers(ctx, guests);
   },
 });

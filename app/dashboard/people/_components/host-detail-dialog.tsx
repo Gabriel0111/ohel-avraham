@@ -14,7 +14,6 @@ import {
   StickyNote,
   Accessibility,
   Calendar,
-  CheckCircle2,
   ShieldCheck,
   Clock,
 } from "lucide-react";
@@ -43,7 +42,9 @@ export function HostDetailDialog({
   const { t } = useT();
   const el = useEnumLabel();
   if (!host) return null;
-  const isVerified = host.isVerified;
+  // Admins are implicitly trusted, so only non-admin hosts can be "pending".
+  const needsVerification =
+    isAdmin && host.role !== "admin" && !host.isVerified;
 
   return (
     <Dialog open={!!host} onOpenChange={() => onClose()}>
@@ -52,19 +53,12 @@ export function HostDetailDialog({
         <div className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
           <DialogHeader className="p-0">
             <div className="flex items-start gap-4">
-              <div className="relative shrink-0">
-                <Avatar className="size-16 ring-2 ring-violet-500/20 shadow-md">
-                  <AvatarImage src={host.image} />
-                  <AvatarFallback className="bg-violet-500/10 text-violet-600 text-lg font-bold">
-                    {getInitials(host.name)}
-                  </AvatarFallback>
-                </Avatar>
-                {isVerified && (
-                  <span className="absolute -bottom-1 -right-1 size-5 flex items-center justify-center rounded-full bg-green-500 ring-2 ring-background shadow-sm">
-                    <CheckCircle2 className="size-3 text-white" />
-                  </span>
-                )}
-              </div>
+              <Avatar className="size-16 shrink-0 ring-2 ring-violet-500/20 shadow-md">
+                <AvatarImage src={host.image} />
+                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-lg font-bold">
+                  {getInitials(host.name)}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-center gap-2 flex-wrap mb-2.5">
                   <DialogTitle className="text-base font-bold leading-tight tracking-tight">
@@ -145,43 +139,32 @@ export function HostDetailDialog({
           </DetailList>
         </div>
 
-        {/* Admin footer */}
-        {isAdmin && (
+        {/* Admin footer — only shown while the host is still pending */}
+        {needsVerification && (
           <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-between gap-3">
-            {isVerified ? (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/30 bg-gradient-to-br from-green-500/20 to-green-500/10">
-                <ShieldCheck className="size-3.5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                  {t.people.confirmed}
-                </span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/30 bg-gradient-to-br from-amber-500/20 to-amber-500/10">
-                <span className="relative flex size-2">
-                  <span className="absolute inset-0 inline-flex rounded-full bg-amber-500 opacity-75 animate-ping" />
-                  <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
-                </span>
-                <Clock className="size-3.5 text-amber-600" />
-                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
-                  {t.people.unverified}
-                </span>
-              </div>
-            )}
-            {!isVerified && (
-              <Button
-                onClick={() => onConfirm(host.userId as Id<"users">)}
-                disabled={verifying === host.userId}
-                size="sm"
-                className="gap-2 rounded-xl"
-              >
-                {verifying === host.userId ? (
-                  <Spinner className="size-3.5" />
-                ) : (
-                  <ShieldCheck className="size-3.5" />
-                )}
-                {t.people.confirm}
-              </Button>
-            )}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/30 bg-gradient-to-br from-amber-500/20 to-amber-500/10">
+              <span className="relative flex size-2">
+                <span className="absolute inset-0 inline-flex rounded-full bg-amber-500 opacity-75 animate-ping" />
+                <span className="relative inline-flex rounded-full size-2 bg-amber-500" />
+              </span>
+              <Clock className="size-3.5 text-amber-600" />
+              <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                {t.people.unverified}
+              </span>
+            </div>
+            <Button
+              onClick={() => onConfirm(host.userId as Id<"users">)}
+              disabled={verifying === host.userId}
+              size="sm"
+              className="gap-2 rounded-xl"
+            >
+              {verifying === host.userId ? (
+                <Spinner className="size-3.5" />
+              ) : (
+                <ShieldCheck className="size-3.5" />
+              )}
+              {t.people.confirm}
+            </Button>
           </div>
         )}
       </DialogContent>

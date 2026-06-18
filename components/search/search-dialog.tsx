@@ -196,7 +196,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               <button
                 type="button"
                 onClick={backToCities}
-                className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 ps-2.5 pe-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-500/15 transition-colors"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 ps-2.5 pe-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-500/15 transition-colors"
               >
                 <ArrowLeft className="size-3.5" />
                 {selectedCity === ALL_CITIES
@@ -224,7 +224,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 <button
                   type="button"
                   onClick={() => pickCity(ALL_CITIES)}
-                  className="group flex w-full items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/8 p-3.5 text-start transition-colors hover:border-violet-500/45 hover:bg-violet-500/12"
+                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/8 p-3.5 text-start transition-colors hover:border-violet-500/45 hover:bg-violet-500/12"
                 >
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
                     <Globe className="size-5" />
@@ -247,7 +247,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         key={city}
                         type="button"
                         onClick={() => pickCity(city)}
-                        className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 text-start transition-all hover:border-violet-500/40 hover:bg-violet-500/5 hover:shadow-sm"
+                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 text-start transition-all hover:border-violet-500/40 hover:bg-violet-500/5 hover:shadow-sm"
                       >
                         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
                           <MapPin className="size-5" />

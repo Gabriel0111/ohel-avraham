@@ -19,15 +19,7 @@ export function ManifestoSection() {
         className="pointer-events-none absolute left-1/2 top-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/8 blur-3xl"
       />
 
-      <Sparkles
-        sparks={[
-          { top: "18%", left: "14%", size: 16, delay: 0.4, tone: "amber" },
-          { top: "30%", left: "84%", size: 12, delay: 1.6 },
-          { top: "70%", left: "10%", size: 11, delay: 1.0 },
-          { top: "76%", left: "88%", size: 15, delay: 0.2, tone: "amber" },
-        ]}
-        className="hidden sm:block"
-      />
+      <Sparkles count={4} className="hidden sm:block" />
 
       <div className="relative mx-auto max-w-4xl px-4 py-24 text-center md:py-32">
         {/* Oversized opening quote glyph */}

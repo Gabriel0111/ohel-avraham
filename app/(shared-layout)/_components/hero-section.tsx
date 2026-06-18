@@ -76,16 +76,7 @@ function HeroIllustration() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-64 rounded-full bg-primary/12 blur-3xl pointer-events-none" />
 
       {/* Étoiles — lueurs de bougie autour de l'anneau (violet hôte / ambre invité) */}
-      <Sparkles
-        sparks={[
-          { top: "8%", left: "62%", size: 18, delay: 0, tone: "amber" },
-          { top: "20%", left: "22%", size: 12, delay: 1.2, tone: "violet" },
-          { top: "46%", left: "88%", size: 14, delay: 0.6, tone: "amber" },
-          { top: "72%", left: "12%", size: 16, delay: 1.8, tone: "amber" },
-          { top: "82%", left: "70%", size: 11, delay: 0.3, tone: "violet" },
-          { top: "38%", left: "4%", size: 10, delay: 2.4, tone: "violet" },
-        ]}
-      />
+      <Sparkles />
 
       {/* Anneau extérieur statique (profondeur) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[440px] rounded-full border border-primary/6" />

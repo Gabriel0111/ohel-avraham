@@ -145,36 +145,32 @@ export function RequestDialog({
 
         <div className="px-6 py-5 space-y-4">
           {/* Date */}
-          <div className="space-y-1.5">
-            <Label>{t.requests.date}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className={cn(
-                    "w-full justify-start text-start font-normal",
-                    !date && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="size-4 shrink-0" />
-                  {date ? format(date, dateLocale) : t.requests.selectDate}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  defaultMonth={date}
-                  startMonth={new Date()}
-                  disabled={(d) =>
-                    d < new Date(new Date().setHours(0, 0, 0, 0))
-                  }
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <Label>{t.requests.date}</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                type="button"
+                className={cn(
+                  "w-full justify-start text-start font-normal",
+                  !date && "text-muted-foreground",
+                )}
+              >
+                <CalendarIcon className="size-4 shrink-0" />
+                {date ? format(date, dateLocale) : t.requests.selectDate}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                defaultMonth={date}
+                startMonth={new Date()}
+                disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+              />
+            </PopoverContent>
+          </Popover>
 
           {/* Party size */}
           <div className="grid grid-cols-2 gap-3">
@@ -193,23 +189,24 @@ export function RequestDialog({
           </div>
 
           {/* Message */}
-          <div className="space-y-1.5">
-            <Label htmlFor="request-message">
-              {t.requests.messageLabel}{" "}
-              <span className="text-xs font-normal text-muted-foreground">
-                ({t.requests.messageOptional})
-              </span>
-            </Label>
-            <Textarea
-              id="request-message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={t.requests.messagePlaceholder}
-              rows={3}
-              maxLength={600}
-              className="resize-none"
-            />
-          </div>
+          <Label
+            htmlFor="request-message"
+            className="flex items-baseline gap-1.5"
+          >
+            {t.requests.messageLabel}
+            <span className="text-xs font-normal text-muted-foreground">
+              ({t.requests.messageOptional})
+            </span>
+          </Label>
+          <Textarea
+            id="request-message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t.requests.messagePlaceholder}
+            rows={3}
+            maxLength={600}
+            className="resize-none"
+          />
         </div>
 
         <DialogFooter className="px-6 py-4 border-t border-border/50 bg-muted/20 gap-2">

@@ -25,14 +25,7 @@ export function CTASection() {
         <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-primary-foreground/10" />
 
         {/* Paillettes dorées — comme des flammes de bougie sur le violet */}
-        <Sparkles
-          sparks={[
-            { top: "16%", left: "12%", size: 16, delay: 0.5, tone: "amber" },
-            { top: "24%", left: "82%", size: 13, delay: 1.4, tone: "amber" },
-            { top: "70%", left: "20%", size: 12, delay: 0.9, tone: "amber" },
-            { top: "64%", left: "88%", size: 17, delay: 0.1, tone: "amber" },
-          ]}
-        />
+        <Sparkles count={4} tone="amber" />
 
         <h2 className="relative text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground text-balance max-w-2xl">
           {t.cta.title}

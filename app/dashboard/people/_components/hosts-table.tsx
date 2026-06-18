@@ -10,14 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Home,
-  Search,
-  Accessibility,
-  CheckCircle2,
-  Clock,
-  Ban,
-} from "lucide-react";
+import { Home, Search, Accessibility, Clock, Ban } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
@@ -177,14 +170,16 @@ export function HostsTable({
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="py-3">
-                        {host.isVerified ? (
-                          <EnumPill color="green" icon={CheckCircle2}>
-                            {t.people.confirmed}
-                          </EnumPill>
-                        ) : (
+                        {/* Admins need no verification; verified hosts show no
+                            badge — only those still pending are flagged. */}
+                        {host.role !== "admin" && !host.isVerified ? (
                           <EnumPill color="amber" icon={Clock}>
                             {t.people.unverified}
                           </EnumPill>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/40">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     )}

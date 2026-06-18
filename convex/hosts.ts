@@ -11,7 +11,10 @@ export const getAllHosts = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    const hosts = await ctx.db.query("hosts").collect();
+    // Exclude the viewer's own host entry from the members list.
+    const hosts = (await ctx.db.query("hosts").collect()).filter(
+      (h) => h.authUserId !== identity.subject,
+    );
     return attachUsers(ctx, hosts);
   },
 });
@@ -138,6 +141,7 @@ export const searchPublicHosts = query({
   args: { query: v.optional(v.string()) },
   handler: async (ctx, { query }) => {
     const trimmed = query?.trim();
+    const identity = await ctx.auth.getUserIdentity();
 
     const hosts = trimmed
       ? await ctx.db
@@ -148,8 +152,11 @@ export const searchPublicHosts = query({
           .take(SEARCH_RESULTS_LIMIT)
       : await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
 
-    // Hosts who switched themselves off don't appear in the public list/map.
-    const available = hosts.filter(isHostAvailable);
+    // Hosts who switched themselves off don't appear in the public list/map,
+    // and the viewer never sees their own listing.
+    const available = hosts
+      .filter(isHostAvailable)
+      .filter((h) => h.authUserId !== identity?.subject);
     return await Promise.all(available.map((host) => toPublicHost(ctx, host)));
   },
 });
@@ -160,10 +167,12 @@ export const getHostCities = query({
   args: {},
   returns: v.array(v.object({ city: v.string(), count: v.number() })),
   handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
     const hosts = await ctx.db.query("hosts").take(PUBLIC_HOSTS_LIMIT);
     const counts = new Map<string, number>();
     for (const host of hosts) {
       if (!isHostAvailable(host)) continue;
+      if (host.authUserId === identity?.subject) continue;
       const { city } = extractLocation(host.address);
       if (!city) continue;
       counts.set(city, (counts.get(city) ?? 0) + 1);

@@ -9,6 +9,12 @@ import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   EnumPill,
@@ -34,12 +40,21 @@ import {
   XCircle,
   Ban,
   CalendarOff,
+  ChevronRight,
 } from "lucide-react";
+import type { FunctionReturnType } from "convex/server";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { DetailList, DetailRow } from "@/components/ui/detail-list";
 
 type Status = "pending" | "accepted" | "declined" | "cancelled";
+
+type IncomingRequest = FunctionReturnType<
+  typeof api.requests.getMyIncomingRequests
+>[number];
+type OutgoingRequest = FunctionReturnType<
+  typeof api.requests.getMyOutgoingRequests
+>[number];
 
 function getInitials(name?: string) {
   if (!name) return "?";
@@ -148,66 +163,112 @@ function ExpiredNotice() {
   );
 }
 
-// ─── Received (host view) ─────────────────────────────────────────────────────
+// ─── Request rows & detail dialogs ────────────────────────────────────────────
 
-function ReceivedList() {
+// Compact, clickable summary row — mirrors the members table: minimal info up
+// front, full details revealed in a dialog.
+function RequestRow({
+  name,
+  image,
+  fallbackColor,
+  pills,
+  status,
+  date,
+  adults,
+  kids,
+  expired,
+  onClick,
+}: {
+  name?: string;
+  image?: string;
+  fallbackColor: "amber" | "violet";
+  pills: React.ReactNode;
+  status: Status;
+  date: number;
+  adults: number;
+  kids: number;
+  expired?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group w-full cursor-pointer rounded-2xl border border-border/60 bg-card p-4 text-start transition-colors hover:bg-accent/60 active:bg-accent"
+    >
+      <div className="flex items-center gap-3">
+        <Avatar className="size-10 shrink-0 border border-border/50">
+          <AvatarImage src={image} />
+          <AvatarFallback
+            className={cn(
+              "text-xs font-semibold",
+              fallbackColor === "amber"
+                ? "bg-amber-500/10 text-amber-600"
+                : "bg-violet-500/10 text-violet-600",
+            )}
+          >
+            {getInitials(name)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-sm truncate">{name ?? "—"}</p>
+            <span className="ms-auto shrink-0">
+              <StatusBadge status={status} />
+            </span>
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">{pills}</div>
+        </div>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+      </div>
+      <div className="mt-3">
+        <PartyDateRow date={date} adults={adults} kids={kids} expired={expired} />
+      </div>
+    </button>
+  );
+}
+
+// ─── Detail dialogs ───────────────────────────────────────────────────────────
+
+function ReceivedDetailDialog({
+  request,
+  busy,
+  onRespond,
+  onClose,
+}: {
+  request: IncomingRequest | null;
+  busy: string | null;
+  onRespond: (id: Id<"requests">, accept: boolean) => void;
+  onClose: () => void;
+}) {
   const { t } = useT();
   const el = useEnumLabel();
-  const incoming = useQuery(api.requests.getMyIncomingRequests);
-  const respond = useMutation(api.requests.respondToRequest);
-  const [busy, setBusy] = useState<string | null>(null);
-
-  const handleRespond = async (requestId: Id<"requests">, accept: boolean) => {
-    setBusy(requestId);
-    try {
-      await respond({ requestId, accept });
-      toast.success(
-        accept ? t.requests.toastAccepted : t.requests.toastDeclined,
-      );
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t.requests.toastRespondError,
-      );
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  if (incoming === undefined) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" />
-      </div>
-    );
-  }
-  if (incoming.length === 0) {
-    return <EmptyState icon={Inbox} label={t.requests.noReceived} />;
-  }
+  if (!request) return null;
+  const r = request;
 
   return (
-    <div className="flex flex-col gap-3">
-      {incoming.map((r) => (
-        <div
-          key={r._id}
-          className="rounded-2xl border border-border/60 bg-card p-4 flex flex-col gap-3"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar className="size-10 border border-border/50">
+    <Dialog open={!!request} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
+        {/* Header */}
+        <div className="relative bg-gradient-to-b from-amber-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
+          <DialogHeader className="p-0">
+            <div className="flex items-start gap-4">
+              <Avatar className="size-14 shrink-0 ring-2 ring-amber-500/20 shadow-md">
                 <AvatarImage src={r.guest.image} />
-                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-xs font-semibold">
+                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-base font-bold">
                   {getInitials(r.guest.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <p className="font-semibold text-sm truncate">
-                  {r.guest.name ?? "—"}
-                </p>
-                <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <DialogTitle className="text-base font-bold leading-tight tracking-tight">
+                    {r.guest.name ?? "—"}
+                  </DialogTitle>
+                  <StatusBadge status={r.status} />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {r.guest.sector && (
-                    <EnumPill color="amber">
-                      {el.sector(r.guest.sector)}
-                    </EnumPill>
+                    <EnumPill color="amber">{el.sector(r.guest.sector)}</EnumPill>
                   )}
                   {r.guest.ethnicity && (
                     <EnumPill color="slate">
@@ -219,18 +280,14 @@ function ReceivedList() {
                       {el.gender(r.guest.gender)}
                     </EnumPill>
                   )}
-                  {r.guest.region && (
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="size-3" />
-                      {r.guest.region}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
-            <StatusBadge status={r.status} />
-          </div>
+          </DialogHeader>
+        </div>
 
+        {/* Body */}
+        <div className="px-6 py-4 space-y-3">
           <PartyDateRow
             date={r.date}
             adults={r.adults}
@@ -245,6 +302,18 @@ function ReceivedList() {
               <ExpiredNotice />
             ) : (
               <DetailList>
+                {r.guest.region && (
+                  <DetailRow icon={MapPin} tone="amber" label={t.form.address}>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.guest.region)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
+                    >
+                      {r.guest.region}
+                    </a>
+                  </DetailRow>
+                )}
                 {r.guest.email && (
                   <DetailRow icon={Mail} tone="rose" label={t.form.email}>
                     <a
@@ -256,20 +325,12 @@ function ReceivedList() {
                   </DetailRow>
                 )}
                 {r.guest.dob != null && (
-                  <DetailRow
-                    icon={CalendarDays}
-                    tone="indigo"
-                    label={t.form.age}
-                  >
+                  <DetailRow icon={CalendarDays} tone="indigo" label={t.form.age}>
                     {computeAge(r.guest.dob)} {t.form.yearsOld}
                   </DetailRow>
                 )}
                 {r.guest.notes && (
-                  <DetailRow
-                    icon={StickyNote}
-                    tone="amber"
-                    label={t.form.notes}
-                  >
+                  <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
                     <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
                       {r.guest.notes}
                     </span>
@@ -277,110 +338,92 @@ function ReceivedList() {
                 )}
               </DetailList>
             ))}
-
-          {r.status === "pending" && (
-            <div className="flex items-center gap-2 pt-1">
-              <Button
-                size="sm"
-                className="gap-1.5 flex-1"
-                disabled={busy === r._id}
-                onClick={() => handleRespond(r._id, true)}
-              >
-                {busy === r._id ? (
-                  <Spinner className="size-4" />
-                ) : (
-                  <Check className="size-4" />
-                )}
-                {t.requests.accept}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 flex-1"
-                disabled={busy === r._id}
-                onClick={() => handleRespond(r._id, false)}
-              >
-                <X className="size-4" />
-                {t.requests.decline}
-              </Button>
-            </div>
-          )}
         </div>
-      ))}
-    </div>
+
+        {/* Footer — respond to a pending request */}
+        {r.status === "pending" && (
+          <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center gap-2">
+            <Button
+              size="sm"
+              className="gap-1.5 flex-1"
+              disabled={busy === r._id}
+              onClick={() => onRespond(r._id, true)}
+            >
+              {busy === r._id ? (
+                <Spinner className="size-4" />
+              ) : (
+                <Check className="size-4" />
+              )}
+              {t.requests.accept}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 flex-1"
+              disabled={busy === r._id}
+              onClick={() => onRespond(r._id, false)}
+            >
+              <X className="size-4" />
+              {t.requests.decline}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ─── Sent (guest view) ────────────────────────────────────────────────────────
-
-function SentList() {
+function SentDetailDialog({
+  request,
+  busy,
+  onCancel,
+  onClose,
+}: {
+  request: OutgoingRequest | null;
+  busy: string | null;
+  onCancel: (id: Id<"requests">) => void;
+  onClose: () => void;
+}) {
   const { t } = useT();
   const el = useEnumLabel();
-  const outgoing = useQuery(api.requests.getMyOutgoingRequests);
-  const cancel = useMutation(api.requests.cancelRequest);
-  const [busy, setBusy] = useState<string | null>(null);
-
-  const handleCancel = async (requestId: Id<"requests">) => {
-    setBusy(requestId);
-    try {
-      await cancel({ requestId });
-      toast.success(t.requests.toastCancelled);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t.requests.toastCancelError,
-      );
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  if (outgoing === undefined) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" />
-      </div>
-    );
-  }
-  if (outgoing.length === 0) {
-    return <EmptyState icon={SendHorizonal} label={t.requests.noSent} />;
-  }
+  if (!request) return null;
+  const r = request;
 
   return (
-    <div className="flex flex-col gap-3">
-      {outgoing.map((r) => (
-        <div
-          key={r._id}
-          className="rounded-2xl border border-border/60 bg-card p-4 flex flex-col gap-3"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar className="size-10 border border-border/50">
+    <Dialog open={!!request} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
+        {/* Header */}
+        <div className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
+          <DialogHeader className="p-0">
+            <div className="flex items-start gap-4">
+              <Avatar className="size-14 shrink-0 ring-2 ring-violet-500/20 shadow-md">
                 <AvatarImage src={r.host.image} />
-                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-xs font-semibold">
+                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-base font-bold">
                   {getInitials(r.host.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <p className="font-semibold text-sm truncate">
-                  {r.host.name ?? "—"}
-                </p>
-                <div className="flex flex-wrap gap-1.5 mt-1">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <DialogTitle className="text-base font-bold leading-tight tracking-tight">
+                    {r.host.name ?? "—"}
+                  </DialogTitle>
+                  <StatusBadge status={r.status} />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
                   {r.host.sector && (
-                    <EnumPill color="violet">
-                      {el.sector(r.host.sector)}
-                    </EnumPill>
+                    <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
                   )}
                   {r.host.kashrout && (
-                    <EnumPill color="blue">
-                      {el.kashrout(r.host.kashrout)}
-                    </EnumPill>
+                    <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
                   )}
                 </div>
               </div>
             </div>
-            <StatusBadge status={r.status} />
-          </div>
+          </DialogHeader>
+        </div>
 
+        {/* Body */}
+        <div className="px-6 py-4 space-y-3">
           <PartyDateRow
             date={r.date}
             adults={r.adults}
@@ -396,11 +439,7 @@ function SentList() {
             ) : r.host.phoneNumber || r.host.address ? (
               <DetailList>
                 {r.host.phoneNumber && (
-                  <DetailRow
-                    icon={Phone}
-                    tone="blue"
-                    label={t.form.phoneNumber}
-                  >
+                  <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
                     <a
                       href={`tel:${r.host.phoneNumber}`}
                       className="hover:text-blue-600 transition-colors"
@@ -432,28 +471,186 @@ function SentList() {
                 )}
               </DetailList>
             ) : null)}
-
-          {r.status === "pending" && (
-            <div className="flex items-center justify-end pt-1">
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5"
-                disabled={busy === r._id}
-                onClick={() => handleCancel(r._id)}
-              >
-                {busy === r._id ? (
-                  <Spinner className="size-4" />
-                ) : (
-                  <X className="size-4" />
-                )}
-                {t.requests.cancelRequest}
-              </Button>
-            </div>
-          )}
         </div>
-      ))}
-    </div>
+
+        {/* Footer — cancel a pending request */}
+        {r.status === "pending" && (
+          <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={busy === r._id}
+              onClick={() => onCancel(r._id)}
+            >
+              {busy === r._id ? (
+                <Spinner className="size-4" />
+              ) : (
+                <X className="size-4" />
+              )}
+              {t.requests.cancelRequest}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Received (host view) ─────────────────────────────────────────────────────
+
+function ReceivedList() {
+  const { t } = useT();
+  const el = useEnumLabel();
+  const incoming = useQuery(api.requests.getMyIncomingRequests);
+  const respond = useMutation(api.requests.respondToRequest);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleRespond = async (requestId: Id<"requests">, accept: boolean) => {
+    setBusy(requestId);
+    try {
+      await respond({ requestId, accept });
+      toast.success(
+        accept ? t.requests.toastAccepted : t.requests.toastDeclined,
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t.requests.toastRespondError,
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (incoming === undefined) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+  if (incoming.length === 0) {
+    return <EmptyState icon={Inbox} label={t.requests.noReceived} />;
+  }
+
+  const selected = incoming.find((r) => r._id === selectedId) ?? null;
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        {incoming.map((r) => (
+          <RequestRow
+            key={r._id}
+            name={r.guest.name}
+            image={r.guest.image}
+            fallbackColor="amber"
+            status={r.status}
+            date={r.date}
+            adults={r.adults}
+            kids={r.children}
+            expired={r.isExpired}
+            onClick={() => setSelectedId(r._id)}
+            pills={
+              <>
+                {r.guest.sector && (
+                  <EnumPill color="amber">{el.sector(r.guest.sector)}</EnumPill>
+                )}
+                {r.guest.region && (
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="size-3" />
+                    {r.guest.region}
+                  </span>
+                )}
+              </>
+            }
+          />
+        ))}
+      </div>
+
+      <ReceivedDetailDialog
+        request={selected}
+        busy={busy}
+        onRespond={handleRespond}
+        onClose={() => setSelectedId(null)}
+      />
+    </>
+  );
+}
+
+// ─── Sent (guest view) ────────────────────────────────────────────────────────
+
+function SentList() {
+  const { t } = useT();
+  const el = useEnumLabel();
+  const outgoing = useQuery(api.requests.getMyOutgoingRequests);
+  const cancel = useMutation(api.requests.cancelRequest);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleCancel = async (requestId: Id<"requests">) => {
+    setBusy(requestId);
+    try {
+      await cancel({ requestId });
+      toast.success(t.requests.toastCancelled);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t.requests.toastCancelError,
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (outgoing === undefined) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" />
+      </div>
+    );
+  }
+  if (outgoing.length === 0) {
+    return <EmptyState icon={SendHorizonal} label={t.requests.noSent} />;
+  }
+
+  const selected = outgoing.find((r) => r._id === selectedId) ?? null;
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        {outgoing.map((r) => (
+          <RequestRow
+            key={r._id}
+            name={r.host.name}
+            image={r.host.image}
+            fallbackColor="violet"
+            status={r.status}
+            date={r.date}
+            adults={r.adults}
+            kids={r.children}
+            expired={r.isExpired}
+            onClick={() => setSelectedId(r._id)}
+            pills={
+              <>
+                {r.host.sector && (
+                  <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
+                )}
+                {r.host.kashrout && (
+                  <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
+                )}
+              </>
+            }
+          />
+        ))}
+      </div>
+
+      <SentDetailDialog
+        request={selected}
+        busy={busy}
+        onCancel={handleCancel}
+        onClose={() => setSelectedId(null)}
+      />
+    </>
   );
 }
 

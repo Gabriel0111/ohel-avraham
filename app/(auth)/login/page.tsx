@@ -49,7 +49,8 @@ function VerifyEmailNotice() {
 }
 
 const LoginPage = () => {
-  const [isRegistering, startRegistering] = useTransition();
+  const [isGoogleLoading, startGoogle] = useTransition();
+  const [isEmailLoading, startEmail] = useTransition();
   const { t } = useT();
   const getErrorMessage = useErrorMessage();
   const { isAuthenticated } = useAuth();
@@ -66,7 +67,7 @@ const LoginPage = () => {
   });
 
   async function signInWithGoogle() {
-    startRegistering(async () => {
+    startGoogle(async () => {
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/",
@@ -83,7 +84,7 @@ const LoginPage = () => {
   }
 
   const handleSubmit = ({ email, password }: SignInSchema) => {
-    startRegistering(async () => {
+    startEmail(async () => {
       await authClient.signIn.email({
         email,
         password,
@@ -115,10 +116,10 @@ const LoginPage = () => {
           variant="outline"
           className="w-full"
           type="button"
-          disabled={isRegistering}
+          disabled={isGoogleLoading || isEmailLoading}
           onClick={signInWithGoogle}
         >
-          {isRegistering ? <Spinner /> : <GoogleIcon />}
+          {isGoogleLoading ? <Spinner /> : <GoogleIcon />}
           {t.auth.continueWithGoogle}
         </Button>
 
@@ -166,8 +167,12 @@ const LoginPage = () => {
               icon={KeyRoundIcon}
             />
 
-            <Button className="w-full" type="submit" disabled={isRegistering}>
-              {isRegistering && <Spinner />}
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={isGoogleLoading || isEmailLoading}
+            >
+              {isEmailLoading && <Spinner />}
               {t.auth.continueWithEmail}
             </Button>
           </FieldGroup>
