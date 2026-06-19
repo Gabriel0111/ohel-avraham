@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { hostSchema, hostSchemaDV, HostType } from "@/app/schemas/host";
+import { buildHostSchema, hostSchemaDV, HostType } from "@/app/schemas/host";
 import * as RPNInput from "react-phone-number-input";
 import {
   CountrySelect,
@@ -35,7 +35,7 @@ import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { Home, Accessibility } from "lucide-react";
-import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const HostForm = () => {
@@ -46,8 +46,10 @@ const HostForm = () => {
 
   const createHost = useMutation(api.hosts.createHost);
 
+  const schema = useMemo(() => buildHostSchema(t.validation), [t.validation]);
+
   const form = useForm({
-    resolver: zodResolver(hostSchema),
+    resolver: zodResolver(schema),
     defaultValues: hostSchemaDV,
   });
 
@@ -213,6 +215,9 @@ const HostForm = () => {
               </Field>
             )}
           />
+
+          {/* Languages spoken */}
+          <LanguagesField control={form.control as never} />
 
           {/* Notes */}
           <NotesField control={form.control as never} />

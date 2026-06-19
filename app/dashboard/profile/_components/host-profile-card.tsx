@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Accessibility, ArrowUpRight, MapPin, Phone, X } from "lucide-react";
-import { hostSchema, HostType } from "@/app/schemas/host";
+import { buildHostSchema, HostType } from "@/app/schemas/host";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
@@ -53,8 +53,10 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
   const { t } = useT();
   const el = useEnumLabel();
 
+  const schema = useMemo(() => buildHostSchema(t.validation), [t.validation]);
+
   const form = useForm({
-    resolver: zodResolver(hostSchema),
+    resolver: zodResolver(schema),
     defaultValues: hostData
       ? {
           ...hostData,

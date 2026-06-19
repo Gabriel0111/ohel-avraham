@@ -4,6 +4,8 @@ import { Accessibility, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { EnumPill } from "@/components/ui/enum-pill";
+import { LanguageFlag } from "@/components/ui/language-flags";
+import { getLanguage } from "@/app/enums/language";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 
 export interface PublicHost {
@@ -13,12 +15,15 @@ export interface PublicHost {
   address: string;
   city?: string;
   neighborhood?: string;
+  /** Street name without the house number (privacy-safe). */
+  street?: string;
   lat?: number;
   lng?: number;
   sector: string;
   ethnicity: string;
   kashrout: string;
   hasDisabilityAccess: boolean;
+  languages?: string[];
 }
 
 interface HostListCardProps {
@@ -67,20 +72,27 @@ export function HostListCard({
           <p className="font-semibold text-foreground text-sm truncate">
             {host.name}
           </p>
-          <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
-            <MapPin className="size-3 shrink-0" />
-            <p className="text-xs truncate">
-              {host.neighborhood ? (
-                <>
-                  <span className="text-foreground/80 font-medium">
+          <div className="flex items-start gap-1 mt-0.5 text-muted-foreground">
+            <MapPin className="size-3 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              {host.street &&
+                host.street !== host.city &&
+                host.street !== host.neighborhood && (
+                  <p className="text-xs font-medium text-foreground/80 truncate">
+                    {host.street}
+                  </p>
+                )}
+              <p className="text-xs truncate">
+                {host.neighborhood ? (
+                  <>
                     {host.neighborhood}
-                  </span>
-                  {host.city ? ` · ${host.city}` : ""}
-                </>
-              ) : (
-                host.city || host.address
-              )}
-            </p>
+                    {host.city ? ` · ${host.city}` : ""}
+                  </>
+                ) : (
+                  host.city || host.address
+                )}
+              </p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
             <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
@@ -92,6 +104,21 @@ export function HostListCard({
               </EnumPill>
             )}
           </div>
+          {(() => {
+            const langs =
+              host.languages?.filter((code) => getLanguage(code)) ?? [];
+            if (langs.length === 0) return null;
+            return (
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {t.form.languages}
+                </span>
+                {langs.map((code) => (
+                  <LanguageFlag key={code} code={code} />
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </button>

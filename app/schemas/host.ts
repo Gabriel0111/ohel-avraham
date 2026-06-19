@@ -2,32 +2,34 @@ import { z } from "zod";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { KASHROUT } from "@/app/enums/kashrout";
+import type { ValidationMessages } from "@/lib/i18n/translations";
 
-export const hostSchema = z.object({
-  dob: z.coerce.date({ message: "Date of birth must be a valid date" }),
-  phoneNumber: z
-    .string({ message: "Phone number must be a valid phone number" })
-    .min(9)
-    .regex(/^[0-9\-+()\s]+$/, "Invalid phone number"),
+export const buildHostSchema = (m: ValidationMessages) =>
+  z.object({
+    dob: z.coerce.date({ message: m.dobInvalid }),
+    phoneNumber: z
+      .string({ message: m.phoneInvalid })
+      .min(9, m.phoneInvalid)
+      .regex(/^[0-9\-+()\s]+$/, m.phoneInvalid),
 
-  address: z.string({ message: "Address must be defined" }).min(5),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
-  floor: z.coerce.number().int().min(-5).max(100),
+    address: z.string({ message: m.addressInvalid }).min(5, m.addressInvalid),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+    floor: z.coerce.number(m.floorInvalid).int(m.floorInvalid).min(-5, m.floorInvalid).max(100, m.floorInvalid),
 
-  hasDisabilityAccess: z.boolean({
-    message: "Disability access must be defined",
-  }),
+    hasDisabilityAccess: z.boolean({ message: m.disabilityRequired }),
 
-  kashrout: z.enum(KASHROUT, { message: "Kashrout must be defined" }),
+    kashrout: z.enum(KASHROUT, { message: m.kashroutRequired }),
 
-  sector: z.enum(SECTORS, { message: "Sector must be a defined" }),
-  ethnicity: z.enum(ETHNICITIES, { message: "Ethnicity must be a defined" }),
+    sector: z.enum(SECTORS, { message: m.sectorRequired }),
+    ethnicity: z.enum(ETHNICITIES, { message: m.ethnicityRequired }),
 
-  notes: z.string().max(1000, "Notes can contains up to 1000 chars").optional(),
-});
+    languages: z.array(z.string()).optional(),
 
-export type HostType = z.infer<typeof hostSchema>;
+    notes: z.string().max(1000, m.notesTooLong).optional(),
+  });
+
+export type HostType = z.infer<ReturnType<typeof buildHostSchema>>;
 
 export const hostSchemaDV: HostType = {
   dob: new Date(2000, 0, 1),
@@ -41,6 +43,8 @@ export const hostSchemaDV: HostType = {
   kashrout: undefined as unknown as HostType["kashrout"],
   sector: undefined as unknown as HostType["sector"],
   ethnicity: undefined as unknown as HostType["ethnicity"],
+
+  languages: [],
 
   notes: "",
 };

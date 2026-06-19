@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { MapPin } from "lucide-react";
-import { guestSchema, GuestType } from "@/app/schemas/guest";
+import { buildGuestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { GENDERS } from "@/app/enums/gender";
@@ -41,8 +41,10 @@ export function GuestProfileCard({
   const { t } = useT();
   const el = useEnumLabel();
 
+  const schema = useMemo(() => buildGuestSchema(t.validation), [t.validation]);
+
   const form = useForm({
-    resolver: zodResolver(guestSchema),
+    resolver: zodResolver(schema),
     defaultValues: guestData
       ? {
           ...guestData,

@@ -253,6 +253,16 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 w-full px-4 py-20">
+        {/* Barre de recherche — point d'entrée principal, tout en haut */}
+        <motion.div
+          className="mb-12 md:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <SearchBarTrigger />
+        </motion.div>
+
         <div className="grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Gauche — texte */}
           <div className="flex flex-col gap-7">
@@ -328,16 +338,6 @@ export function HeroSection() {
             <HeroIllustration />
           </motion.div>
         </div>
-
-        {/* Barre de recherche */}
-        <motion.div
-          className="mt-10 md:mt-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.45 }}
-        >
-          <SearchBarTrigger />
-        </motion.div>
       </div>
     </section>
   );

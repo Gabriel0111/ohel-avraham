@@ -7,9 +7,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { guestSchema, guestSchemaDV, GuestType } from "@/app/schemas/guest";
+import { buildGuestSchema, guestSchemaDV, GuestType } from "@/app/schemas/guest";
 import {
   Select,
   SelectContent,
@@ -24,21 +24,24 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
-import { useErrorMessage, useT } from "@/lib/i18n/context";
+import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
 import { UserRound } from "lucide-react";
-import { DobField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
   const { t } = useT();
+  const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
 
   const createGuest = useMutation(api.guests.createGuest);
 
+  const schema = useMemo(() => buildGuestSchema(t.validation), [t.validation]);
+
   const form = useForm({
-    resolver: zodResolver(guestSchema),
+    resolver: zodResolver(schema),
     defaultValues: guestSchemaDV,
   });
 
@@ -97,7 +100,7 @@ const GuestForm = () => {
                   <SelectContent>
                     {GENDERS.map((gender) => (
                       <SelectItem value={gender} key={gender}>
-                        {gender}
+                        {el.gender(gender)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -129,6 +132,9 @@ const GuestForm = () => {
 
           {/* Sector + Ethnicity */}
           <SectorEthnicityFields control={form.control as never} />
+
+          {/* Languages spoken */}
+          <LanguagesField control={form.control as never} />
 
           {/* Notes */}
           <NotesField control={form.control as never} />

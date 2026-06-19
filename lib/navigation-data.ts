@@ -11,4 +11,5 @@ type NavigationData = {
 export const navigationData: NavigationData[] = [
   { href: "/dashboard", titleKey: "dashboard", requiresAuth: true },
   { href: "/about", titleKey: "aboutUs" },
+  { href: "/contact", titleKey: "contact" },
 ];

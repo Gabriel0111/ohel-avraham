@@ -10,11 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Home, Search, Accessibility, Clock, Ban } from "lucide-react";
+import { Home, Search, Accessibility, Clock, Ban, ShieldCheck } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
 import { EnumPill } from "@/components/ui/enum-pill";
+import { LanguageFlags } from "@/components/ui/language-flags";
 import type { HostData } from "../_lib/types";
 import { getInitials, mapsUrl } from "../_lib/utils";
 import { RowActionsMenu } from "./row-actions-menu";
@@ -97,6 +98,9 @@ export function HostsTable({
                   <TableHead className="hidden lg:table-cell">
                     {t.people.access}
                   </TableHead>
+                  <TableHead className="hidden xl:table-cell">
+                    {t.form.languages}
+                  </TableHead>
                   {isAdmin && <TableHead>{t.people.status}</TableHead>}
                   {isAdmin && (
                     <TableHead className="pr-5 text-right">
@@ -143,7 +147,7 @@ export function HostsTable({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline truncate max-w-[180px] block"
+                        className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline line-clamp-2 break-words max-w-[240px] block"
                       >
                         {host.address}
                       </a>
@@ -168,18 +172,26 @@ export function HostsTable({
                         <span className="text-xs text-muted-foreground/40">—</span>
                       )}
                     </TableCell>
+                    <TableCell className="hidden xl:table-cell py-3">
+                      <LanguageFlags value={host.languages} />
+                    </TableCell>
                     {isAdmin && (
                       <TableCell className="py-3">
-                        {/* Admins need no verification; verified hosts show no
-                            badge — only those still pending are flagged. */}
-                        {host.role !== "admin" && !host.isVerified ? (
+                        {/* Status is always legible: blocked accounts read red,
+                            admins and verified hosts read green, everyone else
+                            is flagged amber as still pending. */}
+                        {host.isBlocked ? (
+                          <EnumPill color="red" icon={Ban}>
+                            {t.people.blocked}
+                          </EnumPill>
+                        ) : host.role === "admin" || host.isVerified ? (
+                          <EnumPill color="green" icon={ShieldCheck}>
+                            {t.people.confirmed}
+                          </EnumPill>
+                        ) : (
                           <EnumPill color="amber" icon={Clock}>
                             {t.people.unverified}
                           </EnumPill>
-                        ) : (
-                          <span className="text-xs text-muted-foreground/40">
-                            —
-                          </span>
                         )}
                       </TableCell>
                     )}

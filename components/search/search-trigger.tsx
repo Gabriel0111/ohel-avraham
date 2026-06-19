@@ -45,7 +45,7 @@ export function SearchBarTrigger({ className }: SearchBarTriggerProps) {
         onClick={() => setOpen(true)}
         aria-label={t.search.searchBarPlaceholder}
         className={cn(
-          "group flex items-center gap-3 w-full max-w-xl mx-auto",
+          "group flex items-center gap-3 w-full max-w-xl mx-auto cursor-pointer",
           "p-2 ps-3 rounded-full",
           "bg-card/90 backdrop-blur-sm border border-border/60 shadow-sm",
           "hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/5",

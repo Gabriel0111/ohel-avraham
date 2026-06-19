@@ -10,11 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Search, Calendar, Ban } from "lucide-react";
+import { Users, Search, Ban } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
 import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { LanguageFlags } from "@/components/ui/language-flags";
 import type { GuestData } from "../_lib/types";
 import { getInitials, formatDate, mapsUrl, computeAge } from "../_lib/utils";
 import { RowActionsMenu } from "./row-actions-menu";
@@ -100,6 +101,9 @@ export function GuestsTable({
                   <TableHead className="hidden lg:table-cell">
                     {t.form.age}
                   </TableHead>
+                  <TableHead className="hidden xl:table-cell">
+                    {t.form.languages}
+                  </TableHead>
                   {isAdmin && (
                     <TableHead className="pr-5 text-right">
                       {t.people.actions}
@@ -164,10 +168,9 @@ export function GuestsTable({
                       </EnumPill>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Calendar className="size-3.5" />
-                        <span className="text-xs">{formatDate(guest.dob)}</span>
-                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(guest.dob)}
+                      </span>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
                       <span className="text-sm font-medium text-foreground tabular-nums">
@@ -176,6 +179,9 @@ export function GuestsTable({
                       <span className="text-xs text-muted-foreground ml-1">
                         {t.form.yearsOld}
                       </span>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell py-3">
+                      <LanguageFlags value={guest.languages} />
                     </TableCell>
                     {isAdmin && (
                       <TableCell

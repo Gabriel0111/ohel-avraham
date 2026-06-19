@@ -74,6 +74,7 @@ export const upsertHost = mutation({
 function extractLocation(address: string): {
   city: string;
   neighborhood?: string;
+  street?: string;
 } {
   let parts = address
     .split(", ")
@@ -92,8 +93,17 @@ function extractLocation(address: string): {
   const city = parts[parts.length - 1];
   // The segment just before the city (when there's also a street part) is the neighborhood.
   const neighborhood = parts.length >= 3 ? parts[parts.length - 2] : undefined;
+  // The first segment is the street. We surface it without the house number for
+  // privacy — guests see the street and city, never the exact door.
+  const street =
+    parts.length >= 2
+      ? parts[0]
+          .replace(/\d+/g, " ")
+          .replace(/\s{2,}/g, " ")
+          .trim() || undefined
+      : undefined;
 
-  return { city, neighborhood };
+  return { city, neighborhood, street };
 }
 
 // Max public hosts returned when no search query is provided (bounds the map view).
@@ -116,7 +126,7 @@ async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
     .withIndex("by_authUserId", (q) => q.eq("authUserId", host.authUserId))
     .first();
 
-  const { city, neighborhood } = extractLocation(host.address);
+  const { city, neighborhood, street } = extractLocation(host.address);
 
   return {
     _id: host._id,
@@ -125,12 +135,14 @@ async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
     address: host.address,
     city,
     neighborhood,
+    street,
     lat: host.lat,
     lng: host.lng,
     sector: host.sector,
     ethnicity: host.ethnicity,
     kashrout: host.kashrout,
     hasDisabilityAccess: host.hasDisabilityAccess,
+    languages: host.languages ?? [],
   };
 }
 

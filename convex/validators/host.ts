@@ -1,6 +1,7 @@
 import { SECTORS } from "../../app/enums/sector";
 import { ETHNICITIES } from "../../app/enums/ethnicity";
 import { KASHROUT } from "../../app/enums/kashrout";
+import { LANGUAGE_VALUES } from "../../app/enums/language";
 import { v } from "convex/values";
 
 const literalUnion = <T extends readonly string[]>(arr: T) =>
@@ -9,6 +10,7 @@ const literalUnion = <T extends readonly string[]>(arr: T) =>
 export const SectorV = literalUnion(SECTORS);
 export const EthnicityV = literalUnion(ETHNICITIES);
 export const KashroutV = literalUnion(KASHROUT);
+export const LanguageV = literalUnion(LANGUAGE_VALUES);
 
 export const HostFields = {
   dob: v.number(), // timestamp (ms)
@@ -25,6 +27,8 @@ export const HostFields = {
   kashrout: KashroutV,
   sector: SectorV,
   ethnicity: EthnicityV,
+
+  languages: v.optional(v.array(LanguageV)),
 
   notes: v.optional(v.string()),
 

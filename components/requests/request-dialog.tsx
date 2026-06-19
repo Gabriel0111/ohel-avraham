@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -143,70 +143,76 @@ export function RequestDialog({
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-5 space-y-4">
-          {/* Date */}
-          <Label>{t.requests.date}</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                type="button"
-                className={cn(
-                  "w-full justify-start text-start font-normal",
-                  !date && "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="size-4 shrink-0" />
-                {date ? format(date, dateLocale) : t.requests.selectDate}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                defaultMonth={date}
-                startMonth={new Date()}
-                disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+        <div className="px-6 py-5">
+          <FieldGroup>
+            {/* Date */}
+            <Field>
+              <FieldLabel htmlFor="request-date">{t.requests.date}</FieldLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="request-date"
+                    variant="outline"
+                    type="button"
+                    className={cn(
+                      "w-full justify-start text-start font-normal",
+                      !date && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="size-4 shrink-0" />
+                    {date ? format(date, dateLocale) : t.requests.selectDate}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    defaultMonth={date}
+                    startMonth={new Date()}
+                    disabled={(d) =>
+                      d < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
+            </Field>
+
+            {/* Party size */}
+            <Field>
+              <FieldLabel>{t.requests.partySize}</FieldLabel>
+              <div className="grid grid-cols-2 gap-3">
+                <Stepper
+                  label={t.requests.adults}
+                  value={adults}
+                  min={1}
+                  onChange={setAdults}
+                />
+                <Stepper
+                  label={t.requests.children}
+                  value={children}
+                  min={0}
+                  onChange={setChildren}
+                />
+              </div>
+            </Field>
+
+            {/* Message */}
+            <Field>
+              <FieldLabel htmlFor="request-message">
+                {t.requests.messageLabel}
+              </FieldLabel>
+              <Textarea
+                id="request-message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={t.requests.messagePlaceholder}
+                rows={3}
+                maxLength={600}
+                className="resize-none"
               />
-            </PopoverContent>
-          </Popover>
-
-          {/* Party size */}
-          <div className="grid grid-cols-2 gap-3">
-            <Stepper
-              label={t.requests.adults}
-              value={adults}
-              min={1}
-              onChange={setAdults}
-            />
-            <Stepper
-              label={t.requests.children}
-              value={children}
-              min={0}
-              onChange={setChildren}
-            />
-          </div>
-
-          {/* Message */}
-          <Label
-            htmlFor="request-message"
-            className="flex items-baseline gap-1.5"
-          >
-            {t.requests.messageLabel}
-            <span className="text-xs font-normal text-muted-foreground">
-              ({t.requests.messageOptional})
-            </span>
-          </Label>
-          <Textarea
-            id="request-message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder={t.requests.messagePlaceholder}
-            rows={3}
-            maxLength={600}
-            className="resize-none"
-          />
+            </Field>
+          </FieldGroup>
         </div>
 
         <DialogFooter className="px-6 py-4 border-t border-border/50 bg-muted/20 gap-2">

@@ -1,8 +1,27 @@
+"use client";
+
+import { useState } from "react";
 import flags from "react-phone-number-input/flags";
-import { ChevronDownIcon, PhoneIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { CheckIcon, ChevronsUpDown, PhoneIcon } from "lucide-react";
 import * as RPNInput from "react-phone-number-input";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/context";
 
 export const PhoneInput = ({
   className,
@@ -31,43 +50,94 @@ type CountrySelectProps = {
 
 export const CountrySelect = ({
   disabled,
-  value,
+  value: selectedCountry,
   onChange,
-  options,
+  options: countryList,
 }: CountrySelectProps) => {
-  const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange(event.target.value as RPNInput.Country);
-  };
+  const { t } = useT();
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-input bg-background text-muted-foreground focus-within:border-ring focus-within:ring-ring/50 hover:bg-accent hover:text-foreground has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 dark:bg-input/30 relative inline-flex items-center self-stretch rounded-s-md border py-2 ps-3 pe-2 transition-[color,box-shadow] outline-none focus-within:z-10 focus-within:ring-[3px] has-disabled:pointer-events-none has-disabled:opacity-50">
-      <div className="inline-flex items-center gap-1" aria-hidden="true">
-        <FlagComponent country={value} countryName={value} aria-hidden="true" />
-        <span className="text-muted-foreground/80">
-          <ChevronDownIcon size={16} aria-hidden="true" />
-        </span>
-      </div>
-      <select
-        disabled={disabled}
-        value={value}
-        onChange={handleSelect}
-        className="absolute inset-0 text-sm opacity-0"
-        aria-label="Select country"
-      >
-        <option key="default" value="">
-          Select a country
-        </option>
-        {options
-          .filter((x) => x.value)
-          .map((option, i) => (
-            <option key={option.value ?? `empty-${i}`} value={option.value}>
-              {option.label}{" "}
-              {option.value &&
-                `+${RPNInput.getCountryCallingCode(option.value)}`}
-            </option>
-          ))}
-      </select>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="flex gap-1 rounded-s-md rounded-e-none border-e-0 px-3 focus:z-10"
+          disabled={disabled}
+        >
+          <FlagComponent
+            country={selectedCountry}
+            countryName={selectedCountry}
+          />
+          <ChevronsUpDown
+            className={cn(
+              "-me-2 size-4 opacity-50",
+              disabled ? "hidden" : "opacity-100",
+            )}
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={t.form.searchCountry} />
+          <CommandList>
+            <ScrollArea className="h-72">
+              <CommandEmpty>{t.form.noCountryFound}</CommandEmpty>
+              <CommandGroup>
+                {countryList.map(({ value, label }) =>
+                  value ? (
+                    <CountrySelectOption
+                      key={value}
+                      country={value}
+                      countryName={label}
+                      selectedCountry={selectedCountry}
+                      onChange={(country) => {
+                        onChange(country);
+                        setOpen(false);
+                      }}
+                    />
+                  ) : null,
+                )}
+              </CommandGroup>
+            </ScrollArea>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+interface CountrySelectOptionProps extends RPNInput.FlagProps {
+  selectedCountry: RPNInput.Country;
+  onChange: (country: RPNInput.Country) => void;
+}
+
+const CountrySelectOption = ({
+  country,
+  countryName,
+  selectedCountry,
+  onChange,
+}: CountrySelectOptionProps) => {
+  return (
+    <CommandItem
+      className="gap-2"
+      // Match the search input against the country name + calling code.
+      value={`${countryName} +${RPNInput.getCountryCallingCode(country)}`}
+      onSelect={() => onChange(country)}
+    >
+      <FlagComponent country={country} countryName={countryName} />
+      <span className="flex-1 text-sm">{countryName}</span>
+      <span className="text-sm text-muted-foreground">
+        {`+${RPNInput.getCountryCallingCode(country)}`}
+      </span>
+      <CheckIcon
+        className={cn(
+          "ms-auto size-4",
+          country === selectedCountry ? "opacity-100" : "opacity-0",
+        )}
+      />
+    </CommandItem>
   );
 };
 
@@ -75,11 +145,11 @@ export const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
   const Flag = flags[country];
 
   return (
-    <span className="w-5 overflow-hidden rounded-sm">
+    <span className="flex h-4 w-6 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-foreground/10 [&_svg]:size-full">
       {Flag ? (
         <Flag title={countryName} />
       ) : (
-        <PhoneIcon size={16} aria-hidden="true" />
+        <PhoneIcon size={14} aria-hidden="true" />
       )}
     </span>
   );

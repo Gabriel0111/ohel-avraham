@@ -11,8 +11,11 @@ import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
+import { LANGUAGES } from "@/app/enums/language";
 import { Textarea } from "@/components/ui/textarea";
 import { useT } from "@/lib/i18n/context";
+import flags from "react-phone-number-input/flags";
+import { Check } from "lucide-react";
 
 export const DobField = ({ control }: { control: Control<FieldValues> }) => {
   const { t } = useT();
@@ -112,6 +115,60 @@ export const SectorEthnicityFields = ({ control }: { control: Control<FieldValue
         )}
       />
     </div>
+  );
+};
+
+export const LanguagesField = ({ control }: { control: Control<FieldValues> }) => {
+  const { t } = useT();
+  return (
+    <Controller
+      name="languages"
+      control={control}
+      render={({ field, fieldState }) => {
+        const selected: string[] = Array.isArray(field.value) ? field.value : [];
+        const toggle = (value: string) => {
+          field.onChange(
+            selected.includes(value)
+              ? selected.filter((v) => v !== value)
+              : [...selected, value],
+          );
+        };
+        return (
+          <Field>
+            <FieldLabel>{t.form.languages}</FieldLabel>
+            <div className="flex flex-wrap gap-2">
+              {LANGUAGES.map((lang) => {
+                const Flag = flags[lang.country];
+                const isSelected = selected.includes(lang.value);
+                return (
+                  <button
+                    key={lang.value}
+                    type="button"
+                    onClick={() => toggle(lang.value)}
+                    aria-pressed={isSelected}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                      isSelected
+                        ? "border-primary/50 bg-primary/10 text-foreground"
+                        : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+                    )}
+                  >
+                    <span className="w-5 shrink-0 overflow-hidden rounded-xs">
+                      {Flag && <Flag title={lang.label} />}
+                    </span>
+                    {lang.label}
+                    {isSelected && (
+                      <Check className="size-3.5 shrink-0 text-primary" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        );
+      }}
+    />
   );
 };
 

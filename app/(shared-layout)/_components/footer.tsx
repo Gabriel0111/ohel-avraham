@@ -32,6 +32,12 @@ export function Footer() {
             >
               {t.nav.dashboard}
             </Link>
+            <Link
+              href="/contact"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.nav.contact}
+            </Link>
           </div>
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">{t.footer.account}</h4>

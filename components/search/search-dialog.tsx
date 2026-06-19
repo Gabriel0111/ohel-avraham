@@ -31,6 +31,7 @@ import {
 import { useT } from "@/lib/i18n/context";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LanguageSelect } from "@/components/ui/language-select";
 import Link from "next/link";
 
 const HostMapGoogle = dynamic(
@@ -62,6 +63,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [requestHost, setRequestHost] = useState<PublicHost | null>(null);
   // City step: null = the picker is showing; a value (or ALL_CITIES) = chosen.
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  // Language filter (empty = no filtering).
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
   // Debounce the term sent to Convex so we hit the search index per pause,
   // not per keystroke.
@@ -93,11 +96,20 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   const cityOf = useCallback((h: PublicHost) => h.city || h.address, []);
 
-  // Step 2 list, narrowed to the chosen city (unless "all").
+  // Step 2 list, narrowed to the chosen city (unless "all") and, when set, to
+  // hosts who speak at least one of the selected languages.
   const filteredHosts = useMemo(() => {
-    if (!selectedCity || selectedCity === ALL_CITIES) return allHosts;
-    return allHosts.filter((h) => cityOf(h) === selectedCity);
-  }, [allHosts, selectedCity, cityOf]);
+    let result = allHosts;
+    if (selectedCity && selectedCity !== ALL_CITIES) {
+      result = result.filter((h) => cityOf(h) === selectedCity);
+    }
+    if (selectedLanguages.length > 0) {
+      result = result.filter((h) =>
+        h.languages?.some((l) => selectedLanguages.includes(l)),
+      );
+    }
+    return result;
+  }, [allHosts, selectedCity, cityOf, selectedLanguages]);
 
   // City list for the picker, filtered live by the search box.
   const visibleCities = useMemo(() => {
@@ -190,9 +202,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             />
           </div>
 
-          {/* Selected-city chip — appears in step 2, lets you change city */}
+          {/* Step-2 controls: change-city chip + language filter */}
           {isAuthenticated && selectedCity !== null && (
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={backToCities}
@@ -206,6 +218,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   · {t.search.changeCity}
                 </span>
               </button>
+              <LanguageSelect
+                value={selectedLanguages}
+                onChange={setSelectedLanguages}
+                placeholder={t.search.filterByLanguage}
+                className="h-8 w-auto min-w-0 ms-auto max-w-[65%] sm:max-w-xs"
+              />
             </div>
           )}
         </DialogHeader>
