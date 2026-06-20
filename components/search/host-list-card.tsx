@@ -1,12 +1,40 @@
 "use client";
 
-import { Accessibility, MapPin } from "lucide-react";
+import { Accessibility, BookOpen, MapPin, Music } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { EnumPill } from "@/components/ui/enum-pill";
 import { LanguageFlag } from "@/components/ui/language-flags";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getLanguage } from "@/app/enums/language";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
+
+// A single hospitality-preference marker: just an icon, the meaning lives in
+// the tooltip so the card footer stays compact.
+function PreferenceIcon({
+  icon: Icon,
+  label,
+}: {
+  icon: LucideIcon;
+  label: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex size-6 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/15 dark:text-violet-300">
+          <Icon className="size-3.5" />
+          <span className="sr-only">{label}</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 export interface PublicHost {
   _id: string;
@@ -23,6 +51,8 @@ export interface PublicHost {
   ethnicity: string;
   kashrout: string;
   hasDisabilityAccess: boolean;
+  likesSinging?: boolean;
+  likesDivreiTorah?: boolean;
   languages?: string[];
 }
 
@@ -39,6 +69,19 @@ export function HostListCard({
 }: HostListCardProps) {
   const el = useEnumLabel();
   const { t } = useT();
+
+  // Privacy-safe wayfinding: a primary line (street when distinct) over a
+  // secondary locality line (neighbourhood · city). Falls back gracefully when
+  // only a city or the raw address is available.
+  const street =
+    host.street && host.street !== host.city && host.street !== host.neighborhood
+      ? host.street
+      : undefined;
+  const locality = host.neighborhood
+    ? `${host.neighborhood}${host.city ? ` · ${host.city}` : ""}`
+    : host.city || host.address;
+  const primaryLine = street ?? locality;
+  const secondaryLine = street ? locality : undefined;
 
   return (
     <button
@@ -72,26 +115,19 @@ export function HostListCard({
           <p className="font-semibold text-foreground text-sm truncate">
             {host.name}
           </p>
-          <div className="flex items-start gap-1 mt-0.5 text-muted-foreground">
-            <MapPin className="size-3 shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              {host.street &&
-                host.street !== host.city &&
-                host.street !== host.neighborhood && (
-                  <p className="text-xs font-medium text-foreground/80 truncate">
-                    {host.street}
-                  </p>
-                )}
-              <p className="text-xs truncate">
-                {host.neighborhood ? (
-                  <>
-                    {host.neighborhood}
-                    {host.city ? ` · ${host.city}` : ""}
-                  </>
-                ) : (
-                  host.city || host.address
-                )}
+          <div className="mt-1.5 flex items-start gap-2">
+            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/15 dark:text-violet-300">
+              <MapPin className="size-3" />
+            </span>
+            <div className="min-w-0 leading-snug">
+              <p className="truncate text-xs font-medium text-foreground">
+                {primaryLine}
               </p>
+              {secondaryLine && (
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {secondaryLine}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
@@ -107,15 +143,35 @@ export function HostListCard({
           {(() => {
             const langs =
               host.languages?.filter((code) => getLanguage(code)) ?? [];
-            if (langs.length === 0) return null;
+            const hasPrefs = host.likesSinging || host.likesDivreiTorah;
+            if (langs.length === 0 && !hasPrefs) return null;
             return (
-              <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  {t.form.languages}
-                </span>
-                {langs.map((code) => (
-                  <LanguageFlag key={code} code={code} />
-                ))}
+              <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border/50 pt-2">
+                {langs.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-1">
+                    {langs.map((code) => (
+                      <LanguageFlag key={code} code={code} />
+                    ))}
+                  </div>
+                ) : (
+                  <span aria-hidden />
+                )}
+                {hasPrefs && (
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {host.likesSinging && (
+                      <PreferenceIcon
+                        icon={Music}
+                        label={t.form.likesSinging}
+                      />
+                    )}
+                    {host.likesDivreiTorah && (
+                      <PreferenceIcon
+                        icon={BookOpen}
+                        label={t.form.likesDivreiTorah}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}

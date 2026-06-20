@@ -8,12 +8,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { LANGUAGES } from "@/app/enums/language";
 import { Textarea } from "@/components/ui/textarea";
-import { useT } from "@/lib/i18n/context";
+import { useEnumLabel, useT } from "@/lib/i18n/context";
 import flags from "react-phone-number-input/flags";
 import { Check } from "lucide-react";
 
@@ -67,6 +67,7 @@ export const DobField = ({ control }: { control: Control<FieldValues> }) => {
 
 export const SectorEthnicityFields = ({ control }: { control: Control<FieldValues> }) => {
   const { t } = useT();
+  const el = useEnumLabel();
   return (
     <div className="grid grid-cols-2 gap-4">
       <Controller
@@ -75,18 +76,17 @@ export const SectorEthnicityFields = ({ control }: { control: Control<FieldValue
         render={({ field, fieldState }) => (
           <Field>
             <FieldLabel>{t.form.sector}</FieldLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t.form.selectSector} />
-              </SelectTrigger>
-              <SelectContent>
-                {SECTORS.map((sector) => (
-                  <SelectItem value={sector} key={sector}>
-                    {sector}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              value={field.value}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={t.form.selectSector}
+              invalid={fieldState.invalid}
+              options={SECTORS.map((sector) => ({
+                value: sector,
+                label: el.sector(sector),
+              }))}
+            />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}
@@ -98,18 +98,17 @@ export const SectorEthnicityFields = ({ control }: { control: Control<FieldValue
         render={({ field, fieldState }) => (
           <Field>
             <FieldLabel>{t.form.ethnicity}</FieldLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t.form.selectEthnicity} />
-              </SelectTrigger>
-              <SelectContent>
-                {ETHNICITIES.map((ethnicity) => (
-                  <SelectItem value={ethnicity} key={ethnicity}>
-                    {ethnicity}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              value={field.value}
+              onValueChange={field.onChange}
+              onBlur={field.onBlur}
+              placeholder={t.form.selectEthnicity}
+              invalid={fieldState.invalid}
+              options={ETHNICITIES.map((ethnicity) => ({
+                value: ethnicity,
+                label: el.ethnicity(ethnicity),
+              }))}
+            />
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

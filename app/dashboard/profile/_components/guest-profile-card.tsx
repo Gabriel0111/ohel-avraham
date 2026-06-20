@@ -7,13 +7,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
 import { MapPin } from "lucide-react";
 import { buildGuestSchema, GuestType } from "@/app/schemas/guest";
@@ -149,18 +143,16 @@ export function GuestProfileCard({
               name="gender"
               control={form.control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t.form.gender} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GENDERS.map((g) => (
-                      <SelectItem key={g} value={g}>
-                        {el.gender(g)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t.form.gender}
+                  options={GENDERS.map((g) => ({
+                    value: g,
+                    label: el.gender(g),
+                  }))}
+                />
               )}
             />
           ) : (
@@ -181,23 +173,19 @@ export function GuestProfileCard({
                 name="sector"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <FieldLabel>{t.form.sector}</FieldLabel>
-                    <Select
+                    <NativeSelect
+                      className="max-w-[60%]"
                       value={field.value}
                       onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.form.selectSector} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECTORS.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {el.sector(s)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onBlur={field.onBlur}
+                      placeholder={t.form.selectSector}
+                      options={SECTORS.map((s) => ({
+                        value: s,
+                        label: el.sector(s),
+                      }))}
+                    />
                   </div>
                 )}
               />
@@ -205,23 +193,19 @@ export function GuestProfileCard({
                 name="ethnicity"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <FieldLabel>{t.form.ethnicity}</FieldLabel>
-                    <Select
+                    <NativeSelect
+                      className="max-w-[60%]"
                       value={field.value}
                       onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.form.selectEthnicity} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ETHNICITIES.map((e) => (
-                          <SelectItem key={e} value={e}>
-                            {el.ethnicity(e)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onBlur={field.onBlur}
+                      placeholder={t.form.selectEthnicity}
+                      options={ETHNICITIES.map((e) => ({
+                        value: e,
+                        label: el.ethnicity(e),
+                      }))}
+                    />
                   </div>
                 )}
               />

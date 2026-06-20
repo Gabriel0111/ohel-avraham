@@ -10,13 +10,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useMemo, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildGuestSchema, guestSchemaDV, GuestType } from "@/app/schemas/guest";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { GENDERS } from "@/app/enums/gender";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -93,18 +87,17 @@ const GuestForm = () => {
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.gender}</FieldLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t.form.selectGender} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GENDERS.map((gender) => (
-                      <SelectItem value={gender} key={gender}>
-                        {el.gender(gender)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t.form.selectGender}
+                  invalid={fieldState.invalid}
+                  options={GENDERS.map((gender) => ({
+                    value: gender,
+                    label: el.gender(gender),
+                  }))}
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

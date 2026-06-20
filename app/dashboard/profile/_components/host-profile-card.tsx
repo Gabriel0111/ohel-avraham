@@ -9,15 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { EnumPill } from "@/components/ui/enum-pill";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
-import { Accessibility, ArrowUpRight, MapPin, Phone, X } from "lucide-react";
+import { Accessibility, ArrowUpRight, BookOpen, MapPin, Music, Phone, X } from "lucide-react";
 import { buildHostSchema, HostType } from "@/app/schemas/host";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
@@ -243,23 +237,19 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 name="kashrout"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <FieldLabel>{t.form.kashrout}</FieldLabel>
-                    <Select
+                    <NativeSelect
+                      className="max-w-[60%]"
                       value={field.value}
                       onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.form.selectKashrout} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {KASHROUT.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {el.kashrout(s)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onBlur={field.onBlur}
+                      placeholder={t.form.selectKashrout}
+                      options={KASHROUT.map((s) => ({
+                        value: s,
+                        label: el.kashrout(s),
+                      }))}
+                    />
                   </div>
                 )}
               />
@@ -267,23 +257,19 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 name="sector"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <FieldLabel>{t.form.sector}</FieldLabel>
-                    <Select
+                    <NativeSelect
+                      className="max-w-[60%]"
                       value={field.value}
                       onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.form.selectSector} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECTORS.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {el.sector(s)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onBlur={field.onBlur}
+                      placeholder={t.form.selectSector}
+                      options={SECTORS.map((s) => ({
+                        value: s,
+                        label: el.sector(s),
+                      }))}
+                    />
                   </div>
                 )}
               />
@@ -291,23 +277,19 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 name="ethnicity"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <FieldLabel>{t.form.ethnicity}</FieldLabel>
-                    <Select
+                    <NativeSelect
+                      className="max-w-[60%]"
                       value={field.value}
                       onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t.form.selectEthnicity} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ETHNICITIES.map((e) => (
-                          <SelectItem key={e} value={e}>
-                            {el.ethnicity(e)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onBlur={field.onBlur}
+                      placeholder={t.form.selectEthnicity}
+                      options={ETHNICITIES.map((e) => ({
+                        value: e,
+                        label: el.ethnicity(e),
+                      }))}
+                    />
                   </div>
                 )}
               />
@@ -367,6 +349,64 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
                 {t.hostProfile.noSpecializedAccess}
               </EnumPill>
             )
+          )}
+        </SettingsRow>
+
+        {/* --- LIGNE : PRÉFÉRENCES --- */}
+        <SettingsRow
+          label={t.hostProfile.preferences}
+          description={t.hostProfile.preferencesDesc}
+        >
+          {isEditing ? (
+            <div className="flex flex-col gap-4 w-full">
+              <Controller
+                name="likesSinging"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2 font-normal">
+                      <Music className="size-4 text-muted-foreground" />
+                      {t.form.likesSinging}
+                    </Label>
+                    <Switch
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
+              <Controller
+                name="likesDivreiTorah"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="flex items-center justify-between">
+                    <Label className="flex items-center gap-2 font-normal">
+                      <BookOpen className="size-4 text-muted-foreground" />
+                      {t.form.likesDivreiTorah}
+                    </Label>
+                    <Switch
+                      checked={!!field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </div>
+                )}
+              />
+            </div>
+          ) : hostData.likesSinging || hostData.likesDivreiTorah ? (
+            <div className="flex flex-wrap gap-2">
+              {hostData.likesSinging && (
+                <EnumPill color="violet" icon={Music}>
+                  {t.form.likesSinging}
+                </EnumPill>
+              )}
+              {hostData.likesDivreiTorah && (
+                <EnumPill color="blue" icon={BookOpen}>
+                  {t.form.likesDivreiTorah}
+                </EnumPill>
+              )}
+            </div>
+          ) : (
+            <ViewValue value={undefined} />
           )}
         </SettingsRow>
 

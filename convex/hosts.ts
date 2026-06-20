@@ -142,6 +142,8 @@ async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
     ethnicity: host.ethnicity,
     kashrout: host.kashrout,
     hasDisabilityAccess: host.hasDisabilityAccess,
+    likesSinging: host.likesSinging ?? false,
+    likesDivreiTorah: host.likesDivreiTorah ?? false,
     languages: host.languages ?? [],
   };
 }

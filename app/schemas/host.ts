@@ -19,6 +19,9 @@ export const buildHostSchema = (m: ValidationMessages) =>
 
     hasDisabilityAccess: z.boolean({ message: m.disabilityRequired }),
 
+    likesSinging: z.boolean().optional(),
+    likesDivreiTorah: z.boolean().optional(),
+
     kashrout: z.enum(KASHROUT, { message: m.kashroutRequired }),
 
     sector: z.enum(SECTORS, { message: m.sectorRequired }),
@@ -39,6 +42,9 @@ export const hostSchemaDV: HostType = {
   floor: 0,
 
   hasDisabilityAccess: false,
+
+  likesSinging: false,
+  likesDivreiTorah: false,
 
   kashrout: undefined as unknown as HostType["kashrout"],
   sector: undefined as unknown as HostType["sector"],

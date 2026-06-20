@@ -6,6 +6,8 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
+  Music,
+  BookOpen,
   ShieldCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -149,6 +151,16 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
             {host?.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
                 {t.people.access}
+              </EnumPill>
+            )}
+            {host?.likesSinging && (
+              <EnumPill color="violet" icon={Music}>
+                {t.form.likesSinging}
+              </EnumPill>
+            )}
+            {host?.likesDivreiTorah && (
+              <EnumPill color="blue" icon={BookOpen}>
+                {t.form.likesDivreiTorah}
               </EnumPill>
             )}
           </div>

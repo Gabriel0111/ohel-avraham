@@ -24,11 +24,11 @@ const FIT_PADDING = 56;
 // Privacy: never let the map zoom past neighbourhood level, so a guest can see
 // roughly where a host is without pinpointing the building. This is the hard
 // cap applied to the map itself (manual zoom included).
-const PRIVACY_MAX_ZOOM = 14;
+const PRIVACY_MAX_ZOOM = 15;
 // Don't zoom in further than this when results are tightly clustered.
-const MAX_FIT_ZOOM = 13;
+const MAX_FIT_ZOOM = 14;
 // Zoom used to focus a single selected host (kept at/under the privacy cap).
-const FOCUS_ZOOM = 14;
+const FOCUS_ZOOM = 15;
 
 // Keeps the viewport framed on the current results: fits all markers into view
 // when the host list changes, and pans/zooms onto a host when one is selected.
@@ -58,7 +58,7 @@ function MapViewController({
 
     if (points.length === 0) {
       map.setCenter(ISRAEL_CENTER);
-      map.setZoom(8);
+      map.setZoom(9);
       return;
     }
 
@@ -118,7 +118,7 @@ export function HostMapGoogle({
     <APIProvider apiKey={apiKey}>
       <Map
         defaultCenter={ISRAEL_CENTER}
-        defaultZoom={8}
+        defaultZoom={9}
         maxZoom={PRIVACY_MAX_ZOOM}
         mapId="DEMO_MAP_ID"
         className="size-full rounded-lg overflow-hidden"

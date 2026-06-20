@@ -24,6 +24,10 @@ export const HostFields = {
 
   hasDisabilityAccess: v.boolean(),
 
+  // Hospitality preferences shown on the host's profile.
+  likesSinging: v.optional(v.boolean()),
+  likesDivreiTorah: v.optional(v.boolean()),
+
   kashrout: KashroutV,
   sector: SectorV,
   ethnicity: EthnicityV,

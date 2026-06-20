@@ -16,6 +16,8 @@ import {
   Calendar,
   ShieldCheck,
   Clock,
+  Music,
+  BookOpen,
 } from "lucide-react";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import * as RPNInput from "react-phone-number-input";
@@ -75,6 +77,16 @@ export function HostDetailDialog({
                   {host.hasDisabilityAccess && (
                     <EnumPill color="green" icon={Accessibility}>
                       {t.people.access}
+                    </EnumPill>
+                  )}
+                  {host.likesSinging && (
+                    <EnumPill color="violet" icon={Music}>
+                      {t.form.likesSinging}
+                    </EnumPill>
+                  )}
+                  {host.likesDivreiTorah && (
+                    <EnumPill color="blue" icon={BookOpen}>
+                      {t.form.likesDivreiTorah}
                     </EnumPill>
                   )}
                 </div>

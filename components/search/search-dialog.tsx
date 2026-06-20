@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
-import { useDebounce } from "use-debounce";
 import { HostListCard, type PublicHost } from "./host-list-card";
 import { RequestDialog } from "@/components/requests/request-dialog";
 import {
@@ -66,14 +65,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   // Language filter (empty = no filtering).
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
-  // Debounce the term sent to Convex so we hit the search index per pause,
-  // not per keystroke.
-  const [debouncedQuery] = useDebounce(searchQuery.trim(), 250);
-
-  // Server-side full-text search via the `search_address` index.
-  const hostsResult = useQuery(api.hosts.searchPublicHosts, {
-    query: debouncedQuery || undefined,
-  }) as PublicHost[] | undefined;
+  // Load the available hosts once; all narrowing (city, language, and free-text
+  // on name/address) happens client-side, so typing a host's name matches too.
+  const hostsResult = useQuery(api.hosts.searchPublicHosts, {}) as
+    | PublicHost[]
+    | undefined;
 
   // Distinct cities with hosts, for the picker step.
   const cities = useQuery(api.hosts.getHostCities);
@@ -96,8 +92,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   const cityOf = useCallback((h: PublicHost) => h.city || h.address, []);
 
-  // Step 2 list, narrowed to the chosen city (unless "all") and, when set, to
-  // hosts who speak at least one of the selected languages.
+  // Step 2 list, narrowed to the chosen city (unless "all"), to hosts who speak
+  // at least one of the selected languages, and to the free-text query — which
+  // matches the host's name as well as their location.
   const filteredHosts = useMemo(() => {
     let result = allHosts;
     if (selectedCity && selectedCity !== ALL_CITIES) {
@@ -108,8 +105,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         h.languages?.some((l) => selectedLanguages.includes(l)),
       );
     }
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      result = result.filter((h) =>
+        [h.name, h.address, h.city, h.neighborhood, h.street]
+          .filter((v): v is string => !!v)
+          .some((v) => v.toLowerCase().includes(q)),
+      );
+    }
     return result;
-  }, [allHosts, selectedCity, cityOf, selectedLanguages]);
+  }, [allHosts, selectedCity, cityOf, selectedLanguages, searchQuery]);
 
   // City list for the picker, filtered live by the search box.
   const visibleCities = useMemo(() => {
@@ -141,11 +146,15 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const pickCity = useCallback((city: string) => {
     setSelectedCity(city);
     setSelectedHost(null);
+    // Reset the box so step 2 starts on the full city list, ready for a
+    // name search.
+    setSearchQuery("");
   }, []);
 
   const backToCities = useCallback(() => {
     setSelectedCity(null);
     setSelectedHost(null);
+    setSearchQuery("");
   }, []);
 
   const resultsLabel =
@@ -369,6 +378,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 </p>
                 <div className="space-y-1">
                   {Object.entries(cityGroups)
+                    .filter(([city]) =>
+                      city
+                        .toLowerCase()
+                        .includes(searchQuery.trim().toLowerCase()),
+                    )
                     .sort((a, b) => b[1] - a[1])
                     .map(([city, count]) => (
                       <div

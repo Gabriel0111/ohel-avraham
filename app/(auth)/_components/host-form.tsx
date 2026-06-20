@@ -10,13 +10,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { buildHostSchema, hostSchemaDV, HostType } from "@/app/schemas/host";
 import * as RPNInput from "react-phone-number-input";
@@ -33,8 +27,8 @@ import { toast } from "sonner";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
-import { useErrorMessage, useT } from "@/lib/i18n/context";
-import { Home, Accessibility } from "lucide-react";
+import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
+import { Home, Accessibility, Music, BookOpen } from "lucide-react";
 import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 
@@ -42,6 +36,7 @@ const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
   const { t } = useT();
+  const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
 
   const createHost = useMutation(api.hosts.createHost);
@@ -197,24 +192,68 @@ const HostForm = () => {
             render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel>{t.form.kashrout}</FieldLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t.form.selectKashrout} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {KASHROUT.map((kashrout) => (
-                      <SelectItem value={kashrout} key={kashrout}>
-                        {kashrout}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <NativeSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder={t.form.selectKashrout}
+                  invalid={fieldState.invalid}
+                  options={KASHROUT.map((kashrout) => ({
+                    value: kashrout,
+                    label: el.kashrout(kashrout),
+                  }))}
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
               </Field>
             )}
           />
+
+          {/* Hospitality preferences */}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Controller
+              name="likesSinging"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
+                  <Label
+                    htmlFor="singing-switch"
+                    className="text-sm cursor-pointer leading-tight"
+                  >
+                    <Music className="size-3.5 inline mr-1.5 text-muted-foreground" />
+                    {t.form.likesSinging}
+                  </Label>
+                  <Switch
+                    id="singing-switch"
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </div>
+              )}
+            />
+
+            <Controller
+              name="likesDivreiTorah"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
+                  <Label
+                    htmlFor="divrei-torah-switch"
+                    className="text-sm cursor-pointer leading-tight"
+                  >
+                    <BookOpen className="size-3.5 inline mr-1.5 text-muted-foreground" />
+                    {t.form.likesDivreiTorah}
+                  </Label>
+                  <Switch
+                    id="divrei-torah-switch"
+                    checked={!!field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </div>
+              )}
+            />
+          </div>
 
           {/* Languages spoken */}
           <LanguagesField control={form.control as never} />
