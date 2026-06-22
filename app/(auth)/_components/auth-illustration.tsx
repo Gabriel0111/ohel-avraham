@@ -6,25 +6,21 @@ import { motion, useReducedMotion } from "motion/react";
  * "La lumière au seuil" — Configuration globale et design tokens.
  */
 const CONFIG = {
-  // Tailles des étoiles
   STAR_MIN_RADIUS: 0.18,
   STAR_RADIUS_MULTIPLIER: 0.75,
   STAR_BRIGHT_THRESHOLD: 0.85,
-
-  // Répartition et densité
-  TOTAL_STAR_LIMIT: 85, // Augmenté pour couvrir toute la surface
-  MIN_STAR_DISTANCE: 5.5, // La clé du secret : force les étoiles à s'espacer élégamment
-  CLUSTER_COUNT: 3, // Moins d'amas, plus de répartition globale
-
-  // Couleurs OKLCH
+  TOTAL_STAR_LIMIT: 95,
+  MIN_STAR_DISTANCE: 4.8,
+  CLUSTER_COUNT: 2,
   colors: {
-    skyTop: "oklch(0.12 0.022 289)",
-    skyMid1: "oklch(0.155 0.05 292)",
-    skyMid2: "oklch(0.235 0.095 293)",
-    skyBottom: "oklch(0.145 0.04 290)",
-    horizonGlow: "oklch(0.541 0.281 293)",
-    starBright: "oklch(0.97 0.02 285)",
-    starDim: "oklch(0.92 0.02 288)",
+    // Ciel modifié pour des teintes bleu foncé / violet
+    skyTop: "oklch(0.15 0.12 275)",
+    skyMid1: "oklch(0.22 0.14 280)",
+    skyMid2: "oklch(0.28 0.15 285)",
+    skyBottom: "oklch(0.25 0.12 290)",
+    horizonGlow: "oklch(0.35 0.18 295)",
+    starBright: "oklch(0.98 0.02 285)",
+    starDim: "oklch(0.85 0.02 288)",
     starHalo: "oklch(0.78 0.08 290)",
   },
 };
@@ -42,7 +38,8 @@ function mulberry32(seed: number) {
 const r1 = (n: number) => Math.round(n * 10) / 10;
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-const inTent = (x: number, y: number) => x > 26 && x < 74 && y > 64 && y < 109;
+// Zone occupée par la tente
+const inTent = (x: number, y: number) => x > 15 && x < 85 && y > 45 && y < 120;
 
 type Star = {
   x: number;
@@ -68,17 +65,15 @@ const STARS: Star[] = (() => {
   const reserved = (x: number, y: number) => x < 30 && y < 13;
 
   const place = (x: number, y: number) => {
-    // Vérification des zones interdites
     if (x < 1 || x > 99 || y < 2 || y > 102 || inTent(x, y) || reserved(x, y)) {
       return false;
     }
 
-    // Vérification de la distance minimale pour une répartition homogène
     for (const star of out) {
       const dx = star.x - x;
       const dy = star.y - y;
       if (Math.sqrt(dx * dx + dy * dy) < CONFIG.MIN_STAR_DISTANCE) {
-        return false; // Rejeté, trop proche d'une autre étoile
+        return false;
       }
     }
 
@@ -105,7 +100,6 @@ const STARS: Star[] = (() => {
     return true;
   };
 
-  // 1. Placement de quelques amas légers pour éviter un look "grille parfaite"
   for (let c = 0; c < CONFIG.CLUSTER_COUNT; c++) {
     const cx = 8 + rnd() * 84;
     const cy = 4 + rnd() * 88;
@@ -119,10 +113,7 @@ const STARS: Star[] = (() => {
     }
   }
 
-  // 2. Remplissage global sur toute la surface
   let guard = 0;
-  // On utilise une limite de garde très haute (3000) car la règle de distance
-  // va rejeter beaucoup de tentatives vers la fin du remplissage.
   while (out.length < CONFIG.TOTAL_STAR_LIMIT && guard < 3000) {
     guard++;
     place(rnd() * 100, 2 + rnd() * 100);
@@ -132,7 +123,7 @@ const STARS: Star[] = (() => {
 })();
 
 const sparkle = (L: number) => {
-  const c = (L * 0.07).toFixed(2);
+  const c = (L * 0.06).toFixed(2);
   const l = L.toFixed(2);
   return `M0 -${l} C${c} -${c} ${c} -${c} ${l} 0 C${c} ${c} ${c} ${c} 0 ${l} C-${c} ${c} -${c} ${c} -${l} 0 C-${c} -${c} -${c} -${c} 0 -${l} Z`;
 };
@@ -146,24 +137,33 @@ export function AuthIllustration() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid slice"
-      className="auth-illu absolute inset-0 h-full w-full"
+      className="ohel-avraham-illu absolute inset-0 h-full w-full bg-[#0a0a0f]"
       aria-hidden
     >
       <style>{`
         @media (dynamic-range: high) {
-          .auth-illu { dynamic-range-limit: no-limit; }
-          .door-core-a { stop-color: color(rec2100-pq 0.67 0.61 0.46); }
-          .door-core-b { stop-color: color(rec2100-pq 0.61 0.50 0.31); }
-          .door-pool  { fill: color(rec2100-pq 0.59 0.48 0.31); }
-          .star-bright { fill: color(rec2100-pq 0.64 0.64 0.66); }
+          .ohel-avraham-illu { dynamic-range-limit: no-limit; }
+          .hdr-light-spill { fill: color(rec2100-pq 0.8 0.5 0.1); }
+          .star-bright { fill: color(rec2100-pq 0.8 0.8 0.9); }
         }
       `}</style>
 
       <defs>
+        {/* Filtre pour l'effet de bloom (lumière réaliste) */}
+        <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="blur1" />
+          <feGaussianBlur stdDeviation="8" result="blur2" />
+          <feMerge>
+            <feMergeNode in="blur2" />
+            <feMergeNode in="blur1" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        {/* Dégradé du ciel */}
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={CONFIG.colors.skyTop} />
-          <stop offset="42%" stopColor={CONFIG.colors.skyMid1} />
-          <stop offset="72%" stopColor={CONFIG.colors.skyMid2} />
+          <stop offset="50%" stopColor={CONFIG.colors.skyMid1} />
           <stop offset="100%" stopColor={CONFIG.colors.skyBottom} />
         </linearGradient>
 
@@ -171,70 +171,84 @@ export function AuthIllustration() {
           <stop
             offset="0%"
             stopColor={CONFIG.colors.horizonGlow}
-            stopOpacity="0.42"
-          />
-          <stop
-            offset="55%"
-            stopColor="oklch(0.45 0.2 293)"
-            stopOpacity="0.14"
-          />
-          <stop offset="100%" stopColor="oklch(0.45 0.2 293)" stopOpacity="0" />
-        </radialGradient>
-
-        <radialGradient id="doorLight" cx="50%" cy="80%" r="68%">
-          <stop
-            className="door-core-a"
-            offset="0%"
-            stopColor="oklch(0.95 0.05 82)"
-            stopOpacity="0.95"
-          />
-          <stop
-            className="door-core-b"
-            offset="45%"
-            stopColor="oklch(0.86 0.11 70)"
-            stopOpacity="0.7"
+            stopOpacity="0.5"
           />
           <stop
             offset="100%"
-            stopColor="oklch(0.75 0.13 55)"
-            stopOpacity="0.05"
+            stopColor={CONFIG.colors.horizonGlow}
+            stopOpacity="0"
           />
         </radialGradient>
 
-        <linearGradient id="spill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="oklch(0.9 0.09 72)" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="oklch(0.9 0.09 72)" stopOpacity="0" />
+        {/* Dégradé du sol avec occlusion de la tente */}
+        <radialGradient id="groundShadow" cx="50%" cy="110%" r="60%">
+          <stop offset="0%" stopColor="oklch(0.05 0.01 290)" />
+          <stop offset="100%" stopColor="oklch(0.12 0.03 291)" />
+        </radialGradient>
+
+        {/* Lumière volumétrique sortant de la tente */}
+        <linearGradient
+          id="volumetricSpill"
+          x1="50%"
+          y1="90%"
+          x2="50%"
+          y2="150%"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="oklch(0.95 0.15 75)" stopOpacity="0.8" />
+          <stop offset="40%" stopColor="oklch(0.7 0.18 60)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="oklch(0.4 0.1 50)" stopOpacity="0" />
         </linearGradient>
 
-        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="oklch(0.165 0.05 291)" />
-          <stop offset="100%" stopColor="oklch(0.1 0.02 288)" />
+        {/* Dégradés du tissu de la tente pour simuler le volume */}
+        <linearGradient id="fabricDark" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="oklch(0.15 0.02 280)" />
+          <stop offset="100%" stopColor="oklch(0.22 0.04 285)" />
         </linearGradient>
+
+        <linearGradient id="fabricLitLeft" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="oklch(0.6 0.15 65)" stopOpacity="0.9" />
+          <stop offset="60%" stopColor="oklch(0.25 0.05 285)" stopOpacity="1" />
+        </linearGradient>
+
+        <linearGradient id="fabricLitRight" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="oklch(0.6 0.15 65)" stopOpacity="0.9" />
+          <stop offset="60%" stopColor="oklch(0.25 0.05 285)" stopOpacity="1" />
+        </linearGradient>
+
+        <radialGradient id="interiorGlow" cx="50%" cy="85%" r="70%">
+          <stop offset="0%" stopColor="oklch(0.98 0.18 80)" />
+          <stop offset="40%" stopColor="oklch(0.85 0.2 65)" />
+          <stop offset="100%" stopColor="oklch(0.3 0.1 40)" />
+        </radialGradient>
       </defs>
 
+      {/* Fond du Ciel */}
       <rect width="100" height="150" fill="url(#sky)" />
       <rect width="100" height="150" fill="url(#horizonGlow)" />
 
-      {/* Starfield */}
+      {/* Étoiles */}
       {STARS.map((s, i) =>
         s.bright ? (
           <g key={i} transform={`translate(${s.x} ${s.y})`}>
             <circle
-              r={s.r * 2.4}
+              r={s.r * 2.8}
               fill={CONFIG.colors.starHalo}
-              opacity={0.09}
+              opacity={0.12}
+              filter="url(#bloom)"
             />
             <motion.path
               d={sparkle(s.r * 3)}
               fill={CONFIG.colors.starBright}
+              className="star-bright"
               initial={{
-                opacity: reduce ? 0.5 : 0.3,
-                scale: reduce ? 1 : 0.82,
+                opacity: reduce ? 0.4 : 0.25,
+                scale: reduce ? 1 : 0.85,
               }}
               animate={
                 reduce
                   ? undefined
-                  : { opacity: [0.3, 0.72, 0.3], scale: [0.82, 1.08, 0.82] }
+                  : { opacity: [0.25, 0.9, 0.25], scale: [0.85, 1.15, 0.85] }
               }
               transition={
                 reduce
@@ -249,9 +263,9 @@ export function AuthIllustration() {
               style={{ transformOrigin: "center" }}
             />
             <circle
-              className="star-bright"
               r={s.r}
               fill={CONFIG.colors.starBright}
+              className="star-bright"
             />
           </g>
         ) : (
@@ -261,17 +275,17 @@ export function AuthIllustration() {
             cy={s.y}
             r={s.r}
             fill={CONFIG.colors.starDim}
-            initial={{ opacity: reduce ? s.base : s.base * 0.5 }}
+            initial={{ opacity: reduce ? s.base : s.base * 0.4 }}
             animate={
               reduce
                 ? undefined
-                : { opacity: [s.base * 0.5, s.base, s.base * 0.5] }
+                : { opacity: [s.base * 0.4, s.base * 1.2, s.base * 0.4] }
             }
             transition={
               reduce
                 ? undefined
                 : {
-                    duration: s.dur,
+                    duration: s.dur * 1.2,
                     delay: s.delay,
                     repeat: Infinity,
                     ease: "easeInOut",
@@ -281,67 +295,141 @@ export function AuthIllustration() {
         ),
       )}
 
-      {/* Ground */}
-      <path d="M0 108 Q50 104 100 107 L100 150 L0 150 Z" fill="url(#ground)" />
+      {/* Sol et Ombre d'environnement */}
       <path
-        d="M0 108 Q50 104 100 107"
-        stroke="oklch(0.6 0.2 293)"
-        strokeOpacity="0.25"
-        strokeWidth="0.4"
-        fill="none"
+        d="M0 100 Q50 95 100 100 L100 150 L0 150 Z"
+        fill="url(#groundShadow)"
       />
 
-      {/* Tent */}
-      <g>
+      {/* ======= TENTE RÉALISTE ======= */}
+      <g id="tent-group">
+        {/* Cordes arrières */}
         <path
-          d="M28 108 C31 86 43 76 50 73 C57 76 69 86 72 108 Z"
-          fill="oklch(0.2 0.07 292)"
-          stroke="oklch(0.62 0.2 293)"
-          strokeOpacity="0.55"
-          strokeWidth="0.6"
-          strokeLinejoin="round"
-        />
-        <line
-          x1="50"
-          y1="73"
-          x2="50"
-          y2="70"
-          stroke="oklch(0.62 0.2 293)"
-          strokeOpacity="0.5"
-          strokeWidth="0.45"
-        />
-        <circle
-          cx="50"
-          cy="69.6"
-          r="0.7"
-          fill="oklch(0.72 0.2 293)"
-          opacity="0.7"
+          d="M50 48 L10 105 M50 48 L90 105"
+          stroke="oklch(0.2 0.02 280)"
+          strokeWidth="0.3"
+          opacity="0.6"
         />
 
-        <motion.path
-          d="M43.5 108 L43.5 91 Q43.5 83 50 83 Q56.5 83 56.5 91 L56.5 108 Z"
-          fill="url(#doorLight)"
-          initial={{ opacity: 0.92 }}
-          animate={reduce ? undefined : { opacity: [0.82, 1, 0.82] }}
-          transition={
-            reduce
-              ? undefined
-              : { duration: 5.5, repeat: Infinity, ease: "easeInOut" }
-          }
-          style={{ transformBox: "fill-box", transformOrigin: "50% 100%" }}
+        {/* Intérieur de la tente (Fond éclairé) */}
+        <path
+          d="M38 105 L45 55 Q50 50 55 55 L62 105 Z"
+          fill="url(#interiorGlow)"
+        />
+
+        {/* Drappé Arrière / Toile de fond assombrie */}
+        <path
+          d="M25 102 Q40 60 50 52 Q60 60 75 102 Q62 98 50 98 Q38 98 25 102 Z"
+          fill="url(#fabricDark)"
+          opacity="0.8"
+        />
+
+        {/* Pilier central / Mât (Silhouette) */}
+        <rect
+          x="49.2"
+          y="52"
+          width="1.6"
+          height="55"
+          fill="oklch(0.15 0.05 40)"
+          opacity="0.9"
+        />
+
+        {/* Drappé Gauche (Tissu avec plis et lumière) */}
+        <path
+          d="M18 108 C 25 80, 38 60, 48 50 C 45 65, 41 85, 36 106 C 30 107, 24 108, 18 108 Z"
+          fill="url(#fabricLitLeft)"
+        />
+        {/* Ombre de pli gauche */}
+        <path
+          d="M24 107 C 32 80, 42 62, 48 50 C 44 65, 36 85, 30 107 C 28 107, 26 107, 24 107 Z"
+          fill="oklch(0.1 0.02 280)"
+          opacity="0.4"
+        />
+
+        {/* Drappé Droit (Tissu avec plis et lumière) */}
+        <path
+          d="M82 108 C 75 80, 62 60, 52 50 C 55 65, 59 85, 64 106 C 70 107, 76 108, 82 108 Z"
+          fill="url(#fabricLitRight)"
+        />
+        {/* Ombre de pli droit */}
+        <path
+          d="M76 107 C 68 80, 58 62, 52 50 C 56 65, 64 85, 70 107 C 72 107, 74 107, 76 107 Z"
+          fill="oklch(0.1 0.02 280)"
+          opacity="0.4"
+        />
+
+        {/* Toit / Auvent frontal */}
+        <path
+          d="M15 105 Q35 70 50 48 Q65 70 85 105 Q65 65 50 45 Q35 65 15 105 Z"
+          fill="url(#fabricDark)"
+        />
+        <path
+          d="M15 105 Q35 70 50 48 Q65 70 85 105 Q65 65 50 45 Q35 65 15 105 Z"
+          fill="url(#interiorGlow)"
+          opacity="0.15"
+        />
+
+        {/* Cordes avant */}
+        <path
+          d="M18 108 L2 120 M82 108 L98 120"
+          stroke="oklch(0.3 0.05 280)"
+          strokeWidth="0.4"
+        />
+        {/* Piquets */}
+        <rect
+          x="1"
+          y="118"
+          width="1"
+          height="4"
+          fill="oklch(0.2 0.02 280)"
+          transform="rotate(-30 1 118)"
+        />
+        <rect
+          x="98"
+          y="118"
+          width="1"
+          height="4"
+          fill="oklch(0.2 0.02 280)"
+          transform="rotate(30 98 118)"
         />
       </g>
 
-      <path d="M43.5 107 L56.5 107 L70 132 L30 132 Z" fill="url(#spill)" />
-      <ellipse
-        className="door-pool"
-        cx="50"
-        cy="108.5"
-        rx="13"
-        ry="2.6"
-        fill="oklch(0.9 0.09 72)"
-        opacity="0.28"
+      {/* ======= LUMIÈRE VOLUMÉTRIQUE (SPILL) ======= */}
+      {/* Le faisceau de lumière qui s'échappe de la tente vers le sol */}
+      <motion.path
+        d="M36 106 L64 106 L95 150 L5 150 Z"
+        fill="url(#volumetricSpill)"
+        className="hdr-light-spill"
+        style={{ mixBlendMode: "screen" }}
+        initial={{ opacity: 0.8 }}
+        animate={reduce ? undefined : { opacity: [0.75, 0.9, 0.75] }}
+        transition={
+          reduce
+            ? undefined
+            : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        }
       />
+      {/* Cœur de la lumière au sol (plus intense) */}
+      <ellipse
+        cx="50"
+        cy="108"
+        rx="16"
+        ry="3"
+        fill="oklch(0.98 0.15 75)"
+        opacity="0.6"
+        filter="url(#bloom)"
+      />
+
+      {/* ======= TABLE VIDE ======= */}
+      <g transform="translate(42 92)">
+        {/* Table Silhouette */}
+        <path d="M1 8 L15 8 L13 10 L3 10 Z" fill="oklch(0.1 0.05 40)" />
+        <path
+          d="M3 10 L3 16 M13 10 L13 16"
+          stroke="oklch(0.1 0.05 40)"
+          strokeWidth="0.6"
+        />
+      </g>
     </svg>
   );
 }

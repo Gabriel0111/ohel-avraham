@@ -4,16 +4,40 @@ import { ConvexError } from "convex/values";
  * Semantic error keys. Both error sources (Better Auth + Convex) are
  * normalized onto this single keyspace, which mirrors `t.errors.*` in
  * `lib/i18n/translations.ts`. `unexpected` is the localized fallback.
+ *
+ * Our own Convex functions throw `ConvexError({ code })` where `code` is one of
+ * these keys directly, so the code *is* the translation key — no alias needed
+ * (see `parseError`). The alias table below is only for foreign codes we don't
+ * control (Better Auth). Every key here must exist in `t.errors` for all three
+ * languages; `scripts/check-error-keys` verifies that.
  */
-export type ErrorKey =
-  | "invalidCredentials"
-  | "userAlreadyExists"
-  | "emailNotVerified"
-  | "invalidEmail"
-  | "passwordLength"
-  | "unauthorized"
-  | "profileCreateFailed"
-  | "unexpected";
+export const ERROR_KEYS = [
+  "invalidCredentials",
+  "userAlreadyExists",
+  "emailNotVerified",
+  "invalidEmail",
+  "passwordLength",
+  "unauthorized",
+  "forbidden",
+  "userNotFound",
+  "hostNotFound",
+  "cannotRequestSelf",
+  "atLeastOneAdult",
+  "requestAlreadyPending",
+  "requestNotFound",
+  "requestNotPending",
+  "notVerified",
+  "profileCreateFailed",
+  "unexpected",
+] as const;
+
+export type ErrorKey = (typeof ERROR_KEYS)[number];
+
+const ERROR_KEY_SET = new Set<string>(ERROR_KEYS);
+
+function isErrorKey(code: string): code is ErrorKey {
+  return ERROR_KEY_SET.has(code);
+}
 
 /**
  * Explicit alias table: raw source code (Better Auth `code`, `ConvexError`
@@ -84,5 +108,8 @@ export function parseError(e: unknown): {
   data?: Record<string, unknown>;
 } {
   const { code, data } = rawCodeFrom(e);
-  return { key: ERROR_ALIASES[code] ?? "unexpected", data };
+  // Foreign codes (Better Auth) go through the alias table; our own codes are
+  // already ErrorKeys, so accept them directly. Anything else → unexpected.
+  const key = ERROR_ALIASES[code] ?? (isErrorKey(code) ? code : "unexpected");
+  return { key, data };
 }

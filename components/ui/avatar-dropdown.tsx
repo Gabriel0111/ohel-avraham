@@ -9,6 +9,7 @@ import {
 import { ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { getRoleRingClass, isRegistrationIncomplete } from "@/lib/role-style";
 
 interface DropdownItems {
   icon: ReactNode;
@@ -24,6 +25,8 @@ interface AvatarDropdownProps {
   items: DropdownItems[];
   pendingCount?: number;
   requestsLabel?: string;
+  role?: string;
+  incompleteLabel?: string;
 }
 
 const AvatarDropdown = ({
@@ -33,8 +36,11 @@ const AvatarDropdown = ({
   items,
   pendingCount = 0,
   requestsLabel,
+  role,
+  incompleteLabel,
 }: AvatarDropdownProps) => {
   const hasNewRequest = pendingCount > 0;
+  const incomplete = isRegistrationIncomplete(role);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,13 +48,30 @@ const AvatarDropdown = ({
           type="button"
           className="relative shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Avatar className="size-8 shadow-sm">
+          <Avatar
+            className={cn(
+              "size-8 shadow-sm ring-2 ring-offset-2 ring-offset-background",
+              getRoleRingClass(role),
+            )}
+          >
             <AvatarImage
               src={imageSrc ?? `https://avatar.vercel.sh/${email}`}
               alt={email}
             />
             <AvatarFallback>{email?.slice(0, 1)}</AvatarFallback>
           </Avatar>
+          {incomplete && (
+            <span
+              role="status"
+              className="absolute -bottom-0.5 -end-0.5 flex size-3.5 items-center justify-center rounded-full bg-amber-500 ring-2 ring-background"
+            >
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/60 motion-reduce:hidden" />
+              <span className="relative text-[8px] font-bold leading-none text-white">
+                !
+              </span>
+              <span className="sr-only">{incompleteLabel}</span>
+            </span>
+          )}
           {hasNewRequest && (
             <span role="status" className="absolute -top-1 -end-1 flex size-3">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 motion-reduce:hidden" />

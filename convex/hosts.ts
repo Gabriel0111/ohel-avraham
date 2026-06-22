@@ -46,7 +46,7 @@ export const upsertHost = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const authUserId = identity.subject;
 
@@ -120,22 +120,13 @@ function isHostAvailable(host: HostDoc) {
   return host.unavailableUntil != null && host.unavailableUntil <= Date.now();
 }
 
-async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_authUserId", (q) => q.eq("authUserId", host.authUserId))
-    .first();
-
+async function toPublicHost(ctx: QueryCtx, host: HostDoc, redact: boolean) {
   const { city, neighborhood, street } = extractLocation(host.address);
 
-  return {
+  // Traits + map pin are public; identity and precise location are not.
+  const base = {
     _id: host._id,
-    name: user?.name ?? "Host",
-    image: user?.image,
-    address: host.address,
     city,
-    neighborhood,
-    street,
     lat: host.lat,
     lng: host.lng,
     sector: host.sector,
@@ -145,6 +136,34 @@ async function toPublicHost(ctx: QueryCtx, host: HostDoc) {
     likesSinging: host.likesSinging ?? false,
     likesDivreiTorah: host.likesDivreiTorah ?? false,
     languages: host.languages ?? [],
+  };
+
+  // Signed-out visitors get an anonymized teaser: no name/photo, no address
+  // beyond the city. This is enforced here (server-side) so the data never
+  // leaves the backend, not just hidden in the UI.
+  if (redact) {
+    return {
+      ...base,
+      name: undefined as string | undefined,
+      image: undefined as string | undefined,
+      address: undefined as string | undefined,
+      neighborhood: undefined as string | undefined,
+      street: undefined as string | undefined,
+    };
+  }
+
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_authUserId", (q) => q.eq("authUserId", host.authUserId))
+    .first();
+
+  return {
+    ...base,
+    name: (user?.name ?? "Host") as string | undefined,
+    image: user?.image as string | undefined,
+    address: host.address as string | undefined,
+    neighborhood,
+    street,
   };
 }
 
@@ -171,7 +190,22 @@ export const searchPublicHosts = query({
     const available = hosts
       .filter(isHostAvailable)
       .filter((h) => h.authUserId !== identity?.subject);
-    return await Promise.all(available.map((host) => toPublicHost(ctx, host)));
+    // Full details (name + precise address) are reserved for finalized members.
+    // Signed-out visitors and not-yet-registered users (role "user") get
+    // anonymized records: city + traits + map pin only.
+    let redact = true;
+    if (identity) {
+      const viewer = await ctx.db
+        .query("users")
+        .withIndex("by_authUserId", (q) =>
+          q.eq("authUserId", identity.subject),
+        )
+        .first();
+      redact = !viewer || viewer.role === "user";
+    }
+    return await Promise.all(
+      available.map((host) => toPublicHost(ctx, host, redact)),
+    );
   },
 });
 
@@ -207,13 +241,13 @@ export const setHostAvailability = mutation({
   returns: v.object({ updated: v.boolean() }),
   handler: async (ctx, { available, unavailableUntil }) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const host = await ctx.db
       .query("hosts")
       .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
       .unique();
-    if (!host) throw new Error("Profil hôte introuvable.");
+    if (!host) throw new ConvexError({ code: "hostNotFound" });
 
     await ctx.db.patch(host._id, {
       isAvailable: available,
@@ -227,7 +261,7 @@ export const deleteHost = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const host = await ctx.db
       .query("hosts")

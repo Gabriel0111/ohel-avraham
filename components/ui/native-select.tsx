@@ -3,6 +3,13 @@
 import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface NativeSelectOption {
   value: string;
@@ -30,11 +37,31 @@ interface NativeSelectProps {
 }
 
 /**
- * A real <select> styled to match the design system. Because it's a native
- * control, mobile browsers (iOS / iPadOS / Android) render it with the system
- * picker — the wheel/list users expect — while desktop gets the native
- * dropdown. Options can carry an emoji `glyph` since native menus can't render
- * SVG icons. Uses logical (start/end) spacing so it mirrors under RTL.
+ * True on coarse-pointer devices (phones / tablets), where the OS picker —
+ * the wheel/list users expect — is the better control. Desktop (fine pointer)
+ * gets the styled Radix dropdown instead. Starts `false` so server and first
+ * client render agree (native is the SSR-safe default); a desktop briefly shows
+ * the native control for one frame before switching, which avoids a hydration
+ * mismatch.
+ */
+function useCoarsePointer() {
+  const [coarse, setCoarse] = React.useState<boolean | null>(null);
+  React.useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarse(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return coarse;
+}
+
+/**
+ * A select that adapts to the device: the OS-native `<select>` on touch
+ * devices (iPhone / iPadOS / Android — the system picker) and the design
+ * system's Radix dropdown on desktop. The public API is identical across both
+ * so call sites (and their React Hook Form wiring) never change. Despite the
+ * name, only touch devices actually render the native control.
  */
 export function NativeSelect({
   value,
@@ -49,8 +76,49 @@ export function NativeSelect({
   onBlur,
   id,
 }: NativeSelectProps) {
-  const isEmpty = value == null || value === "";
+  const coarse = useCoarsePointer();
 
+  // Desktop (fine pointer): the styled Radix dropdown.
+  if (coarse === false) {
+    return (
+      <Select
+        value={value || undefined}
+        onValueChange={onValueChange}
+        disabled={disabled}
+        name={name}
+      >
+        <SelectTrigger
+          id={id}
+          onBlur={onBlur}
+          aria-invalid={invalid || undefined}
+          className={cn("w-full", className)}
+        >
+          {icon && (
+            <span className="shrink-0 text-muted-foreground [&_svg]:size-4">
+              {icon}
+            </span>
+          )}
+          {/* Keep SelectValue a direct child so the trigger's line-clamp/
+              truncation applies — a long placeholder must clip, not overflow. */}
+          <SelectValue
+            placeholder={placeholder}
+            className="min-w-0 flex-1 truncate text-start"
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.glyph ? `${opt.glyph}  ${opt.label}` : opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  // Touch devices (and the SSR / pre-mount default): the real <select> so the
+  // OS renders its system picker.
+  const isEmpty = value == null || value === "";
   return (
     <div className={cn("relative w-full", className)}>
       {icon && (

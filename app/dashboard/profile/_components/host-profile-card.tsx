@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  PreferenceBadge,
+  PreferenceToggle,
+} from "@/components/ui/preference-toggle";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
 import { Accessibility, ArrowUpRight, BookOpen, MapPin, Music, Phone, X } from "lucide-react";
@@ -358,51 +362,49 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
           description={t.hostProfile.preferencesDesc}
         >
           {isEditing ? (
-            <div className="flex flex-col gap-4 w-full">
+            <div className="flex items-center gap-2">
               <Controller
                 name="likesSinging"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-2 font-normal">
-                      <Music className="size-4 text-muted-foreground" />
-                      {t.form.likesSinging}
-                    </Label>
-                    <Switch
-                      checked={!!field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <PreferenceToggle
+                    icon={Music}
+                    label={t.form.likesSinging}
+                    color="rose"
+                    active={!!field.value}
+                    onChange={field.onChange}
+                  />
                 )}
               />
               <Controller
                 name="likesDivreiTorah"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-2 font-normal">
-                      <BookOpen className="size-4 text-muted-foreground" />
-                      {t.form.likesDivreiTorah}
-                    </Label>
-                    <Switch
-                      checked={!!field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </div>
+                  <PreferenceToggle
+                    icon={BookOpen}
+                    label={t.form.likesDivreiTorah}
+                    color="blue"
+                    active={!!field.value}
+                    onChange={field.onChange}
+                  />
                 )}
               />
             </div>
           ) : hostData.likesSinging || hostData.likesDivreiTorah ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {hostData.likesSinging && (
-                <EnumPill color="violet" icon={Music}>
-                  {t.form.likesSinging}
-                </EnumPill>
+                <PreferenceBadge
+                  icon={Music}
+                  label={t.form.likesSinging}
+                  color="rose"
+                />
               )}
               {hostData.likesDivreiTorah && (
-                <EnumPill color="blue" icon={BookOpen}>
-                  {t.form.likesDivreiTorah}
-                </EnumPill>
+                <PreferenceBadge
+                  icon={BookOpen}
+                  label={t.form.likesDivreiTorah}
+                  color="blue"
+                />
               )}
             </div>
           ) : (

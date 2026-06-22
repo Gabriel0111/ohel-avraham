@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { cn } from "@/lib/utils";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
@@ -154,14 +155,18 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
               </EnumPill>
             )}
             {host?.likesSinging && (
-              <EnumPill color="violet" icon={Music}>
-                {t.form.likesSinging}
-              </EnumPill>
+              <PreferenceBadge
+                icon={Music}
+                label={t.form.likesSinging}
+                color="rose"
+              />
             )}
             {host?.likesDivreiTorah && (
-              <EnumPill color="blue" icon={BookOpen}>
-                {t.form.likesDivreiTorah}
-              </EnumPill>
+              <PreferenceBadge
+                icon={BookOpen}
+                label={t.form.likesDivreiTorah}
+                color="blue"
+              />
             )}
           </div>
         </div>

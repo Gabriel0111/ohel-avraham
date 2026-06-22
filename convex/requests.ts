@@ -1,5 +1,5 @@
 import { mutation, query, internalAction, type QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { RequestStatusV } from "./validators/request";
 import type { Doc } from "./_generated/dataModel";
@@ -56,18 +56,24 @@ export const createRequest = mutation({
   returns: v.object({ id: v.id("requests") }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
     const guestAuthUserId = identity.subject;
 
+    // Only verified accounts may ask to be hosted.
+    const guestUser = await getUserByAuthId(ctx, guestAuthUserId);
+    if (!guestUser?.isVerified) {
+      throw new ConvexError({ code: "notVerified" });
+    }
+
     const host = await ctx.db.get(args.hostId);
-    if (!host) throw new Error("Hôte introuvable.");
+    if (!host) throw new ConvexError({ code: "hostNotFound" });
     const hostAuthUserId = host.authUserId;
 
     if (guestAuthUserId === hostAuthUserId) {
-      throw new Error("Vous ne pouvez pas vous envoyer une demande à vous-même.");
+      throw new ConvexError({ code: "cannotRequestSelf" });
     }
     if (args.adults < 1) {
-      throw new Error("Au moins un adulte est requis.");
+      throw new ConvexError({ code: "atLeastOneAdult" });
     }
 
     // Prevent stacking multiple pending requests to the same host.
@@ -80,7 +86,7 @@ export const createRequest = mutation({
       )
       .collect();
     if (existing.some((r) => r.status === "pending")) {
-      throw new Error("Vous avez déjà une demande en attente auprès de cet hôte.");
+      throw new ConvexError({ code: "requestAlreadyPending" });
     }
 
     const id = await ctx.db.insert("requests", {
@@ -95,10 +101,7 @@ export const createRequest = mutation({
     });
 
     // Notify the host by email (best-effort, out of band).
-    const [guestUser, hostUser] = await Promise.all([
-      getUserByAuthId(ctx, guestAuthUserId),
-      getUserByAuthId(ctx, hostAuthUserId),
-    ]);
+    const hostUser = await getUserByAuthId(ctx, hostAuthUserId);
 
     if (hostUser?.email) {
       const guestName = guestUser?.name ?? "Un invité";
@@ -136,17 +139,17 @@ export const respondToRequest = mutation({
   returns: v.object({ status: RequestStatusV }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const request = await ctx.db.get(args.requestId);
-    if (!request) throw new Error("Demande introuvable.");
+    if (!request) throw new ConvexError({ code: "requestNotFound" });
 
     // Only the targeted host may respond.
     if (request.hostAuthUserId !== identity.subject) {
-      throw new Error("Vous n'êtes pas autorisé à répondre à cette demande.");
+      throw new ConvexError({ code: "forbidden" });
     }
     if (request.status !== "pending") {
-      throw new Error("Cette demande a déjà été traitée.");
+      throw new ConvexError({ code: "requestNotPending" });
     }
 
     const status: "accepted" | "declined" = args.accept
@@ -193,15 +196,15 @@ export const cancelRequest = mutation({
   returns: v.object({ cancelled: v.boolean() }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const request = await ctx.db.get(args.requestId);
-    if (!request) throw new Error("Demande introuvable.");
+    if (!request) throw new ConvexError({ code: "requestNotFound" });
     if (request.guestAuthUserId !== identity.subject) {
-      throw new Error("Vous n'êtes pas autorisé à annuler cette demande.");
+      throw new ConvexError({ code: "forbidden" });
     }
     if (request.status !== "pending") {
-      throw new Error("Seule une demande en attente peut être annulée.");
+      throw new ConvexError({ code: "requestNotPending" });
     }
 
     await ctx.db.patch(args.requestId, {

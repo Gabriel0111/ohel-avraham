@@ -11,6 +11,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthHeader from "@/app/(auth)/_components/auth-header";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { useT } from "@/lib/i18n/context";
+import AvatarDropdown from "@/components/ui/avatar-dropdown";
+import { useAuth } from "@/app/ConvexClientProvider";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { LogOutIcon } from "lucide-react";
 
 const CompleteRegistration = () => {
   const [selectedUserType, setSelectedUserType] = useState<string>();
@@ -20,6 +25,21 @@ const CompleteRegistration = () => {
   const userType = searchParams.get("userType");
 
   const { t } = useT();
+  const { user } = useAuth();
+
+  const onSignOut = () => {
+    authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success(t.common.logoutSuccess);
+          router.push("/");
+        },
+        onError: (error) => {
+          toast.error(error.error.message);
+        },
+      },
+    });
+  };
 
   const items: RadioGroupItem[] = [
     {
@@ -52,7 +72,26 @@ const CompleteRegistration = () => {
   return (
     <div className="relative flex flex-col py-10 px-4 min-h-screen overflow-y-auto">
       <BackHomeButton />
-      <AnimatedThemeToggler className="absolute top-7 right-5" />
+      <div className="absolute top-5 end-5 flex items-center gap-3">
+        <AnimatedThemeToggler />
+        {user && (
+          <AvatarDropdown
+            name={user.name}
+            email={user.email}
+            imageSrc={user.image}
+            role={user.role}
+            incompleteLabel={t.nav.finishRegistration}
+            items={[
+              {
+                icon: <LogOutIcon />,
+                label: t.nav.signOut,
+                onClick: onSignOut,
+                variant: "destructive",
+              },
+            ]}
+          />
+        )}
+      </div>
 
       <div className="mx-auto space-y-5 w-full max-w-md px-2 mt-10">
         <AnimatePresence mode="wait">

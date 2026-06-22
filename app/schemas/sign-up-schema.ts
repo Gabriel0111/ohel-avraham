@@ -1,26 +1,23 @@
 import { z } from "zod";
+import type { ValidationMessages } from "@/lib/i18n/translations";
 
-export const signUpSchema = z
-  .object({
-    firstName: z
-      .string()
-      .trim()
-      .min(2, "First name must be at least 2 characters"),
-    lastName: z
-      .string()
-      .trim()
-      .min(2, "Last name must be at least 2 characters"),
-    email: z.email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z
-      .string()
-      .min(8, "Confirm password must be at least 8 characters"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-export type SignUpSchema = z.infer<typeof signUpSchema>;
+// Built from the active language's messages (mirrors buildHostSchema /
+// buildGuestSchema) so validation errors are localized.
+export const buildSignUpSchema = (m: ValidationMessages) =>
+  z
+    .object({
+      firstName: z.string().trim().min(2, m.firstNameMin),
+      lastName: z.string().trim().min(2, m.lastNameMin),
+      email: z.email(m.emailInvalid),
+      password: z.string().min(8, m.passwordMin),
+      confirmPassword: z.string().min(8, m.passwordMin),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: m.passwordsNoMatch,
+      path: ["confirmPassword"],
+    });
+
+export type SignUpSchema = z.infer<ReturnType<typeof buildSignUpSchema>>;
 
 export const signUpSchemaDV: SignUpSchema = {
   firstName: "",

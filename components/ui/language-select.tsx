@@ -80,7 +80,7 @@ export function LanguageSelect({
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] p-1"
+        className="w-(--radix-popover-trigger-width) p-1"
         align="start"
       >
         <div className="max-h-64 overflow-y-auto">
@@ -95,7 +95,7 @@ export function LanguageSelect({
                 aria-pressed={isSelected}
                 className={cn(
                   "flex w-full cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent focus-visible:bg-accent",
-                  isSelected && "font-medium",
+                  isSelected && "bg-accent/60 font-medium",
                 )}
               >
                 <span className="w-5 shrink-0 overflow-hidden rounded-xs">

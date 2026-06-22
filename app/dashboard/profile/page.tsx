@@ -10,7 +10,7 @@ import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-h
 import { PageSection } from "@/app/dashboard/_components/dashboard-page-ui/page-section";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { LinkedAccounts } from "./_components/linked-accounts";
 import { DeleteAccount } from "./_components/delete-account";
 import { VerificationStatus } from "@/app/dashboard/_components/profile-ui/verification-status";
@@ -23,6 +23,7 @@ import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { t, lang } = useT();
+  const getErrorMessage = useErrorMessage();
   const data = useQuery(api.users.getFullProfile);
   const session = authClient.useSession();
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
@@ -67,7 +68,7 @@ export default function ProfilePage() {
         callbackURL: "/dashboard/profile",
       });
       if (error) {
-        toast.error(error.message);
+        toast.error(getErrorMessage(error));
       } else {
         toast.success(t.profile.verifyEmailSent);
       }

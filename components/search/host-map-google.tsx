@@ -8,6 +8,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useEffect } from "react";
 import Image from "next/image";
+import { User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PublicHost } from "./host-list-card";
 import { env } from "@/lib/env";
@@ -138,7 +139,7 @@ export function HostMapGoogle({
               key={host._id}
               position={{ lat: host.lat, lng: host.lng }}
               onClick={() => onSelectHost(host)}
-              title={host.name}
+              title={host.name ?? undefined}
             >
               <div
                 className={cn(
@@ -153,15 +154,17 @@ export function HostMapGoogle({
                 {showPhoto ? (
                   <Image
                     src={host.image!}
-                    alt={host.name}
+                    alt={host.name ?? ""}
                     width={48}
                     height={48}
                     className="size-full object-cover"
                   />
-                ) : (
+                ) : host.name ? (
                   <span className="text-xs font-bold leading-none">
                     {host.name.charAt(0).toUpperCase()}
                   </span>
+                ) : (
+                  <User className="size-4" />
                 )}
               </div>
             </AdvancedMarker>

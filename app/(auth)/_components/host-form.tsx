@@ -21,6 +21,7 @@ import {
 } from "@/app/(auth)/_components/phone-number-comps";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { PreferenceToggle } from "@/components/ui/preference-toggle";
 import { KASHROUT } from "@/app/enums/kashrout";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
@@ -210,50 +211,38 @@ const HostForm = () => {
             )}
           />
 
-          {/* Hospitality preferences */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Controller
-              name="likesSinging"
-              control={form.control}
-              render={({ field }) => (
-                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
-                  <Label
-                    htmlFor="singing-switch"
-                    className="text-sm cursor-pointer leading-tight"
-                  >
-                    <Music className="size-3.5 inline mr-1.5 text-muted-foreground" />
-                    {t.form.likesSinging}
-                  </Label>
-                  <Switch
-                    id="singing-switch"
-                    checked={!!field.value}
-                    onCheckedChange={field.onChange}
+          {/* Hospitality preferences — icon toggles, tooltip carries the title */}
+          <Field>
+            <FieldLabel>{t.hostProfile.preferences}</FieldLabel>
+            <div className="flex items-center gap-2">
+              <Controller
+                name="likesSinging"
+                control={form.control}
+                render={({ field }) => (
+                  <PreferenceToggle
+                    icon={Music}
+                    label={t.form.likesSinging}
+                    color="rose"
+                    active={!!field.value}
+                    onChange={field.onChange}
                   />
-                </div>
-              )}
-            />
-
-            <Controller
-              name="likesDivreiTorah"
-              control={form.control}
-              render={({ field }) => (
-                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
-                  <Label
-                    htmlFor="divrei-torah-switch"
-                    className="text-sm cursor-pointer leading-tight"
-                  >
-                    <BookOpen className="size-3.5 inline mr-1.5 text-muted-foreground" />
-                    {t.form.likesDivreiTorah}
-                  </Label>
-                  <Switch
-                    id="divrei-torah-switch"
-                    checked={!!field.value}
-                    onCheckedChange={field.onChange}
+                )}
+              />
+              <Controller
+                name="likesDivreiTorah"
+                control={form.control}
+                render={({ field }) => (
+                  <PreferenceToggle
+                    icon={BookOpen}
+                    label={t.form.likesDivreiTorah}
+                    color="blue"
+                    active={!!field.value}
+                    onChange={field.onChange}
                   />
-                </div>
-              )}
-            />
-          </div>
+                )}
+              />
+            </div>
+          </Field>
 
           {/* Languages spoken */}
           <LanguagesField control={form.control as never} />

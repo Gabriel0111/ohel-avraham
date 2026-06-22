@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useAuth } from "@/app/ConvexClientProvider";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -502,6 +502,7 @@ function SentDetailDialog({
 function ReceivedList() {
   const { t } = useT();
   const el = useEnumLabel();
+  const getErrorMessage = useErrorMessage();
   const incoming = useQuery(api.requests.getMyIncomingRequests);
   const respond = useMutation(api.requests.respondToRequest);
   const [busy, setBusy] = useState<string | null>(null);
@@ -515,9 +516,7 @@ function ReceivedList() {
         accept ? t.requests.toastAccepted : t.requests.toastDeclined,
       );
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t.requests.toastRespondError,
-      );
+      toast.error(getErrorMessage(err));
     } finally {
       setBusy(null);
     }
@@ -583,6 +582,7 @@ function ReceivedList() {
 function SentList() {
   const { t } = useT();
   const el = useEnumLabel();
+  const getErrorMessage = useErrorMessage();
   const outgoing = useQuery(api.requests.getMyOutgoingRequests);
   const cancel = useMutation(api.requests.cancelRequest);
   const [busy, setBusy] = useState<string | null>(null);
@@ -594,9 +594,7 @@ function SentList() {
       await cancel({ requestId });
       toast.success(t.requests.toastCancelled);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t.requests.toastCancelError,
-      );
+      toast.error(getErrorMessage(err));
     } finally {
       setBusy(null);
     }
@@ -681,18 +679,13 @@ export default function RequestsPage() {
   const role = user?.role;
   // Admins are treated as hosts (they receive requests like one).
   const isHost = role === "host" || role === "guest:host" || role === "admin";
-  const isGuest = role === "guest" || role === "guest:host";
-  // A host only receives requests; a guest only sends them. Only guest:host
-  // sees both. (A plain user with no role yet falls back to the sent view.)
-  const mode: "both" | "received" | "sent" =
-    isHost && isGuest ? "both" : isHost ? "received" : "sent";
+  // A host can do both: receive requests AND send them (act as a guest looking
+  // to be hosted elsewhere), so any host sees both tabs. A plain guest (or a
+  // user with no role yet) can only send, so they get the sent view alone.
+  const mode: "both" | "sent" = isHost ? "both" : "sent";
 
   const subtitle =
-    mode === "received"
-      ? t.requests.descReceived
-      : mode === "sent"
-        ? t.requests.descSent
-        : t.requests.desc;
+    mode === "sent" ? t.requests.descSent : t.requests.desc;
 
   return (
     <div>
@@ -723,8 +716,6 @@ export default function RequestsPage() {
             <SentList />
           </TabsContent>
         </Tabs>
-      ) : mode === "received" ? (
-        <ReceivedList />
       ) : (
         <SentList />
       )}

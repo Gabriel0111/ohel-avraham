@@ -1,46 +1,21 @@
 "use client";
 
-import { Accessibility, BookOpen, MapPin, Music } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Accessibility, BookOpen, Music, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { EnumPill } from "@/components/ui/enum-pill";
 import { LanguageFlag } from "@/components/ui/language-flags";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { getLanguage } from "@/app/enums/language";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 
-// A single hospitality-preference marker: just an icon, the meaning lives in
-// the tooltip so the card footer stays compact.
-function PreferenceIcon({
-  icon: Icon,
-  label,
-}: {
-  icon: LucideIcon;
-  label: string;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="flex size-6 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/15 dark:text-violet-300">
-          <Icon className="size-3.5" />
-          <span className="sr-only">{label}</span>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
-}
-
 export interface PublicHost {
   _id: string;
-  name: string;
+  /** Hidden (undefined) for signed-out viewers — anonymized teaser. */
+  name?: string;
   image?: string;
-  address: string;
+  /** Hidden (undefined) for signed-out viewers — only `city` is exposed. */
+  address?: string;
   city?: string;
   neighborhood?: string;
   /** Street name without the house number (privacy-safe). */
@@ -100,35 +75,37 @@ export function HostListCard({
           {host.image ? (
             <Image
               src={host.image}
-              alt={host.name}
+              alt={host.name ?? ""}
               width={40}
               height={40}
               className="size-10 rounded-full object-cover"
             />
-          ) : (
+          ) : host.name ? (
             <span className="text-sm font-bold text-violet-600 dark:text-violet-300">
               {host.name.charAt(0).toUpperCase()}
             </span>
+          ) : (
+            <User className="size-5 text-violet-600 dark:text-violet-300" />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-sm truncate">
-            {host.name}
+            {host.name ?? t.search.anonymousHost}
           </p>
-          <div className="mt-1.5 flex items-start gap-2">
-            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/15 dark:text-violet-300">
-              <MapPin className="size-3" />
-            </span>
-            <div className="min-w-0 leading-snug">
-              <p className="truncate text-xs font-medium text-foreground">
-                {primaryLine}
-              </p>
-              {secondaryLine && (
-                <p className="truncate text-[11px] text-muted-foreground">
-                  {secondaryLine}
-                </p>
+          <div className="mt-1 min-w-0 leading-snug">
+            <p
+              className={cn(
+                "text-xs font-medium text-foreground",
+                secondaryLine ? "truncate" : "line-clamp-2",
               )}
-            </div>
+            >
+              {primaryLine}
+            </p>
+            {secondaryLine && (
+              <p className="truncate text-[11px] text-muted-foreground">
+                {secondaryLine}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
             <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
@@ -159,15 +136,17 @@ export function HostListCard({
                 {hasPrefs && (
                   <div className="flex shrink-0 items-center gap-1.5">
                     {host.likesSinging && (
-                      <PreferenceIcon
+                      <PreferenceBadge
                         icon={Music}
                         label={t.form.likesSinging}
+                        color="rose"
                       />
                     )}
                     {host.likesDivreiTorah && (
-                      <PreferenceIcon
+                      <PreferenceBadge
                         icon={BookOpen}
                         label={t.form.likesDivreiTorah}
+                        color="blue"
                       />
                     )}
                   </div>

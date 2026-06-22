@@ -9,7 +9,6 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUpSchemaDV } from "@/app/schemas/sign-up-schema";
 import {
   Field,
   FieldError,
@@ -20,8 +19,12 @@ import { PasswordField } from "@/app/(auth)/_components/password-field";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { SignInSchema, signInSchema } from "@/app/schemas/sign-in-schema";
-import { Suspense, useTransition } from "react";
+import {
+  buildSignInSchema,
+  signInSchemaDV,
+  type SignInSchema,
+} from "@/app/schemas/sign-in-schema";
+import { Suspense, useEffect, useMemo, useRef, useTransition } from "react";
 import { redirect, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -48,6 +51,25 @@ function VerifyEmailNotice() {
   );
 }
 
+// Better Auth bounces a Google sign-in for a non-existent account back here
+// with `?error=signup_disabled` (a full-page redirect, so the client onError
+// callback can't catch it). Surface it once on landing.
+function GoogleSignInError() {
+  const { t } = useT();
+  const params = useSearchParams();
+  const router = useRouter();
+  const shown = useRef(false);
+  useEffect(() => {
+    if (shown.current) return;
+    if (params.get("error") === "signup_disabled") {
+      shown.current = true;
+      toast.error(t.auth.noGoogleAccount);
+      router.replace("/login");
+    }
+  }, [params, router, t]);
+  return null;
+}
+
 const LoginPage = () => {
   const [isGoogleLoading, startGoogle] = useTransition();
   const [isEmailLoading, startEmail] = useTransition();
@@ -61,20 +83,21 @@ const LoginPage = () => {
 
   const router = useRouter();
 
+  const schema = useMemo(() => buildSignInSchema(t.validation), [t.validation]);
   const form = useForm({
-    resolver: zodResolver(signInSchema),
-    defaultValues: signUpSchemaDV,
+    resolver: zodResolver(schema),
+    defaultValues: signInSchemaDV,
   });
 
   async function signInWithGoogle() {
     startGoogle(async () => {
+      // `errorCallbackURL` brings a non-existent account back to
+      // /login?error=signup_disabled.
       await authClient.signIn.social({
         provider: "google",
         callbackURL: "/",
+        errorCallbackURL: "/login",
         fetchOptions: {
-          onSuccess: async () => {
-            toast.success(t.auth.signedInWithGoogle);
-          },
           onError: (ctx) => {
             toast.error(getErrorMessage(ctx.error));
           },
@@ -108,6 +131,7 @@ const LoginPage = () => {
       <div className="mx-auto w-full max-w-sm space-y-8">
         <Suspense>
           <VerifyEmailNotice />
+          <GoogleSignInError />
         </Suspense>
 
         <AuthHeader title={t.auth.loginTitle} description={t.auth.loginDesc} />

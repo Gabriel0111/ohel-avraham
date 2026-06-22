@@ -59,6 +59,11 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
         // Always show the Google account chooser so users can pick an account
         // other than the one their browser is already signed into.
         prompt: "select_account",
+        // Don't silently create an account on Google sign-in. The login page
+        // omits `requestSignUp`, so a Google account with no record gets
+        // bounced back with `?error=signup_disabled` ("account doesn't exist").
+        // The sign-up page passes `requestSignUp: true` to allow creation.
+        disableImplicitSignUp: true,
       },
     },
     plugins: [

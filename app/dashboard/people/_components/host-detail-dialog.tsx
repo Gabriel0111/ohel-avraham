@@ -24,6 +24,7 @@ import * as RPNInput from "react-phone-number-input";
 import { type Id } from "@/convex/_generated/dataModel";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { EnumPill } from "@/components/ui/enum-pill";
+import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { DetailList, DetailRow } from "@/components/ui/detail-list";
 import type { HostData } from "../_lib/types";
 import { getInitials, formatDate, mapsUrl, computeAge } from "../_lib/utils";
@@ -80,14 +81,18 @@ export function HostDetailDialog({
                     </EnumPill>
                   )}
                   {host.likesSinging && (
-                    <EnumPill color="violet" icon={Music}>
-                      {t.form.likesSinging}
-                    </EnumPill>
+                    <PreferenceBadge
+                      icon={Music}
+                      label={t.form.likesSinging}
+                      color="rose"
+                    />
                   )}
                   {host.likesDivreiTorah && (
-                    <EnumPill color="blue" icon={BookOpen}>
-                      {t.form.likesDivreiTorah}
-                    </EnumPill>
+                    <PreferenceBadge
+                      icon={BookOpen}
+                      label={t.form.likesDivreiTorah}
+                      color="blue"
+                    />
                   )}
                 </div>
               </div>

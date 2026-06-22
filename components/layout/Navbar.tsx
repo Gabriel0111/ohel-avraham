@@ -17,10 +17,12 @@ import { cn } from "@/lib/utils";
 import {
   Check,
   ChevronDown,
+  CircleAlertIcon,
   LogOutIcon,
   MenuIcon,
   UserIcon,
 } from "lucide-react";
+import { isRegistrationIncomplete } from "@/lib/role-style";
 import { navigationData } from "@/lib/navigation-data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -41,7 +43,7 @@ import AvatarDropdown from "@/components/ui/avatar-dropdown";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { SearchTriggerButton } from "@/components/search/search-trigger";
 import { useRouter } from "next/navigation";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
 
 const LANGUAGES: { value: Language; label: string; flag: string }[] = [
@@ -55,6 +57,7 @@ const Navbar = () => {
   const router = useRouter();
   const { user } = useAuth();
   const { t, lang, setLang } = useT();
+  const getErrorMessage = useErrorMessage();
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const currentLang = LANGUAGES.find((l) => l.value === lang) ?? LANGUAGES[0];
@@ -72,7 +75,7 @@ const Navbar = () => {
           toast.success(t.common.logoutSuccess);
         },
         onError: (error) => {
-          toast.error(error.error.message);
+          toast.error(getErrorMessage(error.error));
         },
       },
     });
@@ -159,14 +162,26 @@ const Navbar = () => {
               name={user?.name}
               email={user?.email}
               imageSrc={user?.image}
+              role={user?.role}
+              incompleteLabel={t.nav.finishRegistration}
               pendingCount={pendingCount ?? 0}
               requestsLabel={t.nav.requests}
               items={[
-                {
-                  icon: <UserIcon />,
-                  label: t.nav.profile,
-                  onClick: () => router.push("/dashboard/profile"),
-                },
+                ...(isRegistrationIncomplete(user?.role)
+                  ? [
+                      {
+                        icon: <CircleAlertIcon />,
+                        label: t.nav.finishRegistration,
+                        onClick: () => router.push("/complete-registration"),
+                      },
+                    ]
+                  : [
+                      {
+                        icon: <UserIcon />,
+                        label: t.nav.profile,
+                        onClick: () => router.push("/dashboard/profile"),
+                      },
+                    ]),
                 {
                   icon: <LogOutIcon />,
                   label: t.nav.signOut,

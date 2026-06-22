@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/input-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  SignUpSchema,
-  signUpSchema,
+  buildSignUpSchema,
   signUpSchemaDV,
+  type SignUpSchema,
 } from "@/app/schemas/sign-up-schema";
 import {
   Field,
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { useTransition } from "react";
+import { useMemo, useTransition } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { redirect, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -52,13 +52,15 @@ const SignUpPage = () => {
 
   async function signInWithGoogle() {
     startGoogle(async () => {
+      // `requestSignUp: true` lets Google create the account here (the provider
+      // has `disableImplicitSignUp`, which the login page relies on to reject
+      // unknown accounts).
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "/complete-registration",
+        errorCallbackURL: "/sign-up",
+        requestSignUp: true,
         fetchOptions: {
-          onSuccess: async () => {
-            toast.success(t.auth.signedInWithGoogle);
-          },
           onError: (ctx) => {
             toast.error(getErrorMessage(ctx.error));
           },
@@ -67,8 +69,9 @@ const SignUpPage = () => {
     });
   }
 
+  const schema = useMemo(() => buildSignUpSchema(t.validation), [t.validation]);
   const form = useForm({
-    resolver: zodResolver(signUpSchema),
+    resolver: zodResolver(schema),
     defaultValues: signUpSchemaDV,
   });
 
@@ -88,7 +91,7 @@ const SignUpPage = () => {
       }
 
       toast.success(t.auth.signedUpSuccess);
-      router.push("/");
+      router.push("/complete-registration");
     });
   };
 

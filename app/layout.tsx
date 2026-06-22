@@ -55,7 +55,7 @@ export default async function RootLayout({
               <ConvexClientProvider initialToken={initialToken}>
                 <AuthSync />
                 {children}
-                <Toaster richColors />
+                <Toaster richColors closeButton />
               </ConvexClientProvider>
             </main>
           </LanguageProvider>

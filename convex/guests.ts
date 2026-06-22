@@ -45,7 +45,7 @@ export const upsertGuest = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const authUserId = identity.subject;
 
@@ -72,7 +72,7 @@ export const deleteGuest = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
 
     const guest = await ctx.db
       .query("guests")

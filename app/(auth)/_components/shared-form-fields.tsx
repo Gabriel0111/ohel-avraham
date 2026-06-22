@@ -3,7 +3,11 @@
 import { Control, Controller, FieldValues } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -49,7 +53,9 @@ export const DobField = ({ control }: { control: Control<FieldValues> }) => {
                 captionLayout="dropdown"
                 selected={field.value instanceof Date ? field.value : undefined}
                 onSelect={(date) => field.onChange(date)}
-                defaultMonth={field.value instanceof Date ? field.value : undefined}
+                defaultMonth={
+                  field.value instanceof Date ? field.value : undefined
+                }
                 startMonth={new Date(1924, 0)}
                 endMonth={new Date()}
                 disabled={(date) =>
@@ -65,7 +71,11 @@ export const DobField = ({ control }: { control: Control<FieldValues> }) => {
   );
 };
 
-export const SectorEthnicityFields = ({ control }: { control: Control<FieldValues> }) => {
+export const SectorEthnicityFields = ({
+  control,
+}: {
+  control: Control<FieldValues>;
+}) => {
   const { t } = useT();
   const el = useEnumLabel();
   return (
@@ -117,14 +127,20 @@ export const SectorEthnicityFields = ({ control }: { control: Control<FieldValue
   );
 };
 
-export const LanguagesField = ({ control }: { control: Control<FieldValues> }) => {
+export const LanguagesField = ({
+  control,
+}: {
+  control: Control<FieldValues>;
+}) => {
   const { t } = useT();
   return (
     <Controller
       name="languages"
       control={control}
       render={({ field, fieldState }) => {
-        const selected: string[] = Array.isArray(field.value) ? field.value : [];
+        const selected: string[] = Array.isArray(field.value)
+          ? field.value
+          : [];
         const toggle = (value: string) => {
           field.onChange(
             selected.includes(value)
@@ -146,7 +162,7 @@ export const LanguagesField = ({ control }: { control: Control<FieldValues> }) =
                     onClick={() => toggle(lang.value)}
                     aria-pressed={isSelected}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                      "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
                       isSelected
                         ? "border-primary/50 bg-primary/10 text-foreground"
                         : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -182,7 +198,7 @@ export const NotesField = ({ control }: { control: Control<FieldValues> }) => {
           <FieldLabel>{t.form.notes}</FieldLabel>
           <Textarea
             placeholder={t.form.notesPlaceholder}
-            className="resize-none"
+            className="resize-none text-sm"
             rows={3}
             {...field}
           />

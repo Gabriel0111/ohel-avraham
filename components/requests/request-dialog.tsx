@@ -26,7 +26,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { CalendarIcon, Minus, Plus, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 
 interface RequestDialogProps {
   open: boolean;
@@ -84,6 +84,7 @@ export function RequestDialog({
   hostName,
 }: RequestDialogProps) {
   const { t, lang } = useT();
+  const getErrorMessage = useErrorMessage();
   const createRequest = useMutation(api.requests.createRequest);
 
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -114,9 +115,7 @@ export function RequestDialog({
       reset();
       onOpenChange(false);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t.requests.toastSentError,
-      );
+      toast.error(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

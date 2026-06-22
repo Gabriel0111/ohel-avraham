@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import { setDeletingAccount } from "@/lib/account-deletion";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -30,17 +31,45 @@ export function DeleteAccount() {
 
   const handleDelete = () => {
     startTransition(async () => {
-      // 1. Delete app data (users, hosts, guests) while still authenticated
-      await deleteUser();
+      // Suppress AuthSync's "create missing user" path: between deleting the
+      // app data and the session being cleared, it would otherwise recreate
+      // the account we're tearing down. Once app data is actually gone we must
+      // NOT re-enable that path until the session is cleared — otherwise a
+      // network blip leaves a resurrected, half-deleted account.
+      setDeletingAccount(true);
+      let appDeleted = false;
+      try {
+        // 1. Delete app data (users, hosts, guests, requests) while still authenticated
+        await deleteUser();
+        appDeleted = true;
 
-      // 2. Delete Better Auth data (sessions, accounts) + sign out
-      const { error } = await authClient.deleteUser();
-      if (error) {
+        // 2. Delete Better Auth data (sessions, accounts) + sign out everywhere
+        const { error } = await authClient.deleteUser();
+        if (error) {
+          // App data is gone but the auth record wasn't deleted. Sign out so the
+          // lingering session can't resurrect a half-deleted account.
+          await authClient.signOut().catch(() => {});
+          toast.error(t.profile.deleteAccountError);
+          router.push("/");
+          return;
+        }
+
+        // Better Auth user + session are gone now, so the recreate race is
+        // closed; clear the flag so a fresh sign-up in the same tab still works.
+        setDeletingAccount(false);
+        router.push("/");
+      } catch {
+        if (appDeleted) {
+          // Destructive deletion already happened — clear the session so it
+          // can't resurrect, but keep the guard set until then.
+          await authClient.signOut().catch(() => {});
+          router.push("/");
+        } else {
+          // Nothing was deleted yet: safe to re-enable normal sync.
+          setDeletingAccount(false);
+        }
         toast.error(t.profile.deleteAccountError);
-        return;
       }
-
-      router.push("/");
     });
   };
 
