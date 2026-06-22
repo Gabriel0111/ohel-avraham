@@ -20,6 +20,30 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
+      sendResetPassword: async ({ user, url }) => {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Ohel Avraham <noreply@mail.ohel-avraham.com>",
+            to: user.email,
+            subject: "Reset your password – Ohel Avraham",
+            html: `
+              <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#111;">
+                <h1 style="font-size:22px;font-weight:600;margin-bottom:8px;">Reset your password</h1>
+                <p style="color:#555;line-height:1.6;margin-bottom:28px;">
+                  We received a request to reset the password for your <strong>Ohel Avraham</strong> account. Click the button below to choose a new password. This link expires in 1 hour.
+                </p>
+                <a href="${url}" style="display:inline-block;background:#111;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;">Reset my password</a>
+                <p style="color:#999;margin-top:28px;font-size:13px;">If you did not request a password reset, you can safely ignore this email — your password will stay the same.</p>
+              </div>
+            `,
+          }),
+        });
+      },
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
@@ -30,7 +54,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Ohel Avraham <gelbaz.dev@gmail.com>",
+            from: "Ohel Avraham <noreply@mail.ohel-avraham.com>",
             to: user.email,
             subject: "Verify your email – Ohel Avraham",
             html: `

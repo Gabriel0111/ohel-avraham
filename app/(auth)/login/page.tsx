@@ -191,6 +191,16 @@ const LoginPage = () => {
               icon={KeyRoundIcon}
             />
 
+            <Link
+              href="/forgot-password"
+              className={buttonVariants({
+                variant: "link",
+                className: "-mt-3 self-end h-auto p-0 font-normal text-xs",
+              })}
+            >
+              {t.auth.forgotPassword}
+            </Link>
+
             <Button
               className="w-full"
               type="submit"

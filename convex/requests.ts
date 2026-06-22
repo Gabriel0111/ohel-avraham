@@ -369,7 +369,7 @@ export const sendEmail = internalAction({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ohel Avraham <gelbaz.dev@gmail.com>",
+        from: "Ohel Avraham <noreply@mail.ohel-avraham.com>",
         to: args.to,
         subject: args.subject,
         html: args.html,

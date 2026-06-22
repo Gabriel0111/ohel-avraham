@@ -62,6 +62,7 @@ export const translations = {
       lastName: "Last Name",
       email: "Email",
       password: "Password",
+      newPassword: "New password",
       confirmPassword: "Confirm Password",
       showPassword: "Show password",
       hidePassword: "Hide password",
@@ -340,6 +341,21 @@ export const translations = {
         "We sent you a verification link. Please verify your email before signing in.",
       noGoogleAccount:
         "No account exists for this Google account. Please sign up first.",
+      forgotPassword: "Forgot password?",
+      forgotPasswordTitle: "Reset your password",
+      forgotPasswordDesc:
+        "Enter your email address and we'll send you a link to reset your password.",
+      sendResetLink: "Send reset link",
+      resetLinkSentTitle: "Check your inbox",
+      resetLinkSentDesc:
+        "If an account exists for this email, you'll receive a link to reset your password shortly.",
+      backToLogin: "Back to login",
+      resetPasswordTitle: "Choose a new password",
+      resetPasswordDesc: "Enter a new password for your account.",
+      updatePassword: "Update password",
+      resetPasswordSuccess: "Password updated. You can now log in.",
+      invalidResetLink: "This reset link is invalid or has expired.",
+      requestNewResetLink: "Request a new link",
     },
     errors: {
       invalidCredentials: "Incorrect email or password.",
@@ -656,6 +672,7 @@ export const translations = {
       lastName: "Nom de famille",
       email: "Email",
       password: "Mot de passe",
+      newPassword: "Nouveau mot de passe",
       confirmPassword: "Confirmer le mot de passe",
       showPassword: "Afficher le mot de passe",
       hidePassword: "Masquer le mot de passe",
@@ -944,6 +961,22 @@ export const translations = {
         "Nous vous avons envoyé un lien de vérification. Veuillez vérifier votre email avant de vous connecter.",
       noGoogleAccount:
         "Aucun compte n'existe pour ce compte Google. Veuillez d'abord vous inscrire.",
+      forgotPassword: "Mot de passe oublié ?",
+      forgotPasswordTitle: "Réinitialiser votre mot de passe",
+      forgotPasswordDesc:
+        "Saisissez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+      sendResetLink: "Envoyer le lien",
+      resetLinkSentTitle: "Vérifiez votre boîte de réception",
+      resetLinkSentDesc:
+        "Si un compte existe pour cet e-mail, vous recevrez sous peu un lien pour réinitialiser votre mot de passe.",
+      backToLogin: "Retour à la connexion",
+      resetPasswordTitle: "Choisissez un nouveau mot de passe",
+      resetPasswordDesc: "Saisissez un nouveau mot de passe pour votre compte.",
+      updatePassword: "Mettre à jour le mot de passe",
+      resetPasswordSuccess:
+        "Mot de passe mis à jour. Vous pouvez maintenant vous connecter.",
+      invalidResetLink: "Ce lien de réinitialisation est invalide ou a expiré.",
+      requestNewResetLink: "Demander un nouveau lien",
     },
     errors: {
       invalidCredentials: "Email ou mot de passe incorrect.",
@@ -1272,6 +1305,7 @@ export const translations = {
       lastName: "שם משפחה",
       email: 'דוא"ל',
       password: "סיסמה",
+      newPassword: "סיסמה חדשה",
       confirmPassword: "אישור סיסמה",
       showPassword: "הצג סיסמה",
       hidePassword: "הסתר סיסמה",
@@ -1542,6 +1576,21 @@ export const translations = {
       verifyEmailDesc:
         "שלחנו לך קישור אימות. אנא אמת את האימייל שלך לפני ההתחברות.",
       noGoogleAccount: "לא קיים חשבון עבור חשבון Google זה. אנא הירשם תחילה.",
+      forgotPassword: "שכחת סיסמה?",
+      forgotPasswordTitle: "איפוס הסיסמה שלך",
+      forgotPasswordDesc:
+        "הזן את כתובת הדוא\"ל שלך ונשלח לך קישור לאיפוס הסיסמה.",
+      sendResetLink: "שליחת קישור לאיפוס",
+      resetLinkSentTitle: "בדוק את תיבת הדואר שלך",
+      resetLinkSentDesc:
+        "אם קיים חשבון עבור דוא\"ל זה, תקבל בקרוב קישור לאיפוס הסיסמה.",
+      backToLogin: "חזרה לכניסה",
+      resetPasswordTitle: "בחר סיסמה חדשה",
+      resetPasswordDesc: "הזן סיסמה חדשה עבור חשבונך.",
+      updatePassword: "עדכון סיסמה",
+      resetPasswordSuccess: "הסיסמה עודכנה. כעת תוכל להתחבר.",
+      invalidResetLink: "קישור איפוס זה אינו תקין או שפג תוקפו.",
+      requestNewResetLink: "בקש קישור חדש",
     },
     errors: {
       invalidCredentials: "אימייל או סיסמה שגויים.",
