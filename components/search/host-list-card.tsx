@@ -55,8 +55,11 @@ export function HostListCard({
   const locality = host.neighborhood
     ? `${host.neighborhood}${host.city ? ` · ${host.city}` : ""}`
     : host.city || host.address;
-  // Whole address kept on a single line, mid-dot separated.
+  // Whole address kept on a single line, mid-dot separated. The first segment
+  // is emphasized; the rest is tinted down to read as secondary location.
   const addressLine = [street, locality].filter(Boolean).join(" · ");
+  const [addressHead, ...addressTailParts] = addressLine.split(" · ");
+  const addressTail = addressTailParts.join(" · ");
 
   return (
     <button
@@ -93,8 +96,14 @@ export function HostListCard({
             {host.name ?? t.search.anonymousHost}
           </p>
           <div className="mt-1 min-w-0 leading-snug">
-            <p className="truncate text-xs font-medium text-foreground">
-              {addressLine}
+            <p className="truncate text-xs font-medium">
+              <span className="text-foreground">{addressHead}</span>
+              {addressTail && (
+                <span className="text-muted-foreground">
+                  {" · "}
+                  {addressTail}
+                </span>
+              )}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">

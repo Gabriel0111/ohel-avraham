@@ -125,6 +125,7 @@ export function HostMapGoogle({
         className="size-full rounded-lg overflow-hidden"
         gestureHandling="greedy"
         disableDefaultUI={false}
+        clickableIcons={false}
         mapTypeControl={false}
         streetViewControl={false}
         fullscreenControl={false}
