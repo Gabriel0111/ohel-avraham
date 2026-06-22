@@ -75,10 +75,10 @@ export function DeleteAccount() {
 
   return (
     <AlertDialog>
-      <div className="flex items-center justify-between p-4 rounded-xl border border-destructive/20 bg-destructive/5">
+      <div className="flex items-center justify-between p-4 rounded-xl border border-destructive/20 bg-gradient-to-br from-destructive/10 to-transparent">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-destructive/10 text-destructive">
-            <Trash2 className="size-5" />
+          <div className="p-2 rounded-full bg-destructive/15 text-destructive">
+            <Trash2 className="size-4" />
           </div>
           <p className="text-sm font-medium text-destructive">
             {t.profile.deleteAccount}

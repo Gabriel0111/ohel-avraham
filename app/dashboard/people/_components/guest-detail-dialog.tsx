@@ -8,7 +8,7 @@ import {
 import { MapPin, Mail, StickyNote, Calendar } from "lucide-react";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
-import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
 import { DetailList, DetailRow } from "@/components/ui/detail-list";
 import type { GuestData } from "../_lib/types";
 import { getInitials, formatDate, mapsUrl, computeAge } from "../_lib/utils";
@@ -46,7 +46,7 @@ export function GuestDetailDialog({
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <EnumPill color="amber">{el.sector(guest.sector)}</EnumPill>
-                  <EnumPill color="slate">
+                  <EnumPill color={ethnicityColor(guest.ethnicity)}>
                     {el.ethnicity(guest.ethnicity)}
                   </EnumPill>
                   <EnumPill color={genderColor(guest.gender)}>

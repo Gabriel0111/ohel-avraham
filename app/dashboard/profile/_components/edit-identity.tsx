@@ -6,11 +6,10 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { Camera } from "lucide-react";
 import { toast } from "sonner";
-import Image from "next/image";
 import { useT } from "@/lib/i18n/context";
 import { Doc } from "@/convex/_generated/dataModel";
+import { EditableAvatar } from "@/app/dashboard/_components/profile-ui/editable-avatar";
 
 interface EditIdentityProps {
   user: Doc<"users">;
@@ -72,22 +71,14 @@ export function EditIdentity({ user, onDone, onCancel }: EditIdentityProps) {
     <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
       {/* Avatar avec bouton upload */}
       <div className="relative shrink-0">
-        <div className="relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ring-border">
-          {avatarSrc ? (
-            <Image src={avatarSrc} alt={name} fill className="object-cover" unoptimized={!!previewUrl} />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
-              {name?.[0]?.toUpperCase()}
-            </div>
-          )}
-        </div>
-        <button
-          type="button"
+        <EditableAvatar
+          src={avatarSrc}
+          name={name}
+          verified={user.isVerified}
           onClick={() => fileInputRef.current?.click()}
-          className="absolute bottom-0 right-0 size-7 bg-primary rounded-full flex items-center justify-center ring-2 ring-background hover:bg-primary/90 transition-colors"
-        >
-          <Camera className="size-3.5 text-primary-foreground" />
-        </button>
+          title={t.profile.uploadImage}
+          unoptimized={!!previewUrl}
+        />
         <input
           ref={fileInputRef}
           type="file"

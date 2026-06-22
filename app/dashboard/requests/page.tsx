@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   EnumPill,
+  ethnicityColor,
   genderColor,
   type PillColor,
 } from "@/components/ui/enum-pill";
@@ -271,7 +272,7 @@ function ReceivedDetailDialog({
                     <EnumPill color="amber">{el.sector(r.guest.sector)}</EnumPill>
                   )}
                   {r.guest.ethnicity && (
-                    <EnumPill color="slate">
+                    <EnumPill color={ethnicityColor(r.guest.ethnicity)}>
                       {el.ethnicity(r.guest.ethnicity)}
                     </EnumPill>
                   )}

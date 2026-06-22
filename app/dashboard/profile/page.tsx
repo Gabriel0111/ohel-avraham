@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Calendar, CheckCircle2, Mail, MailCheck, Pencil } from "lucide-react";
-import Image from "next/image";
+import { useFullProfile } from "@/app/dashboard/_components/profile-provider";
+import { Calendar, CheckCircle2, MailCheck } from "lucide-react";
+import { EnumPill } from "@/components/ui/enum-pill";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
+import { EditButton } from "@/app/dashboard/_components/profile-ui/edit-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { PageSection } from "@/app/dashboard/_components/dashboard-page-ui/page-section";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
@@ -24,7 +26,7 @@ import { toast } from "sonner";
 export default function ProfilePage() {
   const { t, lang } = useT();
   const getErrorMessage = useErrorMessage();
-  const data = useQuery(api.users.getFullProfile);
+  const data = useFullProfile();
   const session = authClient.useSession();
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isSendingVerif, startSendingVerif] = useTransition();
@@ -93,39 +95,17 @@ export default function ProfilePage() {
             />
           ) : (
             <div className="flex gap-4 items-start">
-              {/* Avatar cliquable */}
-              <button
-                type="button"
-                onClick={() => setIsEditingIdentity(true)}
-                className="relative shrink-0 group focus:outline-none cursor-pointer"
-                title={t.profile.uploadImage}
-              >
-                <div
-                  className={`relative size-20 rounded-full overflow-hidden bg-muted shadow-sm ring-2 ${user.isVerified ? "ring-green-500/40" : "ring-border"}`}
-                >
-                  {user.image ? (
-                    <Image
-                      src={user.image}
-                      alt={user.name || ""}
-                      fill
-                      className="object-cover"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground select-none">
-                      {user.name?.[0]?.toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Pencil className="size-4 text-white" />
-                </div>
-                {user.isVerified && (
-                  <div className="absolute bottom-0 right-0 size-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-background">
-                    <CheckCircle2 className="size-3 text-white" />
-                  </div>
+              <Avatar
+                className={cn(
+                  "size-20 shrink-0 shadow-sm ring-2",
+                  user.isVerified ? "ring-green-500/40" : "ring-border",
                 )}
-              </button>
+              >
+                <AvatarImage src={user.image} alt={user.name ?? ""} />
+                <AvatarFallback className="bg-muted text-3xl font-semibold text-muted-foreground">
+                  {user.name?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Infos */}
               <div className="flex-1 min-w-0 space-y-2">
@@ -134,29 +114,18 @@ export default function ProfilePage() {
                     {user.name}
                   </h3>
                   <RoleBadge role={user.role} />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
+                  <EditButton
                     onClick={() => setIsEditingIdentity(true)}
-                    className="ml-auto h-8 gap-1.5 rounded-lg border-violet-500/30 text-violet-700 hover:bg-violet-500/10 hover:text-violet-700 dark:text-violet-300 dark:border-violet-500/30 dark:hover:bg-violet-500/15"
-                  >
-                    <Pencil className="size-3.5" />
-                    {t.profile.editIdentity}
-                  </Button>
+                    label={t.profile.editIdentity}
+                    className="ms-auto"
+                  />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="size-3.5 shrink-0" />
-                    <span className="truncate">{user.email}</span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  <Calendar className="size-3.5 shrink-0" />
+                  <span>
+                    {t.profile.joined} {joinDate}
                   </span>
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="size-3.5 shrink-0" />
-                    <span>
-                      {t.profile.joined} {joinDate}
-                    </span>
-                  </span>
-                </div>
+                </span>
               </div>
             </div>
           )}
@@ -196,20 +165,17 @@ export default function ProfilePage() {
                   >
                     <MailCheck className="size-4" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {emailVerified
-                        ? t.profile.emailVerifiedTitle
-                        : t.profile.emailNotVerifiedTitle}
-                    </p>
-                    {emailVerified && (
-                      <p className="text-xs text-muted-foreground">
-                        {t.profile.emailVerifiedDesc}
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-sm font-medium">
+                    {emailVerified
+                      ? t.profile.emailVerifiedTitle
+                      : t.profile.emailNotVerifiedTitle}
+                  </p>
                 </div>
-                {!emailVerified && (
+                {emailVerified ? (
+                  <EnumPill color="green" icon={CheckCircle2} className="shrink-0">
+                    {t.profile.verified}
+                  </EnumPill>
+                ) : (
                   <Button
                     variant="outline"
                     size="sm"

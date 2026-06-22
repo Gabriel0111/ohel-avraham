@@ -1,7 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Home, User } from "lucide-react";
 import { HostProfileCard } from "@/app/dashboard/profile/_components/host-profile-card";
@@ -12,11 +10,12 @@ import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-l
 import { ProfileError } from "@/app/dashboard/_components/profile-ui/profile-error";
 import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profile";
 import { CommunityHero } from "./_components/community-hero";
+import { useFullProfile } from "@/app/dashboard/_components/profile-provider";
 import { useT } from "@/lib/i18n/context";
 
 export default function CommunityProfilePage() {
   const { t } = useT();
-  const data = useQuery(api.users.getFullProfile);
+  const data = useFullProfile();
 
   if (data === undefined) return <ProfileLoading />;
   if (!data) return <ProfileError />;

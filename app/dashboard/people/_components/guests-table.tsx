@@ -14,7 +14,7 @@ import { Users, Search, Ban } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
-import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
 import { LanguageFlags } from "@/components/ui/language-flags";
 import type { GuestData } from "../_lib/types";
 import { getInitials, formatDate, mapsUrl, computeAge } from "../_lib/utils";
@@ -158,7 +158,7 @@ export function GuestsTable({
                       <EnumPill color="amber">{el.sector(guest.sector)}</EnumPill>
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-3">
-                      <EnumPill color="slate">
+                      <EnumPill color={ethnicityColor(guest.ethnicity)}>
                         {el.ethnicity(guest.ethnicity)}
                       </EnumPill>
                     </TableCell>

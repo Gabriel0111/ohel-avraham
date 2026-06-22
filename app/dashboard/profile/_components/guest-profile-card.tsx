@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
-import { MapPin } from "lucide-react";
 import { buildGuestSchema, GuestType } from "@/app/schemas/guest";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
@@ -18,7 +17,9 @@ import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "../../_components/profile-ui/view-value";
-import { EnumPill, genderColor } from "@/components/ui/enum-pill";
+import { EditButton } from "../../_components/profile-ui/edit-button";
+import { MapLink } from "../../_components/profile-ui/map-link";
+import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -77,13 +78,7 @@ export function GuestProfileCard({
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <h3 className="text-base font-semibold">{t.profile.guestProfile}</h3>
         {!isEditing ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            {t.common.edit}
-          </Button>
+          <EditButton onClick={() => setIsEditing(true)} />
         ) : (
           <div className="flex gap-2">
             <Button
@@ -126,10 +121,7 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <ViewValue
-              value={guestData.region}
-              icon={<MapPin className="size-4" />}
-            />
+            <MapLink query={guestData.region} label={guestData.region} />
           )}
         </SettingsRow>
 
@@ -220,7 +212,7 @@ export function GuestProfileCard({
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color="slate">
+                <EnumPill color={ethnicityColor(guestData.ethnicity)}>
                   {el.ethnicity(guestData.ethnicity)}
                 </EnumPill>
               </div>

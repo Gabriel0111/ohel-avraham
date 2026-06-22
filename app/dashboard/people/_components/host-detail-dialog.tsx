@@ -23,7 +23,7 @@ import { useEnumLabel, useT } from "@/lib/i18n/context";
 import * as RPNInput from "react-phone-number-input";
 import { type Id } from "@/convex/_generated/dataModel";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
-import { EnumPill } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { DetailList, DetailRow } from "@/components/ui/detail-list";
 import type { HostData } from "../_lib/types";
@@ -72,7 +72,7 @@ export function HostDetailDialog({
                 <div className="flex flex-wrap gap-1.5">
                   <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
                   <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-                  <EnumPill color="slate">
+                  <EnumPill color={ethnicityColor(host.ethnicity)}>
                     {el.ethnicity(host.ethnicity)}
                   </EnumPill>
                   {host.hasDisabilityAccess && (

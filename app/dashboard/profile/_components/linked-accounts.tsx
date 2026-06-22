@@ -9,6 +9,7 @@ import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/context";
 
 type Account = {
@@ -100,10 +101,25 @@ export function LinkedAccounts() {
 
   return (
     <div className="space-y-3">
-      {/* Google */}
-      <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
+      {/* Google — status-tinted like the verification cards: green when linked,
+          calm neutral when not (linking is optional, never a warning). */}
+      <div
+        className={cn(
+          "flex items-center justify-between p-4 rounded-xl border transition-colors",
+          isGoogleLinked
+            ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent"
+            : "border-border bg-gradient-to-br from-muted/40 to-transparent",
+        )}
+      >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-muted">
+          <div
+            className={cn(
+              "p-2 rounded-full transition-colors",
+              isGoogleLinked
+                ? "bg-green-500/15 text-green-600"
+                : "bg-muted text-muted-foreground",
+            )}
+          >
             <GoogleIcon className="size-4" />
           </div>
           <p className="text-sm font-medium">{t.profile.googleAccount}</p>

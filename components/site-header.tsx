@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export function SiteHeader() {
   return (
-    <header className="flex sticky top-0 z-10 border-b border-border bg-card md:rounded-t-md h-(--header-height) shrink-0 items-center transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+    <header className="flex sticky top-0 z-10 border-b border-border bg-card md:rounded-t-2xl h-(--header-height) shrink-0 items-center transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center px-3 md:px-4">
         {/* Hamburger — toujours visible */}
         <SidebarTrigger className="transition-transform duration-150 active:scale-90" />

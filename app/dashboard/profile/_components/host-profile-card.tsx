@@ -8,14 +8,14 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { EnumPill } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
 import {
   PreferenceBadge,
   PreferenceToggle,
 } from "@/components/ui/preference-toggle";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
-import { Accessibility, ArrowUpRight, BookOpen, MapPin, Music, Phone, X } from "lucide-react";
+import { Accessibility, BookOpen, Music, Phone, X } from "lucide-react";
 import { buildHostSchema, HostType } from "@/app/schemas/host";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { toast } from "sonner";
@@ -29,6 +29,8 @@ import { EmptyProfile } from "@/app/dashboard/_components/profile-ui/empty-profi
 import { HostAvailability } from "./host-availability";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "@/app/dashboard/_components/profile-ui/view-value";
+import { EditButton } from "@/app/dashboard/_components/profile-ui/edit-button";
+import { MapLink } from "@/app/dashboard/_components/profile-ui/map-link";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { FieldError, FieldLabel } from "@/components/ui/field";
@@ -95,13 +97,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <h3 className="text-base font-semibold">{t.hostProfile.title}</h3>
         {!isEditing ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            {t.common.edit}
-          </Button>
+          <EditButton onClick={() => setIsEditing(true)} />
         ) : (
           <div className="flex gap-2">
             <Button
@@ -170,27 +166,13 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               />
             </div>
           ) : (
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hostData.address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex w-full items-center gap-3.5 rounded-xl border border-violet-500/20 bg-violet-500/5 px-4 py-3.5 transition-colors hover:border-violet-500/40 hover:bg-violet-500/10"
-            >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 transition-transform group-hover:scale-105">
-                <MapPin className="size-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-lg font-semibold leading-tight text-foreground transition-colors group-hover:text-violet-700 dark:group-hover:text-violet-300">
-                  {hostData.address}
-                </p>
-                {hostData.floor && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t.form.floor} {hostData.floor}
-                  </p>
-                )}
-              </div>
-              <ArrowUpRight className="size-4 shrink-0 text-violet-600/0 transition-all group-hover:text-violet-600" />
-            </a>
+            <MapLink
+              query={hostData.address}
+              label={hostData.address}
+              subLabel={
+                hostData.floor ? `${t.form.floor} ${hostData.floor}` : undefined
+              }
+            />
           )}
         </SettingsRow>
 
@@ -314,7 +296,7 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color="slate">
+                <EnumPill color={ethnicityColor(hostData.ethnicity)}>
                   {el.ethnicity(hostData.ethnicity)}
                 </EnumPill>
               </div>

@@ -3,7 +3,7 @@
 import { Accessibility, BookOpen, Music, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { EnumPill } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
 import { LanguageFlag } from "@/components/ui/language-flags";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { getLanguage } from "@/app/enums/language";
@@ -55,8 +55,8 @@ export function HostListCard({
   const locality = host.neighborhood
     ? `${host.neighborhood}${host.city ? ` · ${host.city}` : ""}`
     : host.city || host.address;
-  const primaryLine = street ?? locality;
-  const secondaryLine = street ? locality : undefined;
+  // Whole address kept on a single line, mid-dot separated.
+  const addressLine = [street, locality].filter(Boolean).join(" · ");
 
   return (
     <button
@@ -93,24 +93,16 @@ export function HostListCard({
             {host.name ?? t.search.anonymousHost}
           </p>
           <div className="mt-1 min-w-0 leading-snug">
-            <p
-              className={cn(
-                "text-xs font-medium text-foreground",
-                secondaryLine ? "truncate" : "line-clamp-2",
-              )}
-            >
-              {primaryLine}
+            <p className="truncate text-xs font-medium text-foreground">
+              {addressLine}
             </p>
-            {secondaryLine && (
-              <p className="truncate text-[11px] text-muted-foreground">
-                {secondaryLine}
-              </p>
-            )}
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
             <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
             <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-            <EnumPill color="slate">{el.ethnicity(host.ethnicity)}</EnumPill>
+            <EnumPill color={ethnicityColor(host.ethnicity)}>
+              {el.ethnicity(host.ethnicity)}
+            </EnumPill>
             {host.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
                 {t.people.access}

@@ -7,7 +7,8 @@ export type PillColor =
   | "slate"
   | "green"
   | "amber"
-  | "red";
+  | "red"
+  | "teal";
 
 const PILL_COLORS: Record<PillColor, string> = {
   violet:
@@ -21,6 +22,7 @@ const PILL_COLORS: Record<PillColor, string> = {
   amber:
     "bg-amber-500/10 text-amber-700 border-amber-500/15 dark:text-amber-300",
   red: "bg-red-500/10 text-red-700 border-red-500/15 dark:text-red-300",
+  teal: "bg-teal-500/10 text-teal-700 border-teal-500/15 dark:text-teal-300",
 };
 
 export function EnumPill({
@@ -52,4 +54,9 @@ export function genderColor(gender: string): PillColor {
   if (gender === "Female") return "pink";
   if (gender === "Couple") return "violet";
   return "blue";
+}
+
+export function ethnicityColor(ethnicity: string): PillColor {
+  if (ethnicity === "Sefardi") return "teal";
+  return "slate";
 }

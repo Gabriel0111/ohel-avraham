@@ -14,7 +14,7 @@ import { Home, Search, Accessibility, Clock, Ban, ShieldCheck } from "lucide-rea
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
-import { EnumPill } from "@/components/ui/enum-pill";
+import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
 import { LanguageFlags } from "@/components/ui/language-flags";
 import type { HostData } from "../_lib/types";
 import { getInitials, mapsUrl } from "../_lib/utils";
@@ -161,7 +161,7 @@ export function HostsTable({
                       </EnumPill>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
-                      <EnumPill color="slate">
+                      <EnumPill color={ethnicityColor(host.ethnicity)}>
                         {el.ethnicity(host.ethnicity)}
                       </EnumPill>
                     </TableCell>
