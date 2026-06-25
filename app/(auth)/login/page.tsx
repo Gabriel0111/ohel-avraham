@@ -195,7 +195,7 @@ const LoginPage = () => {
               href="/forgot-password"
               className={buttonVariants({
                 variant: "link",
-                className: "-mt-3 self-end h-auto p-0 font-normal text-xs",
+                className: "-mt-3 justify-end  p-0 font-normal text-sm",
               })}
             >
               {t.auth.forgotPassword}

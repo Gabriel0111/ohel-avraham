@@ -6,8 +6,11 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/i18n/context";
+import { LANG_COOKIE, isLanguage } from "@/lib/i18n/lang";
 import { AuthSync } from "@/components/auth-sync";
 import { getToken } from "@/lib/auth-server";
+import { cookies } from "next/headers";
+import type { Language } from "@/lib/i18n/translations";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -39,8 +42,18 @@ export default async function RootLayout({
   // whether to expect auth (see ConvexClientProvider). Null for logged-out.
   const initialToken = await getToken();
 
+  // Read the language cookie on the server so the very first render is already
+  // in the user's language — no flash of English flipping back to French.
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get(LANG_COOKIE)?.value;
+  const lang: Language = isLanguage(langCookie) ? langCookie : "en";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang={lang}
+      dir={lang === "he" ? "rtl" : "ltr"}
+      suppressHydrationWarning
+    >
       <body
         className={`${plusJakarta.variable} ${geistMono.variable} antialiased select-none min-h-dvh overflow-y-auto`}
       >
@@ -50,7 +63,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider>
+          <LanguageProvider initialLang={lang}>
             <main className="mx-auto w-full">
               <ConvexClientProvider initialToken={initialToken}>
                 <AuthSync />

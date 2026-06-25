@@ -8,7 +8,12 @@ import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import {
   PreferenceBadge,
   PreferenceToggle,
@@ -284,21 +289,15 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.kashrout}</Label>
-                <EnumPill color="blue">
-                  {el.kashrout(hostData.kashrout)}
-                </EnumPill>
+                <KashroutBadge value={hostData.kashrout} />
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <EnumPill color="violet">
-                  {el.sector(hostData.sector)}
-                </EnumPill>
+                <SectorBadge value={hostData.sector} />
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color={ethnicityColor(hostData.ethnicity)}>
-                  {el.ethnicity(hostData.ethnicity)}
-                </EnumPill>
+                <EthnicityBadge value={hostData.ethnicity} />
               </div>
             </div>
           )}

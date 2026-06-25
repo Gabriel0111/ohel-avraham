@@ -32,6 +32,7 @@ import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
 import { Home, Accessibility, Music, BookOpen } from "lucide-react";
 import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
+import { setJustRegistered } from "@/lib/registration-success";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -59,6 +60,7 @@ const HostForm = () => {
             floor: String(values.floor),
           },
         });
+        setJustRegistered(true);
         setRegistered(true);
       } catch (e) {
         toast.error(getErrorMessage(e, "profileCreateFailed"));

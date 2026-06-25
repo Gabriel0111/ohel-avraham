@@ -155,7 +155,7 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
                   key={item.placeId}
                   value={item.placeId}
                   onSelect={() => handleSelectPlace(item.placeId, item.text)}
-                  className="flex items-center gap-2 text-sm"
+                  className="flex cursor-pointer items-center gap-2 text-sm"
                 >
                   <MapPin className="size-3.5 text-muted-foreground shrink-0" />
                   {item.text}

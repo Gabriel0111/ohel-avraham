@@ -4,6 +4,7 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import { authClient } from "@/lib/auth-client";
 import { api } from "@/convex/_generated/api";
 import { isDeletingAccount } from "@/lib/account-deletion";
+import { isJustRegistered } from "@/lib/registration-success";
 import { useMutation, useConvexAuth } from "convex/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -56,7 +57,13 @@ export function AuthSync() {
     // the registration form there. Completed users never sit on that form.
     if (user?.role === "user" && pathname.startsWith(PROTECTED_PREFIX)) {
       router.replace(COMPLETE_REGISTRATION);
-    } else if (user?.role !== "user" && pathname === COMPLETE_REGISTRATION) {
+    } else if (
+      user?.role !== "user" &&
+      pathname === COMPLETE_REGISTRATION &&
+      !isJustRegistered()
+    ) {
+      // Skip the bounce while the post-registration success screen is playing;
+      // it navigates to /dashboard itself once the user is done.
       router.replace("/");
     }
   }, [session?.user?.id, isAuthenticated, isLoading, isConvexLoading, isConvexAuthenticated, user?.role, pathname]);

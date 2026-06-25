@@ -10,14 +10,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Home, Search, Accessibility, Clock, Ban, ShieldCheck } from "lucide-react";
+import {
+  Home,
+  Search,
+  Accessibility,
+  Clock,
+  Ban,
+  ShieldCheck,
+} from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
-import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { LanguageFlags } from "@/components/ui/language-flags";
 import type { HostData } from "../_lib/types";
-import { getInitials, mapsUrl } from "../_lib/utils";
+import { getInitials, mapsUrl, formatDate } from "../_lib/utils";
 import { RowActionsMenu } from "./row-actions-menu";
 import { PaginationBar } from "./pagination-bar";
 
@@ -47,7 +59,6 @@ export function HostsTable({
   onDelete: (info: { authUserId: string; name: string }) => void;
 }) {
   const { t } = useT();
-  const el = useEnumLabel();
 
   return (
     <Card className="border-border/60">
@@ -101,6 +112,9 @@ export function HostsTable({
                   <TableHead className="hidden xl:table-cell">
                     {t.form.languages}
                   </TableHead>
+                  <TableHead className="hidden xl:table-cell">
+                    {t.people.registeredAt}
+                  </TableHead>
                   {isAdmin && <TableHead>{t.people.status}</TableHead>}
                   {isAdmin && (
                     <TableHead className="pr-5 text-right">
@@ -147,33 +161,38 @@ export function HostsTable({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline line-clamp-2 break-words max-w-[240px] block"
+                        className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
                       >
-                        {host.address}
+                        <span className="underline-offset-4 group-hover/addr:underline">
+                          {host.address}
+                        </span>
                       </a>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell py-3">
-                      <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
+                      <SectorBadge value={host.sector} />
                     </TableCell>
                     <TableCell className="hidden sm:table-cell py-3">
-                      <EnumPill color="blue">
-                        {el.kashrout(host.kashrout)}
-                      </EnumPill>
+                      <KashroutBadge value={host.kashrout} />
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
-                      <EnumPill color={ethnicityColor(host.ethnicity)}>
-                        {el.ethnicity(host.ethnicity)}
-                      </EnumPill>
+                      <EthnicityBadge value={host.ethnicity} />
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
                       {host.hasDisabilityAccess ? (
                         <Accessibility className="size-4 text-green-600" />
                       ) : (
-                        <span className="text-xs text-muted-foreground/40">—</span>
+                        <span className="text-xs text-muted-foreground/40">
+                          —
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="hidden xl:table-cell py-3">
                       <LanguageFlags value={host.languages} />
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell py-3">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(host._creationTime)}
+                      </span>
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="py-3">

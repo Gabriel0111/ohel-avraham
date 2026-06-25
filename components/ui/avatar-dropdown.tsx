@@ -63,10 +63,10 @@ const AvatarDropdown = ({
           {incomplete && (
             <span
               role="status"
-              className="absolute -bottom-0.5 -end-0.5 flex size-3.5 items-center justify-center rounded-full bg-amber-500 ring-2 ring-background"
+              className="absolute -bottom-0.5 -end-0.5 flex size-3.5 items-center justify-center rounded-full bg-linear-to-br from-amber-400 to-amber-600 shadow-sm ring-2 ring-background"
             >
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/60 motion-reduce:hidden" />
-              <span className="relative text-[8px] font-bold leading-none text-white">
+              <span className="relative flex items-center justify-center text-[9px] font-bold leading-none text-white">
                 !
               </span>
               <span className="sr-only">{incompleteLabel}</span>
@@ -75,7 +75,7 @@ const AvatarDropdown = ({
           {hasNewRequest && (
             <span role="status" className="absolute -top-1 -end-1 flex size-3">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 motion-reduce:hidden" />
-              <span className="relative inline-flex size-3 rounded-full bg-primary ring-2 ring-background" />
+              <span className="relative inline-flex size-3 items-center justify-center rounded-full bg-linear-to-br from-primary to-primary/70 shadow-sm ring-2 ring-background" />
               <span className="sr-only">
                 {`${pendingCount} ${requestsLabel ?? ""}`.trim()}
               </span>

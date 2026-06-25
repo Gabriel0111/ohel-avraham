@@ -113,11 +113,16 @@ const SEARCH_RESULTS_LIMIT = 50;
 
 type HostDoc = Doc<"hosts">;
 
-// A host is listed unless they've switched themselves off. A return date
-// (`unavailableUntil`) auto-restores them once it's passed.
+// A host is listed unless they're inside an unavailable window. The window is
+// [unavailableFrom, unavailableUntil] (ms): a `from` in the future means it
+// hasn't started yet (still listed), a passed `until` means it's over (listed
+// again). Both absent = unavailable indefinitely from now (legacy behaviour).
 function isHostAvailable(host: HostDoc) {
   if (host.isAvailable !== false) return true;
-  return host.unavailableUntil != null && host.unavailableUntil <= Date.now();
+  const now = Date.now();
+  if (host.unavailableFrom != null && now < host.unavailableFrom) return true;
+  if (host.unavailableUntil != null && now > host.unavailableUntil) return true;
+  return false;
 }
 
 async function toPublicHost(ctx: QueryCtx, host: HostDoc, redact: boolean) {
@@ -236,10 +241,11 @@ export const getHostCities = query({
 export const setHostAvailability = mutation({
   args: {
     available: v.boolean(),
+    unavailableFrom: v.optional(v.number()),
     unavailableUntil: v.optional(v.number()),
   },
   returns: v.object({ updated: v.boolean() }),
-  handler: async (ctx, { available, unavailableUntil }) => {
+  handler: async (ctx, { available, unavailableFrom, unavailableUntil }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
 
@@ -251,6 +257,7 @@ export const setHostAvailability = mutation({
 
     await ctx.db.patch(host._id, {
       isAvailable: available,
+      unavailableFrom: available ? undefined : unavailableFrom,
       unavailableUntil: available ? undefined : unavailableUntil,
     });
     return { updated: true };

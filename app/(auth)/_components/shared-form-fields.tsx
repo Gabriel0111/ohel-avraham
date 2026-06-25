@@ -1,8 +1,16 @@
 "use client";
 
-import { Control, Controller, FieldValues } from "react-hook-form";
+import {
+  Control,
+  Controller,
+  ControllerRenderProps,
+  ControllerFieldState,
+  FieldValues,
+} from "react-hook-form";
+import { useState } from "react";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -10,7 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid, parse } from "date-fns";
 import { cn } from "@/lib/utils";
 import { NativeSelect } from "@/components/ui/native-select";
 import { SECTORS } from "@/app/enums/sector";
@@ -20,56 +28,110 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import flags from "react-phone-number-input/flags";
 import { Check } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-export const DobField = ({ control }: { control: Control<FieldValues> }) => {
+const DOB_MIN = new Date("1924-01-01");
+
+/** Insert slashes as the user types digits: "01011990" -> "01/01/1990". */
+const maskDate = (raw: string) => {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  const parts = [
+    digits.slice(0, 2),
+    digits.slice(2, 4),
+    digits.slice(4, 8),
+  ].filter(Boolean);
+  return parts.join("/");
+};
+
+const DobInput = ({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<FieldValues, "dob">;
+  fieldState: ControllerFieldState;
+}) => {
   const { t } = useT();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState(
+    field.value instanceof Date ? format(field.value, "dd/MM/yyyy") : "",
+  );
+
+  const handleTextChange = (raw: string) => {
+    const masked = maskDate(raw);
+    setText(masked);
+    // Only commit a fully-typed "dd/MM/yyyy"; otherwise clear so the required
+    // rule still fires and partial input never backfills a wrong date.
+    if (masked.length === 10) {
+      const parsed = parse(masked, "dd/MM/yyyy", new Date());
+      field.onChange(
+        isValid(parsed) && parsed <= new Date() && parsed >= DOB_MIN
+          ? parsed
+          : undefined,
+      );
+    } else {
+      field.onChange(undefined);
+    }
+  };
+
   return (
-    <Controller
-      name="dob"
-      control={control}
-      render={({ field, fieldState }) => (
-        <Field>
-          <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                type="button"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !field.value && "text-muted-foreground",
-                  fieldState.invalid && "border-destructive",
-                )}
-              >
-                <CalendarIcon className="size-4 shrink-0" />
-                {field.value instanceof Date
-                  ? format(field.value, "dd/MM/yyyy")
-                  : t.form.dateOfBirth}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                captionLayout="dropdown"
-                selected={field.value instanceof Date ? field.value : undefined}
-                onSelect={(date) => field.onChange(date)}
-                defaultMonth={
-                  field.value instanceof Date ? field.value : undefined
-                }
-                startMonth={new Date(1924, 0)}
-                endMonth={new Date()}
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1924-01-01")
-                }
-              />
-            </PopoverContent>
-          </Popover>
-          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-        </Field>
-      )}
-    />
+    <Field>
+      <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
+      <div className="relative">
+        <Input
+          value={text}
+          inputMode="numeric"
+          placeholder="dd/MM/yyyy"
+          onChange={(e) => handleTextChange(e.target.value)}
+          onBlur={field.onBlur}
+          aria-invalid={fieldState.invalid}
+          className="pr-10"
+        />
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 size-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <CalendarIcon className="size-4" />
+              <span className="sr-only">{t.form.dateOfBirth}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              captionLayout="dropdown"
+              selected={field.value instanceof Date ? field.value : undefined}
+              onSelect={(date) => {
+                field.onChange(date);
+                setText(date ? format(date, "dd/MM/yyyy") : "");
+                setOpen(false);
+              }}
+              defaultMonth={
+                field.value instanceof Date ? field.value : undefined
+              }
+              startMonth={new Date(1924, 0)}
+              endMonth={new Date()}
+              disabled={(date) => date > new Date() || date < DOB_MIN}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+    </Field>
   );
 };
+
+export const DobField = ({ control }: { control: Control<FieldValues> }) => (
+  <Controller
+    name="dob"
+    control={control}
+    render={({ field, fieldState }) => (
+      <DobInput field={field} fieldState={fieldState} />
+    )}
+  />
+);
 
 export const SectorEthnicityFields = ({
   control,
@@ -133,6 +195,7 @@ export const LanguagesField = ({
   control: Control<FieldValues>;
 }) => {
   const { t } = useT();
+  const reduceMotion = useReducedMotion();
   return (
     <Controller
       name="languages"
@@ -172,9 +235,23 @@ export const LanguagesField = ({
                       {Flag && <Flag title={lang.label} />}
                     </span>
                     {lang.label}
-                    {isSelected && (
-                      <Check className="size-3.5 shrink-0 text-primary" />
-                    )}
+                    <AnimatePresence initial={false}>
+                      {isSelected && (
+                        <motion.span
+                          initial={
+                            reduceMotion
+                              ? false
+                              : { width: 0, opacity: 0, marginLeft: -8 }
+                          }
+                          animate={{ width: "auto", opacity: 1, marginLeft: 0 }}
+                          exit={{ width: 0, opacity: 0, marginLeft: -8 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="flex items-center overflow-hidden"
+                        >
+                          <Check className="size-3.5 shrink-0 text-primary" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </button>
                 );
               })}

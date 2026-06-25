@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useAuth } from "@/app/ConvexClientProvider";
-import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
+import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,12 +16,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EnumPill, type PillColor } from "@/components/ui/enum-pill";
 import {
-  EnumPill,
-  ethnicityColor,
-  genderColor,
-  type PillColor,
-} from "@/components/ui/enum-pill";
+  EthnicityBadge,
+  GenderBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { toast } from "sonner";
 import * as RPNInput from "react-phone-number-input";
 import {
@@ -243,7 +244,6 @@ function ReceivedDetailDialog({
   onClose: () => void;
 }) {
   const { t } = useT();
-  const el = useEnumLabel();
   if (!request) return null;
   const r = request;
 
@@ -268,19 +268,11 @@ function ReceivedDetailDialog({
                   <StatusBadge status={r.status} />
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {r.guest.sector && (
-                    <EnumPill color="amber">{el.sector(r.guest.sector)}</EnumPill>
-                  )}
+                  {r.guest.sector && <SectorBadge value={r.guest.sector} />}
                   {r.guest.ethnicity && (
-                    <EnumPill color={ethnicityColor(r.guest.ethnicity)}>
-                      {el.ethnicity(r.guest.ethnicity)}
-                    </EnumPill>
+                    <EthnicityBadge value={r.guest.ethnicity} />
                   )}
-                  {r.guest.gender && (
-                    <EnumPill color={genderColor(r.guest.gender)}>
-                      {el.gender(r.guest.gender)}
-                    </EnumPill>
-                  )}
+                  {r.guest.gender && <GenderBadge value={r.guest.gender} />}
                 </div>
               </div>
             </div>
@@ -386,7 +378,6 @@ function SentDetailDialog({
   onClose: () => void;
 }) {
   const { t } = useT();
-  const el = useEnumLabel();
   if (!request) return null;
   const r = request;
 
@@ -411,12 +402,8 @@ function SentDetailDialog({
                   <StatusBadge status={r.status} />
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {r.host.sector && (
-                    <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
-                  )}
-                  {r.host.kashrout && (
-                    <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
-                  )}
+                  {r.host.sector && <SectorBadge value={r.host.sector} />}
+                  {r.host.kashrout && <KashroutBadge value={r.host.kashrout} />}
                 </div>
               </div>
             </div>
@@ -502,7 +489,6 @@ function SentDetailDialog({
 
 function ReceivedList() {
   const { t } = useT();
-  const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
   const incoming = useQuery(api.requests.getMyIncomingRequests);
   const respond = useMutation(api.requests.respondToRequest);
@@ -553,9 +539,7 @@ function ReceivedList() {
             onClick={() => setSelectedId(r._id)}
             pills={
               <>
-                {r.guest.sector && (
-                  <EnumPill color="amber">{el.sector(r.guest.sector)}</EnumPill>
-                )}
+                {r.guest.sector && <SectorBadge value={r.guest.sector} />}
                 {r.guest.region && (
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="size-3" />
@@ -582,7 +566,6 @@ function ReceivedList() {
 
 function SentList() {
   const { t } = useT();
-  const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
   const outgoing = useQuery(api.requests.getMyOutgoingRequests);
   const cancel = useMutation(api.requests.cancelRequest);
@@ -631,12 +614,8 @@ function SentList() {
             onClick={() => setSelectedId(r._id)}
             pills={
               <>
-                {r.host.sector && (
-                  <EnumPill color="violet">{el.sector(r.host.sector)}</EnumPill>
-                )}
-                {r.host.kashrout && (
-                  <EnumPill color="blue">{el.kashrout(r.host.kashrout)}</EnumPill>
-                )}
+                {r.host.sector && <SectorBadge value={r.host.sector} />}
+                {r.host.kashrout && <KashroutBadge value={r.host.kashrout} />}
               </>
             }
           />

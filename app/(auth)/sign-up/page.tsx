@@ -44,10 +44,14 @@ const SignUpPage = () => {
 
   const router = useRouter();
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   if (isAuthenticated) {
-    redirect("/");
+    // A user who just created their account (role still "user") must finish at
+    // /complete-registration. This guard re-fires the instant the user doc
+    // appears — if it sent them to "/" it would beat the onSubmit push and the
+    // person would never reach the form. Completed users go home.
+    redirect(user?.role === "user" ? "/complete-registration" : "/");
   }
 
   async function signInWithGoogle() {
