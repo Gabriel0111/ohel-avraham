@@ -19,11 +19,16 @@ import {
   Music,
   BookOpen,
 } from "lucide-react";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useT } from "@/lib/i18n/context";
 import * as RPNInput from "react-phone-number-input";
 import { type Id } from "@/convex/_generated/dataModel";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
-import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { DetailList, DetailRow } from "@/components/ui/detail-list";
 import type { HostData } from "../_lib/types";
@@ -43,7 +48,6 @@ export function HostDetailDialog({
   onClose: () => void;
 }) {
   const { t } = useT();
-  const el = useEnumLabel();
   if (!host) return null;
   // Admins are implicitly trusted, so only non-admin hosts can be "pending".
   const needsVerification =
@@ -70,11 +74,9 @@ export function HostDetailDialog({
                   {host.role && <RoleBadge role={host.role} />}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
-                  <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-                  <EnumPill color={ethnicityColor(host.ethnicity)}>
-                    {el.ethnicity(host.ethnicity)}
-                  </EnumPill>
+                  <SectorBadge value={host.sector} />
+                  <KashroutBadge value={host.kashrout} />
+                  <EthnicityBadge value={host.ethnicity} />
                   {host.hasDisabilityAccess && (
                     <EnumPill color="green" icon={Accessibility}>
                       {t.people.access}
@@ -170,6 +172,7 @@ export function HostDetailDialog({
               </span>
             </div>
             <Button
+              variant="success"
               onClick={() => onConfirm(host.userId as Id<"users">)}
               disabled={verifying === host.userId}
               size="sm"

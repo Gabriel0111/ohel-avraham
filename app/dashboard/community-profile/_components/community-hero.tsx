@@ -10,11 +10,17 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  GenderBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { cn } from "@/lib/utils";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useT } from "@/lib/i18n/context";
 import type { Doc } from "@/convex/_generated/dataModel";
 
 type Accent = "violet" | "amber" | "slate";
@@ -62,7 +68,6 @@ interface CommunityHeroProps {
 
 export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
   const { t } = useT();
-  const el = useEnumLabel();
   const reduce = useReducedMotion();
 
   const isHost = !!host;
@@ -152,24 +157,10 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
           </div>
 
           <div className="flex flex-wrap gap-1.5 border-t border-border/50 pt-3.5">
-            {sector && (
-              <EnumPill color={isHost ? "violet" : "amber"}>
-                {el.sector(sector)}
-              </EnumPill>
-            )}
-            {host && (
-              <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-            )}
-            {ethnicity && (
-              <EnumPill color={ethnicityColor(ethnicity)}>
-                {el.ethnicity(ethnicity)}
-              </EnumPill>
-            )}
-            {guest && (
-              <EnumPill color={genderColor(guest.gender)}>
-                {el.gender(guest.gender)}
-              </EnumPill>
-            )}
+            {sector && <SectorBadge value={sector} />}
+            {host && <KashroutBadge value={host.kashrout} />}
+            {ethnicity && <EthnicityBadge value={ethnicity} />}
+            {guest && <GenderBadge value={guest.gender} />}
             {host?.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
                 {t.people.access}

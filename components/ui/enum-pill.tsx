@@ -50,13 +50,10 @@ export function EnumPill({
   );
 }
 
+// Gender is the one enum whose colour varies by value (see enum-badges.tsx for
+// the centralized badges that consume this).
 export function genderColor(gender: string): PillColor {
   if (gender === "Female") return "pink";
   if (gender === "Couple") return "violet";
   return "blue";
-}
-
-export function ethnicityColor(ethnicity: string): PillColor {
-  if (ethnicity === "Sefardi") return "teal";
-  return "slate";
 }

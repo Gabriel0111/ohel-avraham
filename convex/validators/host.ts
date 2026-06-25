@@ -37,9 +37,12 @@ export const HostFields = {
   notes: v.optional(v.string()),
 
   // Availability. Absent / true = the host is open to guests and listed.
-  // false = the host has marked themselves unavailable and is hidden from the
-  // public lists/map. `unavailableUntil` (ms) optionally auto-restores them on
-  // that date; absent means indefinitely until they switch back on.
+  // false = the host has marked themselves unavailable for a window and is
+  // hidden from the public lists/map while inside it. The window is
+  // [`unavailableFrom`, `unavailableUntil`] (ms): `from` absent = already
+  // started, `until` absent = indefinite. Read-time logic auto-restores the
+  // host once the window has passed (or before it starts).
   isAvailable: v.optional(v.boolean()),
+  unavailableFrom: v.optional(v.number()),
   unavailableUntil: v.optional(v.number()),
 };

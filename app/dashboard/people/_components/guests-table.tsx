@@ -10,11 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, Search, Ban } from "lucide-react";
+import { Users, Search, Ban, Clock, ShieldCheck } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
-import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  GenderBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { LanguageFlags } from "@/components/ui/language-flags";
 import type { GuestData } from "../_lib/types";
 import { getInitials, formatDate, mapsUrl, computeAge } from "../_lib/utils";
@@ -47,7 +52,6 @@ export function GuestsTable({
   onDelete: (info: { authUserId: string; name: string }) => void;
 }) {
   const { t } = useT();
-  const el = useEnumLabel();
 
   return (
     <Card className="border-border/60">
@@ -104,6 +108,10 @@ export function GuestsTable({
                   <TableHead className="hidden xl:table-cell">
                     {t.form.languages}
                   </TableHead>
+                  <TableHead className="hidden xl:table-cell">
+                    {t.people.registeredAt}
+                  </TableHead>
+                  {isAdmin && <TableHead>{t.people.status}</TableHead>}
                   {isAdmin && (
                     <TableHead className="pr-5 text-right">
                       {t.people.actions}
@@ -155,17 +163,13 @@ export function GuestsTable({
                       </a>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell py-3">
-                      <EnumPill color="amber">{el.sector(guest.sector)}</EnumPill>
+                      <SectorBadge value={guest.sector} />
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-3">
-                      <EnumPill color={ethnicityColor(guest.ethnicity)}>
-                        {el.ethnicity(guest.ethnicity)}
-                      </EnumPill>
+                      <EthnicityBadge value={guest.ethnicity} />
                     </TableCell>
                     <TableCell className="hidden md:table-cell py-3">
-                      <EnumPill color={genderColor(guest.gender)}>
-                        {el.gender(guest.gender)}
-                      </EnumPill>
+                      <GenderBadge value={guest.gender} />
                     </TableCell>
                     <TableCell className="hidden lg:table-cell py-3">
                       <span className="text-xs text-muted-foreground">
@@ -183,6 +187,28 @@ export function GuestsTable({
                     <TableCell className="hidden xl:table-cell py-3">
                       <LanguageFlags value={guest.languages} />
                     </TableCell>
+                    <TableCell className="hidden xl:table-cell py-3">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(guest._creationTime)}
+                      </span>
+                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="py-3">
+                        {guest.isBlocked ? (
+                          <EnumPill color="red" icon={Ban}>
+                            {t.people.blocked}
+                          </EnumPill>
+                        ) : guest.role === "admin" || guest.isVerified ? (
+                          <EnumPill color="green" icon={ShieldCheck}>
+                            {t.people.confirmed}
+                          </EnumPill>
+                        ) : (
+                          <EnumPill color="amber" icon={Clock}>
+                            {t.people.unverified}
+                          </EnumPill>
+                        )}
+                      </TableCell>
+                    )}
                     {isAdmin && (
                       <TableCell
                         className="pr-5 py-3 text-right"

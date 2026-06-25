@@ -19,7 +19,11 @@ import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "../../_components/profile-ui/view-value";
 import { EditButton } from "../../_components/profile-ui/edit-button";
 import { MapLink } from "../../_components/profile-ui/map-link";
-import { EnumPill, ethnicityColor, genderColor } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  GenderBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -148,9 +152,7 @@ export function GuestProfileCard({
               )}
             />
           ) : (
-            <EnumPill color={genderColor(guestData.gender)}>
-              {el.gender(guestData.gender)}
-            </EnumPill>
+            <GenderBadge value={guestData.gender} />
           )}
         </SettingsRow>
 
@@ -206,15 +208,11 @@ export function GuestProfileCard({
             <div className="flex flex-col gap-6 w-full">
               <div className="flex items-center justify-between">
                 <Label>{t.form.sector}</Label>
-                <EnumPill color="amber">
-                  {el.sector(guestData.sector)}
-                </EnumPill>
+                <SectorBadge value={guestData.sector} />
               </div>
               <div className="flex items-center justify-between">
                 <Label>{t.form.ethnicity}</Label>
-                <EnumPill color={ethnicityColor(guestData.ethnicity)}>
-                  {el.ethnicity(guestData.ethnicity)}
-                </EnumPill>
+                <EthnicityBadge value={guestData.ethnicity} />
               </div>
             </div>
           )}

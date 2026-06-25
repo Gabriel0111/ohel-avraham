@@ -92,14 +92,17 @@ export default function PeoplePage() {
     if (!allGuests) return [];
     return allGuests.filter((guest) => {
       const search = guestSearch.toLowerCase();
-      return (
+      const matchesSearch =
         !search ||
         guest.name?.toLowerCase().includes(search) ||
         guest.region?.toLowerCase().includes(search) ||
-        guest.sector?.toLowerCase().includes(search)
-      );
+        guest.sector?.toLowerCase().includes(search);
+      // Admins are implicitly trusted and never count as "unverified".
+      const matchesVerified =
+        !showUnverifiedOnly || (!guest.isVerified && guest.role !== "admin");
+      return matchesSearch && matchesVerified;
     });
-  }, [allGuests, guestSearch]);
+  }, [allGuests, guestSearch, showUnverifiedOnly]);
 
   // TanStack Table — hosts
   const hostTableColumns = useMemo<ColumnDef<HostData>[]>(
@@ -137,7 +140,7 @@ export default function PeoplePage() {
   }, [hostSearch, showUnverifiedOnly]);
   useEffect(() => {
     setGuestPagination((p) => ({ ...p, pageIndex: 0 }));
-  }, [guestSearch]);
+  }, [guestSearch, showUnverifiedOnly]);
 
   const handleVerify = useCallback(
     async (userId: Id<"users">) => {
@@ -146,6 +149,7 @@ export default function PeoplePage() {
         await verifyUser({ userId });
         toast.success(t.people.confirmSuccess);
         setSelectedHost(null);
+        setSelectedGuest(null);
       } catch {
         toast.error(t.people.confirmError);
       } finally {
@@ -219,6 +223,8 @@ export default function PeoplePage() {
 
   const unverifiedCount =
     allHosts?.filter((h) => !h.isVerified && h.role !== "admin").length ?? 0;
+  const guestUnverifiedCount =
+    allGuests?.filter((g) => !g.isVerified && g.role !== "admin").length ?? 0;
 
   return (
     <div>
@@ -268,6 +274,14 @@ export default function PeoplePage() {
                   <Users className="size-5 text-amber-600" />
                 </div>
               </div>
+              {guestUnverifiedCount > 0 && (
+                <div className="mt-2 flex items-center gap-1.5">
+                  <Clock className="size-3 text-amber-500" />
+                  <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                    {guestUnverifiedCount} {t.people.unverified.toLowerCase()}
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -323,7 +337,7 @@ export default function PeoplePage() {
           </div>
 
           {/* Unverified filter */}
-          {isAdmin && activeTab === "hosts" && (
+          {isAdmin && (
             <div className="flex items-center gap-2">
               <Switch
                 id="unverified-filter"
@@ -386,6 +400,9 @@ export default function PeoplePage() {
         {/* Guest detail dialog */}
         <GuestDetailDialog
           guest={selectedGuest}
+          isAdmin={isAdmin}
+          verifying={verifying}
+          onConfirm={handleVerify}
           onClose={() => setSelectedGuest(null)}
         />
 

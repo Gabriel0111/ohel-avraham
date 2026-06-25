@@ -3,11 +3,16 @@
 import { Accessibility, BookOpen, Music, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { EnumPill, ethnicityColor } from "@/components/ui/enum-pill";
+import { EnumPill } from "@/components/ui/enum-pill";
+import {
+  EthnicityBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
 import { LanguageFlag } from "@/components/ui/language-flags";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { getLanguage } from "@/app/enums/language";
-import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useT } from "@/lib/i18n/context";
 
 export interface PublicHost {
   _id: string;
@@ -42,7 +47,6 @@ export function HostListCard({
   isSelected,
   onSelect,
 }: HostListCardProps) {
-  const el = useEnumLabel();
   const { t } = useT();
 
   // Privacy-safe wayfinding: a primary line (street when distinct) over a
@@ -107,11 +111,9 @@ export function HostListCard({
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">
-            <EnumPill color="violet">{el.sector(host.sector)}</EnumPill>
-            <EnumPill color="blue">{el.kashrout(host.kashrout)}</EnumPill>
-            <EnumPill color={ethnicityColor(host.ethnicity)}>
-              {el.ethnicity(host.ethnicity)}
-            </EnumPill>
+            <SectorBadge value={host.sector} />
+            <KashroutBadge value={host.kashrout} />
+            <EthnicityBadge value={host.ethnicity} />
             {host.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
                 {t.people.access}
