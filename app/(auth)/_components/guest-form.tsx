@@ -22,6 +22,7 @@ import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
 import { UserRound } from "lucide-react";
 import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
+import { setJustRegistered } from "@/lib/registration-success";
 
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
@@ -48,6 +49,7 @@ const GuestForm = () => {
             dob: values.dob.getTime(),
           },
         });
+        setJustRegistered(true);
         setRegistered(true);
       } catch (e) {
         toast.error(getErrorMessage(e, "profileCreateFailed"));
@@ -64,7 +66,8 @@ const GuestForm = () => {
 
           {/* Welcome header */}
           <div className="flex flex-col items-center gap-3 text-center py-2">
-            <div className="size-16 rounded-2xl bg-amber-500/10 flex items-center justify-center ring-4 ring-amber-500/5">
+            <div className="relative flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-amber-500/20 to-amber-500/5 shadow-sm shadow-amber-500/10 ring-1 ring-inset ring-amber-500/20">
+              <span className="absolute inset-0 rounded-2xl ring-4 ring-amber-500/5" />
               <UserRound className="size-7 text-amber-600 dark:text-amber-400" />
             </div>
             <div>

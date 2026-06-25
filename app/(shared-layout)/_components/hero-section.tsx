@@ -242,7 +242,7 @@ export function HeroSection() {
   const { t } = useT();
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+    <section className="relative flex flex-col justify-start">
       {/* Fond pleine largeur (breakout du container max-w-7xl) */}
       <div
         className="absolute inset-y-0 pointer-events-none"
@@ -252,7 +252,7 @@ export function HeroSection() {
         <div className="absolute top-0 right-0 w-1/2 h-3/4 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full px-4 py-20">
+      <div className="relative z-10 w-full px-4 pt-8 pb-20 md:pt-10">
         {/* Barre de recherche — point d'entrée principal, tout en haut */}
         <motion.div
           className="mb-12 md:mb-16"

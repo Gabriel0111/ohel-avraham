@@ -7,6 +7,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { setJustRegistered } from "@/lib/registration-success";
 
 const REDIRECT_MS = 9000;
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
@@ -62,7 +63,12 @@ export function RegistrationSuccess({ role }: { role: "host" | "guest" }) {
 
   useEffect(() => {
     const id = setTimeout(() => router.push("/dashboard"), REDIRECT_MS);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      // Clear the "just registered" signal so a later manual visit to
+      // /complete-registration is bounced away as intended.
+      setJustRegistered(false);
+    };
   }, [router]);
 
   const title = role === "host" ? t.celebrate.hostTitle : t.celebrate.guestTitle;
