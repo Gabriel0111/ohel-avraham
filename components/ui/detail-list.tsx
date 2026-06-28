@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 // (admin people dialogs, accepted-request reveals). Tone lives on the icon
 // only; labels are sentence-case, values sit below in ink.
 
-export type FieldTone = "violet" | "blue" | "rose" | "indigo" | "amber";
+export type FieldTone = "sky" | "blue" | "rose" | "indigo" | "amber";
 
 const FIELD_TONE: Record<FieldTone, string> = {
-  violet: "text-violet-500",
+  sky: "text-primary",
   blue: "text-blue-500",
   rose: "text-rose-500",
   indigo: "text-indigo-500",

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 
 export type PillColor =
+  | "sky"
   | "violet"
   | "blue"
   | "pink"
@@ -11,6 +12,8 @@ export type PillColor =
   | "teal";
 
 const PILL_COLORS: Record<PillColor, string> = {
+  // `sky` is backed by the semantic primary token so it tracks the brand.
+  sky: "bg-primary/10 text-primary border-primary/15",
   violet:
     "bg-violet-500/10 text-violet-700 border-violet-500/15 dark:text-violet-300",
   blue: "bg-blue-500/10 text-blue-700 border-blue-500/15 dark:text-blue-300",

@@ -3,11 +3,11 @@
 import { Sparkle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Candlelight tones: violet (host / primary) + amber (guest / warmth).
-export type SparkTone = "violet" | "amber";
+// Candlelight tones: sky (host / primary) + amber (guest / warmth).
+export type SparkTone = "sky" | "amber";
 
 const TONE_CLASS: Record<SparkTone, string> = {
-  violet: "text-violet-500",
+  sky: "text-primary",
   amber: "text-amber-400",
 };
 
@@ -25,10 +25,10 @@ export type Spark = {
 // don't repeat positional arrays across sections.
 const SCATTER: Spark[] = [
   { top: "8%", left: "62%", size: 18, delay: 0, tone: "amber" },
-  { top: "20%", left: "22%", size: 12, delay: 1.2, tone: "violet" },
+  { top: "20%", left: "22%", size: 12, delay: 1.2, tone: "sky" },
   { top: "46%", left: "88%", size: 14, delay: 0.6, tone: "amber" },
   { top: "72%", left: "12%", size: 16, delay: 1.8, tone: "amber" },
-  { top: "82%", left: "70%", size: 11, delay: 0.3, tone: "violet" },
+  { top: "82%", left: "70%", size: 11, delay: 0.3, tone: "sky" },
   { top: "38%", left: "4%", size: 10, delay: 2.4, tone: "amber" },
 ];
 
@@ -68,10 +68,10 @@ export function Sparkles({
           fill="currentColor"
           strokeWidth={0}
           className={cn(
-            TONE_CLASS[s.tone ?? "violet"],
+            TONE_CLASS[s.tone ?? "sky"],
             "absolute animate-twinkle drop-shadow-2xl will-change-transform",
             "drop-shadow-[0_0_6px_currentColor]",
-            TONE_CLASS[s.tone ?? "violet"],
+            TONE_CLASS[s.tone ?? "sky"],
           )}
           style={{
             top: s.top,

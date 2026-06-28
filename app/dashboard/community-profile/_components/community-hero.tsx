@@ -23,18 +23,18 @@ import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/context";
 import type { Doc } from "@/convex/_generated/dataModel";
 
-type Accent = "violet" | "amber" | "slate";
+type Accent = "sky" | "amber" | "slate";
 
 // Full class strings (Tailwind can't see interpolated color names).
 const ACCENT: Record<
   Accent,
   { grad: string; ring: string; fallback: string; orb: string }
 > = {
-  violet: {
-    grad: "from-violet-500/12",
-    ring: "ring-violet-500/25",
-    fallback: "bg-violet-500/10 text-violet-600",
-    orb: "bg-violet-500/20",
+  sky: {
+    grad: "from-primary/12",
+    ring: "ring-primary/25",
+    fallback: "bg-primary/10 text-primary",
+    orb: "bg-primary/20",
   },
   amber: {
     grad: "from-amber-500/12",
@@ -72,7 +72,7 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
 
   const isHost = !!host;
   const isGuest = !!guest;
-  const accent: Accent = isHost ? "violet" : isGuest ? "amber" : "slate";
+  const accent: Accent = isHost ? "sky" : isGuest ? "amber" : "slate";
   const a = ACCENT[accent];
 
   const sector = host?.sector ?? guest?.sector;

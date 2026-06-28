@@ -116,7 +116,7 @@ export function HostAvailability({ host }: { host: Doc<"hosts"> }) {
         "flex items-center justify-between gap-3 rounded-xl border p-3",
         isAvailable
           ? "border-green-500/20 bg-gradient-to-br from-green-500/10 to-transparent"
-          : "border-red-500/25 bg-gradient-to-br from-red-500/10 to-transparent",
+          : "border-destructive/25 bg-gradient-to-br from-destructive/10 to-transparent",
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -125,7 +125,7 @@ export function HostAvailability({ host }: { host: Doc<"hosts"> }) {
             "flex size-9 items-center justify-center rounded-full shrink-0",
             isAvailable
               ? "bg-green-500/15 text-green-600"
-              : "bg-red-500/15 text-red-600",
+              : "bg-destructive/15 text-destructive",
           )}
         >
           {isAvailable ? (
@@ -140,7 +140,7 @@ export function HostAvailability({ host }: { host: Doc<"hosts"> }) {
               "text-sm font-semibold",
               isAvailable
                 ? "text-green-700 dark:text-green-400"
-                : "text-red-700 dark:text-red-400",
+                : "text-destructive",
             )}
           >
             {isAvailable ? t.hostProfile.available : t.hostProfile.unavailable}
@@ -174,7 +174,7 @@ export function HostAvailability({ host }: { host: Doc<"hosts"> }) {
         <Button
           variant="outline"
           size="sm"
-          className="shrink-0 gap-1.5 border-red-500/40 text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400 dark:hover:text-red-400"
+          className="shrink-0 gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
           onClick={() => setDialogOpen(true)}
         >
           <PowerOff className="size-3.5" />
@@ -204,7 +204,7 @@ export function HostAvailability({ host }: { host: Doc<"hosts"> }) {
               className={cn(
                 "w-full gap-1.5",
                 !indefinite &&
-                  "border-red-500/40 text-red-600 hover:bg-red-500/10 hover:text-red-600 dark:text-red-400 dark:hover:text-red-400",
+                  "border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive",
               )}
             >
               <PowerOff className="size-3.5" />

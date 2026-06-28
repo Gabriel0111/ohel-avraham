@@ -1,7 +1,18 @@
+"use client";
+
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -17,6 +28,9 @@ import {
   Clock,
   Ban,
   ShieldCheck,
+  Trash2,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import type { Table as ReactTable } from "@tanstack/react-table";
 import { useT } from "@/lib/i18n/context";
@@ -32,6 +46,8 @@ import type { HostData } from "../_lib/types";
 import { getInitials, mapsUrl, formatDate } from "../_lib/utils";
 import { RowActionsMenu } from "./row-actions-menu";
 import { PaginationBar } from "./pagination-bar";
+import { useRef } from "react";
+import { cn } from "@/lib/utils";
 
 export function HostsTable({
   table,
@@ -43,8 +59,19 @@ export function HostsTable({
   isAdmin,
   onRowClick,
   blocking,
+  verifying,
   onBlock,
+  onVerify,
   onDelete,
+  selectedIds,
+  onToggleSelect,
+  onSelectRange,
+  bulkBusy,
+  canBulkVerify,
+  onBulkVerify,
+  onBulkBlock,
+  onBulkDelete,
+  onClearSelection,
 }: {
   table: ReactTable<HostData>;
   rows: HostData[];
@@ -55,27 +82,155 @@ export function HostsTable({
   isAdmin: boolean;
   onRowClick: (host: HostData) => void;
   blocking: string | null;
+  verifying: string | null;
   onBlock: (userId: Id<"users">, blocked: boolean) => void;
+  onVerify: (userId: Id<"users">) => void;
   onDelete: (info: { authUserId: string; name: string }) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (authUserId: string) => void;
+  onSelectRange: (authUserIds: string[], deselect: boolean) => void;
+  bulkBusy: boolean;
+  canBulkVerify: boolean;
+  onBulkVerify: () => void;
+  onBulkBlock: () => void;
+  onBulkDelete: () => void;
+  onClearSelection: () => void;
 }) {
   const { t } = useT();
+  const lastClickedIdRef = useRef<string | null>(null);
+  const selectionCount = selectedIds.size;
+
+  const computeRange = (idx: number): string[] | null => {
+    if (lastClickedIdRef.current === null) return null;
+    const anchorIdx = rows.findIndex((r) => r.authUserId === lastClickedIdRef.current);
+    if (anchorIdx === -1) return null;
+    const lo = Math.min(anchorIdx, idx);
+    const hi = Math.max(anchorIdx, idx);
+    return rows.slice(lo, hi + 1).map((r) => r.authUserId);
+  };
+
+  const handleRowClick = (host: HostData, idx: number, e: React.MouseEvent) => {
+    if (e.shiftKey) {
+      e.preventDefault();
+      const range = computeRange(idx);
+      if (range) {
+        const deselect = selectedIds.has(host.authUserId);
+        onSelectRange(range, deselect);
+      }
+      lastClickedIdRef.current = host.authUserId;
+      return;
+    }
+    onRowClick(host);
+    lastClickedIdRef.current = host.authUserId;
+  };
+
+  const handleCheckboxClick = (host: HostData, idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (e.shiftKey) {
+      e.preventDefault();
+      const range = computeRange(idx);
+      if (range) {
+        const deselect = selectedIds.has(host.authUserId);
+        onSelectRange(range, deselect);
+      }
+    } else {
+      onToggleSelect(host.authUserId);
+    }
+    lastClickedIdRef.current = host.authUserId;
+  };
 
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-4">
-          <CardTitle className="text-base text-foreground">
+          <CardTitle className="text-base text-foreground shrink-0">
             {t.people.hosts}
           </CardTitle>
-          <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              placeholder={t.people.searchHosts}
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 h-9"
-            />
-          </div>
+
+          {isAdmin && selectionCount > 0 ? (
+            /* Bulk action bar — replaces search when items are selected */
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <span className="text-sm font-medium text-primary tabular-nums whitespace-nowrap">
+                {selectionCount} {t.people.selected}
+              </span>
+              {/* Full action buttons — hidden on small screens */}
+              <div className="hidden sm:flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  disabled={bulkBusy || !canBulkVerify}
+                  onClick={onBulkVerify}
+                  className="text-green-700 border-green-600/30 hover:bg-green-50 dark:hover:bg-green-950/20 disabled:opacity-40"
+                >
+                  <ShieldCheck />
+                  {t.people.bulkVerify}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={bulkBusy}
+                  onClick={onBulkBlock}
+                  className="text-amber-700 border-amber-600/30 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                >
+                  <Ban />
+                  {t.people.bulkBlock}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={bulkBusy}
+                  onClick={onBulkDelete}
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                >
+                  <Trash2 />
+                  {t.people.bulkDelete}
+                </Button>
+              </div>
+              {/* Collapsed menu — visible on small screens */}
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={bulkBusy}>
+                      <MoreHorizontal />
+                      Actions
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem onClick={onBulkVerify} disabled={!canBulkVerify} className="gap-2 text-green-700 focus:text-green-700 focus:bg-green-50 dark:focus:bg-green-950/20">
+                      <ShieldCheck className="size-3.5" />
+                      {t.people.bulkVerify}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onBulkBlock} className="gap-2 text-amber-700 focus:text-amber-700 focus:bg-amber-50 dark:focus:bg-amber-950/20">
+                      <Ban className="size-3.5" />
+                      {t.people.bulkBlock}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={onBulkDelete} className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10">
+                      <Trash2 className="size-3.5" />
+                      {t.people.bulkDelete}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={bulkBusy}
+                onClick={onClearSelection}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X />
+              </Button>
+            </div>
+          ) : (
+            /* Normal search bar */
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder={t.people.searchHosts}
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -93,6 +248,7 @@ export function HostsTable({
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-b border-border/60">
+                  {isAdmin && <TableHead className="w-10 pl-4" />}
                   <TableHead className="pl-5">{t.people.host}</TableHead>
                   <TableHead className="hidden md:table-cell">
                     {t.form.address}
@@ -124,114 +280,133 @@ export function HostsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((host) => (
-                  <TableRow
-                    key={host._id}
-                    onClick={() => onRowClick(host)}
-                    className="cursor-pointer transition-colors hover:bg-accent/60 active:bg-accent border-b border-border/40 last:border-0"
-                  >
-                    <TableCell className="pl-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative shrink-0">
-                          <Avatar className="size-9 border border-border/50">
-                            <AvatarImage src={host.image} />
-                            <AvatarFallback className="text-xs bg-violet-500/10 text-violet-600 font-semibold">
-                              {getInitials(host.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {host.isBlocked && (
-                            <span className="absolute -bottom-0.5 -right-0.5 size-3.5 flex items-center justify-center rounded-full bg-destructive ring-1 ring-background">
-                              <Ban className="size-2 text-white" />
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-medium text-foreground text-sm truncate">
-                            {host.name || t.people.unknown}
-                          </span>
-                          <span className="text-xs text-muted-foreground md:hidden truncate">
-                            {host.address}
-                          </span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell py-3">
-                      <a
-                        href={mapsUrl(host.address)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-muted-foreground hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
-                      >
-                        <span className="underline-offset-4 group-hover/addr:underline">
-                          {host.address}
-                        </span>
-                      </a>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell py-3">
-                      <SectorBadge value={host.sector} />
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell py-3">
-                      <KashroutBadge value={host.kashrout} />
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell py-3">
-                      <EthnicityBadge value={host.ethnicity} />
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell py-3">
-                      {host.hasDisabilityAccess ? (
-                        <Accessibility className="size-4 text-green-600" />
-                      ) : (
-                        <span className="text-xs text-muted-foreground/40">
-                          —
-                        </span>
+                {rows.map((host, idx) => {
+                  const isSelected = selectedIds.has(host.authUserId);
+                  return (
+                    <TableRow
+                      key={host._id}
+                      onClick={(e) => handleRowClick(host, idx, e)}
+                      className={cn(
+                        "cursor-pointer transition-colors border-b border-border/40 last:border-0 select-none",
+                        isSelected
+                          ? "bg-primary/5 hover:bg-primary/8"
+                          : "hover:bg-accent/60 active:bg-accent",
                       )}
-                    </TableCell>
-                    <TableCell className="hidden xl:table-cell py-3">
-                      <LanguageFlags value={host.languages} />
-                    </TableCell>
-                    <TableCell className="hidden xl:table-cell py-3">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(host._creationTime)}
-                      </span>
-                    </TableCell>
-                    {isAdmin && (
-                      <TableCell className="py-3">
-                        {/* Status is always legible: blocked accounts read red,
-                            admins and verified hosts read green, everyone else
-                            is flagged amber as still pending. */}
-                        {host.isBlocked ? (
-                          <EnumPill color="red" icon={Ban}>
-                            {t.people.blocked}
-                          </EnumPill>
-                        ) : host.role === "admin" || host.isVerified ? (
-                          <EnumPill color="green" icon={ShieldCheck}>
-                            {t.people.confirmed}
-                          </EnumPill>
+                    >
+                      {isAdmin && (
+                        <TableCell
+                          className="w-10 pl-4 py-3"
+                          onClick={(e) => handleCheckboxClick(host, idx, e)}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            aria-label={`Select ${host.name}`}
+                            className="pointer-events-none"
+                          />
+                        </TableCell>
+                      )}
+                      <TableCell className="pl-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative shrink-0">
+                            <Avatar className="size-9 border border-border/50">
+                              <AvatarImage src={host.image} />
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                                {getInitials(host.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {host.isBlocked && (
+                              <span className="absolute -bottom-0.5 -right-0.5 size-3.5 flex items-center justify-center rounded-full bg-destructive ring-1 ring-background">
+                                <Ban className="size-2 text-white" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-foreground text-sm truncate">
+                              {host.name || t.people.unknown}
+                            </span>
+                            <span className="text-xs text-muted-foreground md:hidden truncate">
+                              {host.address}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell py-3">
+                        <a
+                          href={mapsUrl(host.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                        >
+                          {host.address}
+                        </a>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell py-3">
+                        <SectorBadge value={host.sector} />
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell py-3">
+                        <KashroutBadge value={host.kashrout} />
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell py-3">
+                        <EthnicityBadge value={host.ethnicity} />
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell py-3">
+                        {host.hasDisabilityAccess ? (
+                          <Accessibility className="size-4 text-green-600" />
                         ) : (
-                          <EnumPill color="amber" icon={Clock}>
-                            {t.people.unverified}
-                          </EnumPill>
+                          <span className="text-xs text-muted-foreground/40">
+                            —
+                          </span>
                         )}
                       </TableCell>
-                    )}
-                    {isAdmin && (
-                      <TableCell
-                        className="pr-5 py-3 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <RowActionsMenu
-                          userId={host.userId as Id<"users">}
-                          authUserId={host.authUserId}
-                          name={host.name || t.people.unknown}
-                          isBlocked={host.isBlocked}
-                          blocking={blocking}
-                          onBlock={onBlock}
-                          onDelete={onDelete}
-                        />
+                      <TableCell className="hidden xl:table-cell py-3">
+                        <LanguageFlags value={host.languages} />
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))}
+                      <TableCell className="hidden xl:table-cell py-3">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(host._creationTime)}
+                        </span>
+                      </TableCell>
+                      {isAdmin && (
+                        <TableCell className="py-3">
+                          {host.isBlocked ? (
+                            <EnumPill color="red" icon={Ban}>
+                              {t.people.blocked}
+                            </EnumPill>
+                          ) : host.role === "admin" || host.isVerified ? (
+                            <EnumPill color="green" icon={ShieldCheck}>
+                              {t.people.confirmed}
+                            </EnumPill>
+                          ) : (
+                            <EnumPill color="amber" icon={Clock}>
+                              {t.people.unverified}
+                            </EnumPill>
+                          )}
+                        </TableCell>
+                      )}
+                      {isAdmin && (
+                        <TableCell
+                          className="pr-5 py-3 text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <RowActionsMenu
+                            userId={host.userId as Id<"users">}
+                            authUserId={host.authUserId}
+                            name={host.name || t.people.unknown}
+                            isBlocked={host.isBlocked}
+                            isVerified={host.isVerified}
+                            role={host.role ?? "user"}
+                            blocking={blocking}
+                            verifying={verifying}
+                            onBlock={onBlock}
+                            onVerify={onVerify}
+                            onDelete={onDelete}
+                          />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <PaginationBar

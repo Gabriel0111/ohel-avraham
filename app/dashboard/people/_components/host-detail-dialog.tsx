@@ -57,12 +57,12 @@ export function HostDetailDialog({
     <Dialog open={!!host} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Header */}
-        <div className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
+        <div className="relative bg-gradient-to-b from-primary/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
           <DialogHeader className="p-0">
             <div className="flex items-start gap-4">
-              <Avatar className="size-16 shrink-0 ring-2 ring-violet-500/20 shadow-md">
+              <Avatar className="size-16 shrink-0 ring-2 ring-primary/20 shadow-md">
                 <AvatarImage src={host.image} />
-                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-lg font-bold">
+                <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
                   {getInitials(host.name)}
                 </AvatarFallback>
               </Avatar>
@@ -105,12 +105,12 @@ export function HostDetailDialog({
         {/* Body */}
         <div className="px-6 py-4">
           <DetailList>
-            <DetailRow icon={MapPin} tone="violet" label={t.form.address}>
+            <DetailRow icon={MapPin} tone="sky" label={t.form.address}>
               <a
                 href={mapsUrl(host.address)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
+                className="hover:text-primary transition-colors underline-offset-4 hover:underline"
               >
                 {host.address}
               </a>
@@ -125,7 +125,7 @@ export function HostDetailDialog({
             <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
               <a
                 href={`tel:${host.phoneNumber}`}
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-primary transition-colors"
               >
                 {RPNInput.formatPhoneNumberIntl(host.phoneNumber) ||
                   host.phoneNumber}

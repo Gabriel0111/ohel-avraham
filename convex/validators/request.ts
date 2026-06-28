@@ -14,16 +14,22 @@ export const RequestStatusV = v.union(
 );
 
 export const RequestFields = {
-  // Requester (guest) and target (host), both stored as Better Auth subject ids.
+  // The two parties, both stored as Better Auth subject ids. The pairing is the
+  // same regardless of direction; `initiator` says who started it.
   guestAuthUserId: v.string(),
   hostAuthUserId: v.string(),
 
-  // The Shabbat / date the guest is asking to be hosted (ms timestamp).
+  // Who opened this thread: a guest asking to be hosted (default / legacy), or
+  // a host inviting a guest to their table. Absent = "guest" for old rows.
+  initiator: v.optional(v.union(v.literal("guest"), v.literal("host"))),
+
+  // The Shabbat / date concerned (ms timestamp).
   date: v.number(),
 
-  // Party size.
-  adults: v.number(),
-  children: v.number(),
+  // Party size — only meaningful for guest-initiated requests; host invitations
+  // carry no count, so these are optional.
+  adults: v.optional(v.number()),
+  children: v.optional(v.number()),
 
   message: v.optional(v.string()),
 

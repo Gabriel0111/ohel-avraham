@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 export const ProfileError = () => (
   <div className="flex flex-col items-center justify-center text-center p-6 space-y-2">
-    <div className="size-12 rounded-full bg-red-500/10 text-red-600 flex items-center justify-center mb-4">
+    <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
       <User className="size-6" />
     </div>
     <h3 className="text-lg font-bold">Session expired</h3>

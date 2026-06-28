@@ -14,8 +14,8 @@ const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 
 const theme = {
   host: {
-    medallion: "from-violet-500 to-violet-600",
-    glow: "bg-violet-500/25",
+    medallion: "from-primary to-primary",
+    glow: "bg-primary/25",
     sparks: ["#a78bfa", "#f59e0b", "#c4b5fd"],
   },
   guest: {
@@ -172,7 +172,7 @@ export function RegistrationSuccess({ role }: { role: "host" | "guest" }) {
           <motion.div
             className={cn(
               "h-full rounded-full",
-              role === "host" ? "bg-violet-400/70" : "bg-amber-400/70",
+              role === "host" ? "bg-primary/70" : "bg-amber-400/70",
             )}
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}

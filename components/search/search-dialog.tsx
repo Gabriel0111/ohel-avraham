@@ -14,6 +14,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
 import { HostListCard, type PublicHost } from "./host-list-card";
+import { GuestSearchDialog } from "./guest-search-dialog";
 import { RequestDialog } from "@/components/requests/request-dialog";
 import {
   Search,
@@ -55,7 +56,35 @@ interface SearchDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Role-aware entry point: hosts (and dual guest:host) search guests to invite;
+// everyone else searches hosts. We wait for the current user before choosing so
+// the dialog doesn't flash the wrong direction.
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
+  const { t } = useT();
+  const currentUser = useQuery(api.users.getCurrentUser);
+
+  if (currentUser === undefined) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-3xl h-[80vh] sm:h-[78vh] flex items-center justify-center rounded-2xl">
+          <DialogTitle className="sr-only">{t.search.title}</DialogTitle>
+          <Loader2 className="size-5 animate-spin text-muted-foreground" />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const guestMode =
+    currentUser?.role === "host" || currentUser?.role === "guest:host";
+
+  return guestMode ? (
+    <GuestSearchDialog open={open} onOpenChange={onOpenChange} />
+  ) : (
+    <HostSearchDialog open={open} onOpenChange={onOpenChange} />
+  );
+}
+
+function HostSearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const { t } = useT();
   const currentUser = useQuery(api.users.getCurrentUser);
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,11 +201,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         className="w-[calc(100%-2rem)] sm:max-w-5xl h-[80vh] max-h-[calc(100dvh-2rem)] sm:h-[78vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl"
         showCloseButton
       >
-        {/* Header — gradient accent (host = violet, cohérent avec le dashboard) */}
-        <DialogHeader className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-4 shrink-0 text-start border-b border-border/50">
+        {/* Header — gradient accent (host = sky, cohérent avec le dashboard) */}
+        <DialogHeader className="relative bg-gradient-to-b from-primary/8 to-transparent px-6 pt-6 pb-4 shrink-0 text-start border-b border-border/50">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0 ring-1 ring-violet-500/15">
-              <MapPin className="size-5 text-violet-600 dark:text-violet-400" />
+            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/15">
+              <MapPin className="size-5 text-primary" />
             </div>
             <div className="min-w-0">
               <DialogTitle className="text-base font-bold tracking-tight">
@@ -209,7 +238,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-9 h-11 rounded-xl bg-background/80 border-border/60 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20 transition-colors"
+              className="ps-9 h-11 rounded-xl bg-background/80 border-border/60 focus-visible:border-primary/50 focus-visible:ring-primary/20 transition-colors"
             />
           </div>
 
@@ -219,13 +248,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
               <button
                 type="button"
                 onClick={backToCities}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 ps-2.5 pe-3 py-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-500/15 transition-colors"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 ps-2.5 pe-3 py-1 text-xs font-medium text-primary hover:bg-primary/15 transition-colors"
               >
                 <ArrowLeft className="size-3.5" />
                 {selectedCity === ALL_CITIES
                   ? t.search.allCities
                   : selectedCity}
-                <span className="text-violet-700/60 dark:text-violet-300/60">
+                <span className="text-primary/60">
                   · {t.search.changeCity}
                 </span>
               </button>
@@ -252,9 +281,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 <button
                   type="button"
                   onClick={() => pickCity(ALL_CITIES)}
-                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-violet-500/25 bg-violet-500/8 p-3.5 text-start transition-colors hover:border-violet-500/45 hover:bg-violet-500/12"
+                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-primary/25 bg-primary/8 p-3.5 text-start transition-colors hover:border-primary/45 hover:bg-primary/12"
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary transition-transform group-hover:scale-105">
                     <Globe className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -265,7 +294,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                       {totalHostCount} {t.search.hostsInCityPlural}
                     </p>
                   </div>
-                  <ChevronRight className="size-4 shrink-0 text-violet-500/50 transition-all group-hover:translate-x-0.5 group-hover:text-violet-500" />
+                  <ChevronRight className="size-4 shrink-0 text-primary/50 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
                 </button>
 
                 {visibleCities.length > 0 ? (
@@ -275,9 +304,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         key={city}
                         type="button"
                         onClick={() => pickCity(city)}
-                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 text-start transition-all hover:border-violet-500/40 hover:bg-violet-500/5 hover:shadow-sm"
+                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 text-start transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm"
                       >
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 transition-transform group-hover:scale-105 dark:text-violet-300">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
                           <MapPin className="size-5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -291,7 +320,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                               : t.search.hostsInCityPlural}
                           </p>
                         </div>
-                        <ChevronRight className="size-4 shrink-0 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:text-violet-500" />
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
                       </button>
                     ))}
                   </div>
