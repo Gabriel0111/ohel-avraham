@@ -33,6 +33,53 @@ const FOCUS_ZOOM = 15;
 
 // Keeps the viewport framed on the current results: fits all markers into view
 // when the host list changes, and pans/zooms onto a host when one is selected.
+function fitAllMarkers(
+  map: ReturnType<typeof useMap>,
+  hosts: PublicHost[],
+) {
+  if (!map) return;
+
+  const points = hosts.filter(
+    (h): h is PublicHost & { lat: number; lng: number } =>
+      h.lat != null && h.lng != null,
+  );
+
+  if (points.length === 0) {
+    map.setCenter(ISRAEL_CENTER);
+    map.setZoom(9);
+    return;
+  }
+
+  if (points.length === 1) {
+    map.setCenter({ lat: points[0].lat, lng: points[0].lng });
+    map.setZoom(MAX_FIT_ZOOM);
+    return;
+  }
+
+  const bounds = points.reduce(
+    (acc, p) => ({
+      north: Math.max(acc.north, p.lat),
+      south: Math.min(acc.south, p.lat),
+      east: Math.max(acc.east, p.lng),
+      west: Math.min(acc.west, p.lng),
+    }),
+    {
+      north: points[0].lat,
+      south: points[0].lat,
+      east: points[0].lng,
+      west: points[0].lng,
+    },
+  );
+  map.fitBounds(bounds, FIT_PADDING);
+
+  const listener = map.addListener("idle", () => {
+    const zoom = map.getZoom();
+    if (zoom != null && zoom > MAX_FIT_ZOOM) map.setZoom(MAX_FIT_ZOOM);
+    listener.remove();
+  });
+  return listener;
+}
+
 function MapViewController({
   hosts,
   selectedHost,
@@ -50,59 +97,21 @@ function MapViewController({
     .join("|");
 
   useEffect(() => {
-    if (!map) return;
-
-    const points = hosts.filter(
-      (h): h is PublicHost & { lat: number; lng: number } =>
-        h.lat != null && h.lng != null,
-    );
-
-    if (points.length === 0) {
-      map.setCenter(ISRAEL_CENTER);
-      map.setZoom(9);
-      return;
-    }
-
-    if (points.length === 1) {
-      map.setCenter({ lat: points[0].lat, lng: points[0].lng });
-      map.setZoom(MAX_FIT_ZOOM);
-      return;
-    }
-
-    // Build literal bounds (north/south/east/west) from the points so we don't
-    // depend on the `google.maps` global type being in scope.
-    const bounds = points.reduce(
-      (acc, p) => ({
-        north: Math.max(acc.north, p.lat),
-        south: Math.min(acc.south, p.lat),
-        east: Math.max(acc.east, p.lng),
-        west: Math.min(acc.west, p.lng),
-      }),
-      {
-        north: points[0].lat,
-        south: points[0].lat,
-        east: points[0].lng,
-        west: points[0].lng,
-      },
-    );
-    map.fitBounds(bounds, FIT_PADDING);
-
-    // Cap the zoom so a tight cluster doesn't blow up to street level.
-    const listener = map.addListener("idle", () => {
-      const zoom = map.getZoom();
-      if (zoom != null && zoom > MAX_FIT_ZOOM) map.setZoom(MAX_FIT_ZOOM);
-      listener.remove();
-    });
-    return () => listener.remove();
+    const listener = fitAllMarkers(map, hosts);
+    return () => listener?.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, pointsKey]);
 
-  // Focus the selected host without changing the framing of the whole set.
+  // Focus the selected host; re-fit all markers when selection is cleared.
   useEffect(() => {
-    if (!map || !selectedHost || selectedHost.lat == null || selectedHost.lng == null)
+    if (!map) return;
+    if (!selectedHost || selectedHost.lat == null || selectedHost.lng == null) {
+      fitAllMarkers(map, hosts);
       return;
+    }
     map.panTo({ lat: selectedHost.lat, lng: selectedHost.lng });
     if ((map.getZoom() ?? 0) < FOCUS_ZOOM) map.setZoom(FOCUS_ZOOM);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, selectedHost]);
 
   return null;

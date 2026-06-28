@@ -27,13 +27,13 @@ export function MapLink({ query, label, subLabel, className }: MapLinkProps) {
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "group -mx-2.5 inline-flex max-w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-violet-500/8",
+        "group -mx-2.5 inline-flex max-w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-primary/8",
         className,
       )}
     >
-      <MapPin className="size-4 shrink-0 text-violet-600 dark:text-violet-400" />
+      <MapPin className="size-4 shrink-0 text-primary" />
       <span className="min-w-0">
-        <span className="block truncate font-medium text-foreground transition-colors group-hover:text-violet-700 dark:group-hover:text-violet-300">
+        <span className="block truncate font-medium text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary">
           {label}
         </span>
         {subLabel && (
@@ -42,7 +42,7 @@ export function MapLink({ query, label, subLabel, className }: MapLinkProps) {
           </span>
         )}
       </span>
-      <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground/40 transition-all group-hover:text-violet-600 dark:group-hover:text-violet-400 rtl:-scale-x-100" />
+      <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground/40 transition-all group-hover:text-primary dark:group-hover:text-primary rtl:-scale-x-100" />
     </a>
   );
 }

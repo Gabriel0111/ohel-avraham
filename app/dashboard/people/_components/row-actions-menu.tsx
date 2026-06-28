@@ -7,32 +7,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Ban, ShieldOff, Trash2 } from "lucide-react";
+import { MoreHorizontal, Ban, ShieldOff, Trash2, ShieldCheck } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import { type Id } from "@/convex/_generated/dataModel";
 
-/**
- * Admin row actions (block / unblock / delete) shared by the host and guest
- * tables. Renders inside a table cell that stops row-click propagation.
- */
 export function RowActionsMenu({
   userId,
   authUserId,
   name,
   isBlocked,
+  isVerified,
+  role,
   blocking,
+  verifying,
   onBlock,
+  onVerify,
   onDelete,
 }: {
   userId: Id<"users">;
   authUserId: string;
   name: string;
   isBlocked: boolean;
+  isVerified: boolean;
+  role: string;
   blocking: string | null;
+  verifying: string | null;
   onBlock: (userId: Id<"users">, blocked: boolean) => void;
+  onVerify: (userId: Id<"users">) => void;
   onDelete: (info: { authUserId: string; name: string }) => void;
 }) {
   const { t } = useT();
+  const canVerify = role !== "admin" && !isVerified;
+  const isBusy = blocking === userId || verifying === userId;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,9 +47,9 @@ export function RowActionsMenu({
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 hover:bg-muted"
-          disabled={blocking === userId}
+          disabled={isBusy}
         >
-          {blocking === userId ? (
+          {isBusy ? (
             <Spinner className="size-3" />
           ) : (
             <MoreHorizontal className="size-4" />
@@ -50,6 +57,18 @@ export function RowActionsMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
+        {canVerify && (
+          <>
+            <DropdownMenuItem
+              onClick={() => onVerify(userId)}
+              className="gap-2 cursor-pointer text-green-600 focus:text-green-600 focus:bg-green-50 dark:focus:bg-green-950/20"
+            >
+              <ShieldCheck className="size-3.5 text-green-600" />
+              {t.people.confirm}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         {isBlocked ? (
           <DropdownMenuItem
             onClick={() => onBlock(userId, false)}

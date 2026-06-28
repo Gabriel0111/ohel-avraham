@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { useAuth } from "@/app/ConvexClientProvider";
 import { useErrorMessage, useT } from "@/lib/i18n/context";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -51,11 +50,9 @@ import { DetailList, DetailRow } from "@/components/ui/detail-list";
 
 type Status = "pending" | "accepted" | "declined" | "cancelled";
 
-type IncomingRequest = FunctionReturnType<
+// Incoming and outgoing now share one unified shape (party + counterpartyKind).
+type RequestItem = FunctionReturnType<
   typeof api.requests.getMyIncomingRequests
->[number];
-type OutgoingRequest = FunctionReturnType<
-  typeof api.requests.getMyOutgoingRequests
 >[number];
 
 function getInitials(name?: string) {
@@ -114,12 +111,14 @@ function PartyDateRow({
   expired,
 }: {
   date: number;
-  adults: number;
-  kids: number;
+  // Absent for host invitations (no party size).
+  adults?: number;
+  kids?: number;
   expired?: boolean;
 }) {
   const { t, lang } = useT();
-  const total = adults + kids;
+  const hasParty = adults != null;
+  const total = (adults ?? 0) + (kids ?? 0);
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
       <span className="inline-flex items-center gap-1.5">
@@ -129,13 +128,15 @@ function PartyDateRow({
         </span>
         {expired && <EnumPill color="slate">{t.requests.expired}</EnumPill>}
       </span>
-      <span className="inline-flex items-center gap-1.5">
-        <Users className="size-3.5" />
-        {total} {t.requests.people}
-        <span className="text-muted-foreground/60">
-          ({adults} + {kids})
+      {hasParty && (
+        <span className="inline-flex items-center gap-1.5">
+          <Users className="size-3.5" />
+          {total} {t.requests.people}
+          <span className="text-muted-foreground/60">
+            ({adults} + {kids ?? 0})
+          </span>
         </span>
-      </span>
+      )}
     </div>
   );
 }
@@ -183,12 +184,12 @@ function RequestRow({
 }: {
   name?: string;
   image?: string;
-  fallbackColor: "amber" | "violet";
+  fallbackColor: "amber" | "sky";
   pills: React.ReactNode;
   status: Status;
   date: number;
-  adults: number;
-  kids: number;
+  adults?: number;
+  kids?: number;
   expired?: boolean;
   onClick: () => void;
 }) {
@@ -206,7 +207,7 @@ function RequestRow({
               "text-xs font-semibold",
               fallbackColor === "amber"
                 ? "bg-amber-500/10 text-amber-600"
-                : "bg-violet-500/10 text-violet-600",
+                : "bg-primary/10 text-primary",
             )}
           >
             {getInitials(name)}
@@ -232,178 +233,98 @@ function RequestRow({
 
 // ─── Detail dialogs ───────────────────────────────────────────────────────────
 
-function ReceivedDetailDialog({
-  request,
-  busy,
-  onRespond,
-  onClose,
-}: {
-  request: IncomingRequest | null;
-  busy: string | null;
-  onRespond: (id: Id<"requests">, accept: boolean) => void;
-  onClose: () => void;
-}) {
+type Direction = "incoming" | "outgoing";
+
+// A short line describing the thread, by who's looking and at whom.
+function useThreadLabel() {
   const { t } = useT();
-  if (!request) return null;
-  const r = request;
-
-  return (
-    <Dialog open={!!request} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
-        {/* Header */}
-        <div className="relative bg-gradient-to-b from-amber-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
-          <DialogHeader className="p-0">
-            <div className="flex items-start gap-4">
-              <Avatar className="size-14 shrink-0 ring-2 ring-amber-500/20 shadow-md">
-                <AvatarImage src={r.guest.image} />
-                <AvatarFallback className="bg-amber-500/10 text-amber-600 text-base font-bold">
-                  {getInitials(r.guest.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <DialogTitle className="text-base font-bold leading-tight tracking-tight">
-                    {r.guest.name ?? "—"}
-                  </DialogTitle>
-                  <StatusBadge status={r.status} />
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {r.guest.sector && <SectorBadge value={r.guest.sector} />}
-                  {r.guest.ethnicity && (
-                    <EthnicityBadge value={r.guest.ethnicity} />
-                  )}
-                  {r.guest.gender && <GenderBadge value={r.guest.gender} />}
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-4 space-y-3">
-          <PartyDateRow
-            date={r.date}
-            adults={r.adults}
-            kids={r.children}
-            expired={r.isExpired}
-          />
-          <MessageBlock message={r.message} />
-
-          {/* Full guest details — revealed once accepted, withheld once past */}
-          {r.status === "accepted" &&
-            (r.isExpired ? (
-              <ExpiredNotice />
-            ) : (
-              <DetailList>
-                {r.guest.region && (
-                  <DetailRow icon={MapPin} tone="amber" label={t.form.address}>
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.guest.region)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
-                    >
-                      {r.guest.region}
-                    </a>
-                  </DetailRow>
-                )}
-                {r.guest.email && (
-                  <DetailRow icon={Mail} tone="rose" label={t.form.email}>
-                    <a
-                      href={`mailto:${r.guest.email}`}
-                      className="hover:text-rose-600 transition-colors"
-                    >
-                      {r.guest.email}
-                    </a>
-                  </DetailRow>
-                )}
-                {r.guest.dob != null && (
-                  <DetailRow icon={CalendarDays} tone="indigo" label={t.form.age}>
-                    {computeAge(r.guest.dob)} {t.form.yearsOld}
-                  </DetailRow>
-                )}
-                {r.guest.notes && (
-                  <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
-                    <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                      {r.guest.notes}
-                    </span>
-                  </DetailRow>
-                )}
-              </DetailList>
-            ))}
-        </div>
-
-        {/* Footer — respond to a pending request */}
-        {r.status === "pending" && (
-          <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center gap-2">
-            <Button
-              size="sm"
-              className="gap-1.5 flex-1"
-              disabled={busy === r._id}
-              onClick={() => onRespond(r._id, true)}
-            >
-              {busy === r._id ? (
-                <Spinner className="size-4" />
-              ) : (
-                <Check className="size-4" />
-              )}
-              {t.requests.accept}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 flex-1"
-              disabled={busy === r._id}
-              onClick={() => onRespond(r._id, false)}
-            >
-              <X className="size-4" />
-              {t.requests.decline}
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+  return (direction: Direction, kind: "guest" | "host") => {
+    if (direction === "incoming") {
+      return kind === "guest"
+        ? t.requests.wantsToBeHostedLabel
+        : t.requests.invitedYouLabel;
+    }
+    return kind === "host"
+      ? t.requests.youRequestedLabel
+      : t.requests.youInvitedLabel;
+  };
 }
 
-function SentDetailDialog({
+// One detail dialog for every thread. The counterparty (guest or host) drives
+// the accent and which traits/contacts show; the direction drives the action
+// (respond when it's addressed to me, cancel when I opened it).
+function RequestDetailDialog({
   request,
+  direction,
   busy,
+  onRespond,
   onCancel,
   onClose,
 }: {
-  request: OutgoingRequest | null;
+  request: RequestItem | null;
+  direction: Direction;
   busy: string | null;
+  onRespond: (id: Id<"requests">, accept: boolean) => void;
   onCancel: (id: Id<"requests">) => void;
   onClose: () => void;
 }) {
   const { t } = useT();
+  const threadLabel = useThreadLabel();
   if (!request) return null;
   const r = request;
+  const p = r.party;
+  const isGuest = r.counterpartyKind === "guest";
 
   return (
     <Dialog open={!!request} onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
         {/* Header */}
-        <div className="relative bg-gradient-to-b from-violet-500/8 to-transparent px-6 pt-6 pb-5 border-b border-border/50">
+        <div
+          className={cn(
+            "relative bg-gradient-to-b to-transparent px-6 pt-6 pb-5 border-b border-border/50",
+            isGuest ? "from-amber-500/8" : "from-primary/8",
+          )}
+        >
           <DialogHeader className="p-0">
             <div className="flex items-start gap-4">
-              <Avatar className="size-14 shrink-0 ring-2 ring-violet-500/20 shadow-md">
-                <AvatarImage src={r.host.image} />
-                <AvatarFallback className="bg-violet-500/10 text-violet-600 text-base font-bold">
-                  {getInitials(r.host.name)}
+              <Avatar
+                className={cn(
+                  "size-14 shrink-0 ring-2 shadow-md",
+                  isGuest ? "ring-amber-500/20" : "ring-primary/20",
+                )}
+              >
+                <AvatarImage src={p.image} />
+                <AvatarFallback
+                  className={cn(
+                    "text-base font-bold",
+                    isGuest
+                      ? "bg-amber-500/10 text-amber-600"
+                      : "bg-primary/10 text-primary",
+                  )}
+                >
+                  {getInitials(p.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-center gap-2 flex-wrap mb-2">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
                   <DialogTitle className="text-base font-bold leading-tight tracking-tight">
-                    {r.host.name ?? "—"}
+                    {p.name ?? "—"}
                   </DialogTitle>
                   <StatusBadge status={r.status} />
                 </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {threadLabel(direction, r.counterpartyKind)}
+                </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {r.host.sector && <SectorBadge value={r.host.sector} />}
-                  {r.host.kashrout && <KashroutBadge value={r.host.kashrout} />}
+                  {p.sector && <SectorBadge value={p.sector} />}
+                  {isGuest ? (
+                    <>
+                      {p.ethnicity && <EthnicityBadge value={p.ethnicity} />}
+                      {p.gender && <GenderBadge value={p.gender} />}
+                    </>
+                  ) : (
+                    p.kashrout && <KashroutBadge value={p.kashrout} />
+                  )}
                 </div>
               </div>
             </div>
@@ -420,39 +341,75 @@ function SentDetailDialog({
           />
           <MessageBlock message={r.message} />
 
-          {/* Contact — revealed once accepted, withheld once past */}
+          {/* Contact / details — revealed once accepted, withheld once past */}
           {r.status === "accepted" &&
             (r.isExpired ? (
               <ExpiredNotice />
-            ) : r.host.phoneNumber || r.host.address ? (
+            ) : isGuest ? (
               <DetailList>
-                {r.host.phoneNumber && (
-                  <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+                {p.region && (
+                  <DetailRow icon={MapPin} tone="amber" label={t.form.address}>
                     <a
-                      href={`tel:${r.host.phoneNumber}`}
-                      className="hover:text-blue-600 transition-colors"
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.region)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-amber-600 transition-colors underline-offset-4 hover:underline"
                     >
-                      {RPNInput.formatPhoneNumberIntl(r.host.phoneNumber) ||
-                        r.host.phoneNumber}
+                      {p.region}
                     </a>
                   </DetailRow>
                 )}
-                {r.host.address && (
-                  <DetailRow icon={MapPin} tone="violet" label={t.form.address}>
+                {p.email && (
+                  <DetailRow icon={Mail} tone="rose" label={t.form.email}>
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.host.address)}`}
+                      href={`mailto:${p.email}`}
+                      className="hover:text-rose-600 transition-colors"
+                    >
+                      {p.email}
+                    </a>
+                  </DetailRow>
+                )}
+                {p.dob != null && (
+                  <DetailRow icon={CalendarDays} tone="indigo" label={t.form.age}>
+                    {computeAge(p.dob)} {t.form.yearsOld}
+                  </DetailRow>
+                )}
+                {p.notes && (
+                  <DetailRow icon={StickyNote} tone="amber" label={t.form.notes}>
+                    <span className="font-normal text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                      {p.notes}
+                    </span>
+                  </DetailRow>
+                )}
+              </DetailList>
+            ) : p.phoneNumber || p.address ? (
+              <DetailList>
+                {p.phoneNumber && (
+                  <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
+                    <a
+                      href={`tel:${p.phoneNumber}`}
+                      className="hover:text-blue-600 transition-colors"
+                    >
+                      {RPNInput.formatPhoneNumberIntl(p.phoneNumber) ||
+                        p.phoneNumber}
+                    </a>
+                  </DetailRow>
+                )}
+                {p.address && (
+                  <DetailRow icon={MapPin} tone="sky" label={t.form.address}>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-violet-600 transition-colors underline-offset-4 hover:underline"
+                      className="hover:text-primary transition-colors underline-offset-4 hover:underline"
                     >
-                      {r.host.address}
+                      {p.address}
                     </a>
-                    {(r.host.floor || r.host.entrance) && (
+                    {(p.floor || p.entrance) && (
                       <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                        {r.host.floor && `${t.form.floor} ${r.host.floor}`}
-                        {r.host.floor && r.host.entrance && " · "}
-                        {r.host.entrance &&
-                          `${t.form.entrance} ${r.host.entrance}`}
+                        {p.floor && `${t.form.floor} ${p.floor}`}
+                        {p.floor && p.entrance && " · "}
+                        {p.entrance && `${t.form.entrance} ${p.entrance}`}
                       </span>
                     )}
                   </DetailRow>
@@ -461,37 +418,69 @@ function SentDetailDialog({
             ) : null)}
         </div>
 
-        {/* Footer — cancel a pending request */}
-        {r.status === "pending" && (
-          <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              disabled={busy === r._id}
-              onClick={() => onCancel(r._id)}
-            >
-              {busy === r._id ? (
-                <Spinner className="size-4" />
-              ) : (
+        {/* Footer — respond if it's addressed to me, cancel if I opened it */}
+        {r.status === "pending" &&
+          (direction === "incoming" ? (
+            <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center gap-2">
+              <Button
+                size="sm"
+                className="gap-1.5 flex-1"
+                disabled={busy === r._id}
+                onClick={() => onRespond(r._id, true)}
+              >
+                {busy === r._id ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <Check className="size-4" />
+                )}
+                {t.requests.accept}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 flex-1"
+                disabled={busy === r._id}
+                onClick={() => onRespond(r._id, false)}
+              >
                 <X className="size-4" />
-              )}
-              {t.requests.cancelRequest}
-            </Button>
-          </div>
-        )}
+                {t.requests.decline}
+              </Button>
+            </div>
+          ) : (
+            <div className="px-6 py-4 border-t border-border/50 bg-muted/20 flex items-center justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                disabled={busy === r._id}
+                onClick={() => onCancel(r._id)}
+              >
+                {busy === r._id ? (
+                  <Spinner className="size-4" />
+                ) : (
+                  <X className="size-4" />
+                )}
+                {t.requests.cancelRequest}
+              </Button>
+            </div>
+          ))}
       </DialogContent>
     </Dialog>
   );
 }
 
-// ─── Received (host view) ─────────────────────────────────────────────────────
+// ─── Thread list (received or sent) ───────────────────────────────────────────
 
-function ReceivedList() {
+function RequestsList({ direction }: { direction: Direction }) {
   const { t } = useT();
   const getErrorMessage = useErrorMessage();
-  const incoming = useQuery(api.requests.getMyIncomingRequests);
+  const items = useQuery(
+    direction === "incoming"
+      ? api.requests.getMyIncomingRequests
+      : api.requests.getMyOutgoingRequests,
+  );
   const respond = useMutation(api.requests.respondToRequest);
+  const cancel = useMutation(api.requests.cancelRequest);
   const [busy, setBusy] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -509,69 +498,6 @@ function ReceivedList() {
     }
   };
 
-  if (incoming === undefined) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" />
-      </div>
-    );
-  }
-  if (incoming.length === 0) {
-    return <EmptyState icon={Inbox} label={t.requests.noReceived} />;
-  }
-
-  const selected = incoming.find((r) => r._id === selectedId) ?? null;
-
-  return (
-    <>
-      <div className="flex flex-col gap-3">
-        {incoming.map((r) => (
-          <RequestRow
-            key={r._id}
-            name={r.guest.name}
-            image={r.guest.image}
-            fallbackColor="amber"
-            status={r.status}
-            date={r.date}
-            adults={r.adults}
-            kids={r.children}
-            expired={r.isExpired}
-            onClick={() => setSelectedId(r._id)}
-            pills={
-              <>
-                {r.guest.sector && <SectorBadge value={r.guest.sector} />}
-                {r.guest.region && (
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="size-3" />
-                    {r.guest.region}
-                  </span>
-                )}
-              </>
-            }
-          />
-        ))}
-      </div>
-
-      <ReceivedDetailDialog
-        request={selected}
-        busy={busy}
-        onRespond={handleRespond}
-        onClose={() => setSelectedId(null)}
-      />
-    </>
-  );
-}
-
-// ─── Sent (guest view) ────────────────────────────────────────────────────────
-
-function SentList() {
-  const { t } = useT();
-  const getErrorMessage = useErrorMessage();
-  const outgoing = useQuery(api.requests.getMyOutgoingRequests);
-  const cancel = useMutation(api.requests.cancelRequest);
-  const [busy, setBusy] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
   const handleCancel = async (requestId: Id<"requests">) => {
     setBusy(requestId);
     try {
@@ -584,47 +510,68 @@ function SentList() {
     }
   };
 
-  if (outgoing === undefined) {
+  if (items === undefined) {
     return (
       <div className="flex justify-center py-16">
         <Spinner className="size-6" />
       </div>
     );
   }
-  if (outgoing.length === 0) {
-    return <EmptyState icon={SendHorizonal} label={t.requests.noSent} />;
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={direction === "incoming" ? Inbox : SendHorizonal}
+        label={
+          direction === "incoming" ? t.requests.noReceived : t.requests.noSent
+        }
+      />
+    );
   }
 
-  const selected = outgoing.find((r) => r._id === selectedId) ?? null;
+  const selected = items.find((r) => r._id === selectedId) ?? null;
 
   return (
     <>
       <div className="flex flex-col gap-3">
-        {outgoing.map((r) => (
-          <RequestRow
-            key={r._id}
-            name={r.host.name}
-            image={r.host.image}
-            fallbackColor="violet"
-            status={r.status}
-            date={r.date}
-            adults={r.adults}
-            kids={r.children}
-            expired={r.isExpired}
-            onClick={() => setSelectedId(r._id)}
-            pills={
-              <>
-                {r.host.sector && <SectorBadge value={r.host.sector} />}
-                {r.host.kashrout && <KashroutBadge value={r.host.kashrout} />}
-              </>
-            }
-          />
-        ))}
+        {items.map((r) => {
+          const isGuest = r.counterpartyKind === "guest";
+          return (
+            <RequestRow
+              key={r._id}
+              name={r.party.name}
+              image={r.party.image}
+              fallbackColor={isGuest ? "amber" : "sky"}
+              status={r.status}
+              date={r.date}
+              adults={r.adults}
+              kids={r.children}
+              expired={r.isExpired}
+              onClick={() => setSelectedId(r._id)}
+              pills={
+                <>
+                  {r.party.sector && <SectorBadge value={r.party.sector} />}
+                  {isGuest
+                    ? r.party.region && (
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="size-3" />
+                          {r.party.region}
+                        </span>
+                      )
+                    : r.party.kashrout && (
+                        <KashroutBadge value={r.party.kashrout} />
+                      )}
+                </>
+              }
+            />
+          );
+        })}
       </div>
 
-      <SentDetailDialog
+      <RequestDetailDialog
         request={selected}
+        direction={direction}
         busy={busy}
+        onRespond={handleRespond}
         onCancel={handleCancel}
         onClose={() => setSelectedId(null)}
       />
@@ -653,52 +600,39 @@ function EmptyState({
 
 export default function RequestsPage() {
   const { t } = useT();
-  const { user } = useAuth();
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
-  const role = user?.role;
-  // Admins are treated as hosts (they receive requests like one).
-  const isHost = role === "host" || role === "guest:host" || role === "admin";
-  // A host can do both: receive requests AND send them (act as a guest looking
-  // to be hosted elsewhere), so any host sees both tabs. A plain guest (or a
-  // user with no role yet) can only send, so they get the sent view alone.
-  const mode: "both" | "sent" = isHost ? "both" : "sent";
-
-  const subtitle =
-    mode === "sent" ? t.requests.descSent : t.requests.desc;
-
+  // Everyone can both receive and send now: a guest sends hosting requests and
+  // receives host invitations; a host receives requests and sends invitations.
+  // So both tabs are always shown.
   return (
     <div>
-      <PageHeader title={t.requests.title} subtitle={subtitle} />
+      <PageHeader title={t.requests.title} subtitle={t.requests.desc} />
 
-      {mode === "both" ? (
-        <Tabs defaultValue="received" className="w-full">
-          <TabsList>
-            <TabsTrigger value="received" className="gap-2">
-              <Inbox className="size-4" />
-              {t.requests.received}
-              {pendingCount != null && pendingCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
-                  {pendingCount}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="sent" className="gap-2">
-              <SendHorizonal className="size-4" />
-              {t.requests.sent}
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="received" className="w-full">
+        <TabsList>
+          <TabsTrigger value="received" className="gap-2">
+            <Inbox className="size-4" />
+            {t.requests.received}
+            {pendingCount != null && pendingCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold tabular-nums">
+                {pendingCount}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="sent" className="gap-2">
+            <SendHorizonal className="size-4" />
+            {t.requests.sent}
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="received" className="mt-4">
-            <ReceivedList />
-          </TabsContent>
-          <TabsContent value="sent" className="mt-4">
-            <SentList />
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <SentList />
-      )}
+        <TabsContent value="received" className="mt-4">
+          <RequestsList direction="incoming" />
+        </TabsContent>
+        <TabsContent value="sent" className="mt-4">
+          <RequestsList direction="outgoing" />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

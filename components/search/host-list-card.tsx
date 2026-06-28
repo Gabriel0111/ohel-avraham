@@ -71,14 +71,14 @@ export function HostListCard({
       onClick={() => onSelect(host)}
       className={cn(
         "group w-full text-start p-3 rounded-xl border transition-all cursor-pointer",
-        "hover:border-violet-500/40 hover:shadow-sm",
+        "hover:border-primary/40 hover:shadow-sm",
         isSelected
-          ? "border-violet-500/50 bg-violet-500/5 shadow-sm ring-1 ring-violet-500/20"
+          ? "border-primary/50 bg-primary/5 shadow-sm ring-1 ring-primary/20"
           : "border-border/60 bg-card",
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="size-10 rounded-full bg-violet-500/10 flex items-center justify-center shrink-0 ring-1 ring-violet-500/15">
+        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-1 ring-primary/15">
           {host.image ? (
             <Image
               src={host.image}
@@ -88,11 +88,11 @@ export function HostListCard({
               className="size-10 rounded-full object-cover"
             />
           ) : host.name ? (
-            <span className="text-sm font-bold text-violet-600 dark:text-violet-300">
+            <span className="text-sm font-bold text-primary">
               {host.name.charAt(0).toUpperCase()}
             </span>
           ) : (
-            <User className="size-5 text-violet-600 dark:text-violet-300" />
+            <User className="size-5 text-primary" />
           )}
         </div>
         <div className="flex-1 min-w-0">

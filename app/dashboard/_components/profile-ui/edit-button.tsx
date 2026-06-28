@@ -13,7 +13,7 @@ interface EditButtonProps {
 }
 
 /**
- * The single edit affordance used across the dashboard: a compact violet
+ * The single edit affordance used across the dashboard: a compact brand
  * outline button with a pencil. Keeps every "edit this section" trigger
  * visually identical (profile identity, host card, guest card).
  */
@@ -27,7 +27,7 @@ export function EditButton({ onClick, label, className }: EditButtonProps) {
       size="sm"
       onClick={onClick}
       className={cn(
-        "h-8 gap-1.5 rounded-lg border-violet-500/30 text-violet-700 hover:bg-violet-500/10 hover:text-violet-700 dark:border-violet-500/30 dark:text-violet-300 dark:hover:bg-violet-500/15",
+        "h-8 gap-1.5 rounded-lg border-primary/30 text-primary hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/15",
         className,
       )}
     >

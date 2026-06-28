@@ -12,8 +12,8 @@ export function FloatingPaths({ position }: { position: number }) {
     } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    // Gradient from violet-500 to fuchsia-500
-    hue: 270 - (i / 36) * 30, // 270 (violet) to 240 (purple/fuchsia)
+    // Gradient from sky-blue to cyan
+    hue: 230 - (i / 36) * 25, // 230 (sky blue) to 205 (cyan)
     opacity: 0.15 + i * 0.025,
     width: 0.5 + i * 0.04,
   }));

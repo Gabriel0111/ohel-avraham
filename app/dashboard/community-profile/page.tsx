@@ -42,7 +42,7 @@ export default function CommunityProfilePage() {
         {isBoth ? (
           <Tabs defaultValue="host" className="w-full">
             <TabsList className="grid w-full grid-cols-2 rounded-xl mb-6">
-              <TabsTrigger value="host" className="rounded-lg gap-2 data-[state=active]:text-violet-600">
+              <TabsTrigger value="host" className="rounded-lg gap-2 data-[state=active]:text-primary">
                 <Home className="size-4" />{t.profile.hostProfile}
               </TabsTrigger>
               <TabsTrigger value="guest" className="rounded-lg gap-2 data-[state=active]:text-amber-600">

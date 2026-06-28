@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as contact from "../contact.js";
+import type * as emails from "../emails.js";
 import type * as enums from "../enums.js";
 import type * as guests from "../guests.js";
 import type * as helpers_attachUsers from "../helpers/attachUsers.js";
@@ -33,6 +34,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   contact: typeof contact;
+  emails: typeof emails;
   enums: typeof enums;
   guests: typeof guests;
   "helpers/attachUsers": typeof helpers_attachUsers;

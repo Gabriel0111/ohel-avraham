@@ -53,12 +53,18 @@ export default function PeoplePage() {
   const [showUnverifiedOnly, setShowUnverifiedOnly] = useState(false);
   const [verifying, setVerifying] = useState<string | null>(null);
   const [blocking, setBlocking] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
   const [selectedHost, setSelectedHost] = useState<HostData | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<GuestData | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{
     authUserId: string;
     name: string;
   } | null>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+
+  // Multi-select state (keyed by authUserId)
+  const [selectedHostIds, setSelectedHostIds] = useState<Set<string>>(new Set());
+  const [selectedGuestIds, setSelectedGuestIds] = useState<Set<string>>(new Set());
 
   const [hostPagination, setHostPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -81,7 +87,6 @@ export default function PeoplePage() {
         host.address?.toLowerCase().includes(search) ||
         host.sector?.toLowerCase().includes(search) ||
         host.kashrout?.toLowerCase().includes(search);
-      // Admins are implicitly trusted and never count as "unverified".
       const matchesVerified =
         !showUnverifiedOnly || (!host.isVerified && host.role !== "admin");
       return matchesSearch && matchesVerified;
@@ -97,7 +102,6 @@ export default function PeoplePage() {
         guest.name?.toLowerCase().includes(search) ||
         guest.region?.toLowerCase().includes(search) ||
         guest.sector?.toLowerCase().includes(search);
-      // Admins are implicitly trusted and never count as "unverified".
       const matchesVerified =
         !showUnverifiedOnly || (!guest.isVerified && guest.role !== "admin");
       return matchesSearch && matchesVerified;
@@ -134,13 +138,54 @@ export default function PeoplePage() {
   });
   const paginatedGuests = guestTable.getRowModel().rows.map((r) => r.original);
 
-  // Reset page on search change
+  // Reset page + clear selection on filter changes
   useEffect(() => {
     setHostPagination((p) => ({ ...p, pageIndex: 0 }));
+    setSelectedHostIds(new Set());
   }, [hostSearch, showUnverifiedOnly]);
   useEffect(() => {
     setGuestPagination((p) => ({ ...p, pageIndex: 0 }));
+    setSelectedGuestIds(new Set());
   }, [guestSearch, showUnverifiedOnly]);
+  // Also clear on tab switch
+  useEffect(() => {
+    setSelectedHostIds(new Set());
+    setSelectedGuestIds(new Set());
+  }, [activeTab]);
+
+  // Single-row selection helpers
+  const toggleHostSelect = useCallback((authUserId: string) => {
+    setSelectedHostIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(authUserId)) next.delete(authUserId);
+      else next.add(authUserId);
+      return next;
+    });
+  }, []);
+  const toggleGuestSelect = useCallback((authUserId: string) => {
+    setSelectedGuestIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(authUserId)) next.delete(authUserId);
+      else next.add(authUserId);
+      return next;
+    });
+  }, []);
+
+  // Range selection helpers (Shift+click) — deselect=true removes, false adds
+  const selectHostRange = useCallback((authUserIds: string[], deselect: boolean) => {
+    setSelectedHostIds((prev) => {
+      const next = new Set(prev);
+      authUserIds.forEach((id) => (deselect ? next.delete(id) : next.add(id)));
+      return next;
+    });
+  }, []);
+  const selectGuestRange = useCallback((authUserIds: string[], deselect: boolean) => {
+    setSelectedGuestIds((prev) => {
+      const next = new Set(prev);
+      authUserIds.forEach((id) => (deselect ? next.delete(id) : next.add(id)));
+      return next;
+    });
+  }, []);
 
   const handleVerify = useCallback(
     async (userId: Id<"users">) => {
@@ -188,6 +233,83 @@ export default function PeoplePage() {
       toast.error(t.people.deleteUserError);
     }
   }, [confirmDelete, deleteUserAsAdmin, t]);
+
+  // --- Bulk actions ---
+  const currentSelectedIds =
+    activeTab === "hosts" ? selectedHostIds : selectedGuestIds;
+  const currentAllRows =
+    activeTab === "hosts" ? (allHosts ?? []) : (allGuests ?? []);
+  const selectionCount = currentSelectedIds.size;
+  const canBulkVerify = currentAllRows.some(
+    (r) =>
+      currentSelectedIds.has(r.authUserId) &&
+      !r.isVerified &&
+      r.role !== "admin",
+  );
+
+  const handleBulkVerify = useCallback(async () => {
+    if (!allHosts && !allGuests) return;
+    setBulkBusy(true);
+    // Only verify non-admin, unverified users in the selection
+    const rows = currentAllRows.filter(
+      (r) =>
+        currentSelectedIds.has(r.authUserId) &&
+        !r.isVerified &&
+        r.role !== "admin",
+    );
+    if (rows.length === 0) {
+      toast.info(t.people.confirmSuccess);
+      setBulkBusy(false);
+      return;
+    }
+    const results = await Promise.allSettled(
+      rows.map((r) => verifyUser({ userId: r.userId as Id<"users"> })),
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    const fail = results.filter((r) => r.status === "rejected").length;
+    if (ok > 0) toast.success(`${ok} ${t.people.bulkVerifySuccess}`);
+    if (fail > 0) toast.error(`${fail} ${t.people.confirmError}`);
+    if (activeTab === "hosts") setSelectedHostIds(new Set());
+    else setSelectedGuestIds(new Set());
+    setBulkBusy(false);
+  }, [currentAllRows, currentSelectedIds, verifyUser, allHosts, allGuests, activeTab, t]);
+
+  const handleBulkBlock = useCallback(async () => {
+    setBulkBusy(true);
+    const rows = currentAllRows.filter((r) =>
+      currentSelectedIds.has(r.authUserId),
+    );
+    const results = await Promise.allSettled(
+      rows.map((r) =>
+        blockUser({ userId: r.userId as Id<"users">, blocked: true }),
+      ),
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    const fail = results.filter((r) => r.status === "rejected").length;
+    if (ok > 0) toast.success(`${ok} ${t.people.bulkBlockSuccess}`);
+    if (fail > 0) toast.error(`${fail} ${t.people.blockError}`);
+    if (activeTab === "hosts") setSelectedHostIds(new Set());
+    else setSelectedGuestIds(new Set());
+    setBulkBusy(false);
+  }, [currentAllRows, currentSelectedIds, blockUser, activeTab, t]);
+
+  const handleBulkDeleteConfirmed = useCallback(async () => {
+    setBulkBusy(true);
+    setConfirmBulkDelete(false);
+    const rows = currentAllRows.filter((r) =>
+      currentSelectedIds.has(r.authUserId),
+    );
+    const results = await Promise.allSettled(
+      rows.map((r) => deleteUserAsAdmin({ authUserId: r.authUserId })),
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    const fail = results.filter((r) => r.status === "rejected").length;
+    if (ok > 0) toast.success(`${ok} ${t.people.bulkDeleteSuccess}`);
+    if (fail > 0) toast.error(`${fail} ${t.people.deleteUserError}`);
+    if (activeTab === "hosts") setSelectedHostIds(new Set());
+    else setSelectedGuestIds(new Set());
+    setBulkBusy(false);
+  }, [currentAllRows, currentSelectedIds, deleteUserAsAdmin, activeTab, t]);
 
   useEffect(() => {
     if (currentUser !== undefined && currentUser?.role !== "admin") {
@@ -244,8 +366,8 @@ export default function PeoplePage() {
                     {allHosts?.length ?? 0}
                   </p>
                 </div>
-                <div className="size-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                  <Home className="size-5 text-violet-600" />
+                <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Home className="size-5 text-primary" />
                 </div>
               </div>
               {unverifiedCount > 0 && (
@@ -305,7 +427,7 @@ export default function PeoplePage() {
                 className={cn(
                   "tabular-nums text-[11px] px-1.5 py-0.5 rounded-full font-bold",
                   activeTab === "hosts"
-                    ? "bg-violet-500/10 text-violet-600"
+                    ? "bg-primary/10 text-primary"
                     : "bg-muted-foreground/10 text-muted-foreground",
                 )}
               >
@@ -366,8 +488,19 @@ export default function PeoplePage() {
             isAdmin={isAdmin}
             onRowClick={setSelectedHost}
             blocking={blocking}
+            verifying={verifying}
             onBlock={handleBlock}
+            onVerify={handleVerify}
             onDelete={setConfirmDelete}
+            selectedIds={selectedHostIds}
+            onToggleSelect={toggleHostSelect}
+            onSelectRange={selectHostRange}
+            bulkBusy={bulkBusy}
+            canBulkVerify={canBulkVerify}
+            onBulkVerify={handleBulkVerify}
+            onBulkBlock={handleBulkBlock}
+            onBulkDelete={() => setConfirmBulkDelete(true)}
+            onClearSelection={() => setSelectedHostIds(new Set())}
           />
         )}
 
@@ -383,8 +516,19 @@ export default function PeoplePage() {
             isAdmin={isAdmin}
             onRowClick={setSelectedGuest}
             blocking={blocking}
+            verifying={verifying}
             onBlock={handleBlock}
+            onVerify={handleVerify}
             onDelete={setConfirmDelete}
+            selectedIds={selectedGuestIds}
+            onToggleSelect={toggleGuestSelect}
+            onSelectRange={selectGuestRange}
+            bulkBusy={bulkBusy}
+            canBulkVerify={canBulkVerify}
+            onBulkVerify={handleBulkVerify}
+            onBulkBlock={handleBulkBlock}
+            onBulkDelete={() => setConfirmBulkDelete(true)}
+            onClearSelection={() => setSelectedGuestIds(new Set())}
           />
         )}
 
@@ -406,7 +550,7 @@ export default function PeoplePage() {
           onClose={() => setSelectedGuest(null)}
         />
 
-        {/* Delete confirmation */}
+        {/* Single delete confirmation */}
         <AlertDialog
           open={!!confirmDelete}
           onOpenChange={() => setConfirmDelete(null)}
@@ -430,6 +574,37 @@ export default function PeoplePage() {
               >
                 <Trash2 className="size-4 mr-2" />
                 {t.people.deleteUser}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk delete confirmation */}
+        <AlertDialog
+          open={confirmBulkDelete}
+          onOpenChange={setConfirmBulkDelete}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t.people.bulkDeleteConfirmTitle}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                <span className="font-medium text-foreground">
+                  {selectionCount} {t.people.selected}
+                </span>
+                {" — "}
+                {t.people.bulkDeleteConfirmDesc}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBulkDeleteConfirmed}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                <Trash2 className="size-4 mr-2" />
+                {t.people.bulkDelete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

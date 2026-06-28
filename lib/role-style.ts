@@ -1,14 +1,14 @@
 /**
  * Maps a user's system role to a Tailwind ring-color class for avatar status
  * rings. Class names are written as full literals so the Tailwind JIT keeps
- * them. Mirrors the palette in `role-badge.tsx` (host/dual = violet,
- * guest = amber, admin = red).
+ * them. Mirrors the palette in `role-badge.tsx` (host/dual = brand sky,
+ * guest = amber, admin = destructive).
  */
 const ROLE_RING: Record<string, string> = {
-  host: "ring-violet-500",
-  "guest:host": "ring-violet-500",
+  host: "ring-primary",
+  "guest:host": "ring-primary",
   guest: "ring-amber-500",
-  admin: "ring-red-500",
+  admin: "ring-destructive",
 };
 
 /** A user whose registration is not finished (no role beyond the default). */

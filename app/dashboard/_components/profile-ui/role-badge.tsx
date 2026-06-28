@@ -5,8 +5,8 @@ import { useT } from "@/lib/i18n/context";
 
 const ROLE_COLORS: Record<string, PillColor> = {
   admin: "red",
-  host: "violet",
-  "guest:host": "violet",
+  host: "sky",
+  "guest:host": "sky",
   guest: "amber",
 };
 

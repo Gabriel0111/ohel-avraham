@@ -47,5 +47,6 @@ export default defineSchema({
     .index("by_guest", ["guestAuthUserId"])
     .index("by_host", ["hostAuthUserId"])
     .index("by_host_status", ["hostAuthUserId", "status"])
+    .index("by_guest_status", ["guestAuthUserId", "status"])
     .index("by_guest_host", ["guestAuthUserId", "hostAuthUserId"]),
 });
