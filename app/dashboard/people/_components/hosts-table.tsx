@@ -156,33 +156,30 @@ export function HostsTable({
               {/* Full action buttons — hidden on small screens */}
               <div className="hidden sm:flex items-center gap-1.5">
                 <Button
-                  size="sm"
                   variant="outline"
                   disabled={bulkBusy || !canBulkVerify}
                   onClick={onBulkVerify}
-                  className="gap-1.5 h-9 text-xs text-green-700 border-green-600/30 hover:bg-green-50 dark:hover:bg-green-950/20 disabled:opacity-40"
+                  className="text-green-700 border-green-600/30 hover:bg-green-50 dark:hover:bg-green-950/20 disabled:opacity-40"
                 >
-                  <ShieldCheck className="size-3.5" />
+                  <ShieldCheck />
                   {t.people.bulkVerify}
                 </Button>
                 <Button
-                  size="sm"
                   variant="outline"
                   disabled={bulkBusy}
                   onClick={onBulkBlock}
-                  className="gap-1.5 h-9 text-xs text-amber-700 border-amber-600/30 hover:bg-amber-50 dark:hover:bg-amber-950/20"
+                  className="text-amber-700 border-amber-600/30 hover:bg-amber-50 dark:hover:bg-amber-950/20"
                 >
-                  <Ban className="size-3.5" />
+                  <Ban />
                   {t.people.bulkBlock}
                 </Button>
                 <Button
-                  size="sm"
                   variant="outline"
                   disabled={bulkBusy}
                   onClick={onBulkDelete}
-                  className="gap-1.5 h-9 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                  className="text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
-                  <Trash2 className="size-3.5" />
+                  <Trash2 />
                   {t.people.bulkDelete}
                 </Button>
               </div>
@@ -190,8 +187,8 @@ export function HostsTable({
               <div className="sm:hidden">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs" disabled={bulkBusy}>
-                      <MoreHorizontal className="size-3.5" />
+                    <Button variant="outline" disabled={bulkBusy}>
+                      <MoreHorizontal />
                       Actions
                     </Button>
                   </DropdownMenuTrigger>
@@ -214,12 +211,12 @@ export function HostsTable({
               </div>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 disabled={bulkBusy}
                 onClick={onClearSelection}
-                className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground"
               >
-                <X className="size-3.5" />
+                <X />
               </Button>
             </div>
           ) : (
