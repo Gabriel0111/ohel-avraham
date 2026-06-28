@@ -13,15 +13,15 @@ const CONFIG = {
   MIN_STAR_DISTANCE: 4.8,
   CLUSTER_COUNT: 2,
   colors: {
-    // Ciel nocturne en teintes bleu ciel / bleu profond (cohérent avec le thème)
-    skyTop: "oklch(0.15 0.12 252)",
-    skyMid1: "oklch(0.22 0.14 250)",
-    skyMid2: "oklch(0.28 0.15 248)",
-    skyBottom: "oklch(0.25 0.12 246)",
-    horizonGlow: "oklch(0.35 0.18 244)",
-    starBright: "oklch(0.98 0.02 250)",
-    starDim: "oklch(0.85 0.02 250)",
-    starHalo: "oklch(0.78 0.08 248)",
+    // Ciel nocturne désertique — nuit chaude et étoilée, halo ambré de la tente
+    skyTop: "oklch(0.08 0.015 35)",
+    skyMid1: "oklch(0.15 0.055 42)",
+    skyMid2: "oklch(0.21 0.10 48)",
+    skyBottom: "oklch(0.19 0.08 46)",
+    horizonGlow: "oklch(0.48 0.18 52)",
+    starBright: "oklch(0.98 0.02 82)",
+    starDim: "oklch(0.86 0.015 72)",
+    starHalo: "oklch(0.82 0.10 58)",
   },
 };
 
@@ -137,7 +137,7 @@ export function AuthIllustration() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid slice"
-      className="ohel-avraham-illu absolute inset-0 h-full w-full bg-[#0a0a0f]"
+      className="ohel-avraham-illu absolute inset-0 h-full w-full bg-[#0d0806]"
       aria-hidden
     >
       <style>{`
@@ -151,8 +151,8 @@ export function AuthIllustration() {
       <defs>
         {/* Filtre pour l'effet de bloom (lumière réaliste) */}
         <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="blur1" />
-          <feGaussianBlur stdDeviation="8" result="blur2" />
+          <feGaussianBlur stdDeviation="2.5" result="blur1" />
+          <feGaussianBlur stdDeviation="7" result="blur2" />
           <feMerge>
             <feMergeNode in="blur2" />
             <feMergeNode in="blur1" />
@@ -182,8 +182,8 @@ export function AuthIllustration() {
 
         {/* Dégradé du sol avec occlusion de la tente */}
         <radialGradient id="groundShadow" cx="50%" cy="110%" r="60%">
-          <stop offset="0%" stopColor="oklch(0.05 0.01 246)" />
-          <stop offset="100%" stopColor="oklch(0.12 0.03 246)" />
+          <stop offset="0%" stopColor="oklch(0.05 0.01 40)" />
+          <stop offset="100%" stopColor="oklch(0.12 0.04 42)" />
         </radialGradient>
 
         {/* Lumière volumétrique sortant de la tente */}
@@ -202,18 +202,18 @@ export function AuthIllustration() {
 
         {/* Dégradés du tissu de la tente pour simuler le volume */}
         <linearGradient id="fabricDark" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="oklch(0.15 0.02 250)" />
-          <stop offset="100%" stopColor="oklch(0.22 0.04 248)" />
+          <stop offset="0%" stopColor="oklch(0.15 0.04 42)" />
+          <stop offset="100%" stopColor="oklch(0.22 0.07 44)" />
         </linearGradient>
 
         <linearGradient id="fabricLitLeft" x1="1" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="oklch(0.6 0.15 65)" stopOpacity="0.9" />
-          <stop offset="60%" stopColor="oklch(0.25 0.05 248)" stopOpacity="1" />
+          <stop offset="60%" stopColor="oklch(0.25 0.09 46)" stopOpacity="1" />
         </linearGradient>
 
         <linearGradient id="fabricLitRight" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="oklch(0.6 0.15 65)" stopOpacity="0.9" />
-          <stop offset="60%" stopColor="oklch(0.25 0.05 248)" stopOpacity="1" />
+          <stop offset="60%" stopColor="oklch(0.25 0.09 46)" stopOpacity="1" />
         </linearGradient>
 
         <radialGradient id="interiorGlow" cx="50%" cy="85%" r="70%">
@@ -306,7 +306,7 @@ export function AuthIllustration() {
         {/* Cordes arrières */}
         <path
           d="M50 48 L10 105 M50 48 L90 105"
-          stroke="oklch(0.2 0.02 250)"
+          stroke="oklch(0.20 0.03 42)"
           strokeWidth="0.3"
           opacity="0.6"
         />
@@ -342,7 +342,7 @@ export function AuthIllustration() {
         {/* Ombre de pli gauche */}
         <path
           d="M24 107 C 32 80, 42 62, 48 50 C 44 65, 36 85, 30 107 C 28 107, 26 107, 24 107 Z"
-          fill="oklch(0.1 0.02 250)"
+          fill="oklch(0.10 0.02 40)"
           opacity="0.4"
         />
 
@@ -354,7 +354,7 @@ export function AuthIllustration() {
         {/* Ombre de pli droit */}
         <path
           d="M76 107 C 68 80, 58 62, 52 50 C 56 65, 64 85, 70 107 C 72 107, 74 107, 76 107 Z"
-          fill="oklch(0.1 0.02 250)"
+          fill="oklch(0.10 0.02 40)"
           opacity="0.4"
         />
 
@@ -372,7 +372,7 @@ export function AuthIllustration() {
         {/* Cordes avant */}
         <path
           d="M18 108 L2 120 M82 108 L98 120"
-          stroke="oklch(0.3 0.05 250)"
+          stroke="oklch(0.30 0.05 44)"
           strokeWidth="0.4"
         />
         {/* Piquets */}
@@ -381,7 +381,7 @@ export function AuthIllustration() {
           y="118"
           width="1"
           height="4"
-          fill="oklch(0.2 0.02 250)"
+          fill="oklch(0.20 0.03 42)"
           transform="rotate(-30 1 118)"
         />
         <rect
@@ -389,7 +389,7 @@ export function AuthIllustration() {
           y="118"
           width="1"
           height="4"
-          fill="oklch(0.2 0.02 250)"
+          fill="oklch(0.20 0.03 42)"
           transform="rotate(30 98 118)"
         />
       </g>

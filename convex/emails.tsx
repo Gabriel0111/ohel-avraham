@@ -18,9 +18,9 @@ import {
 
 // ─── Brand ────────────────────────────────────────────────────────────────────
 
-const BRAND = "#0284c7"; // sky-600
-const BRAND_LIGHT = "#e0f2fe"; // sky-100
-const AMBER = "#d97706"; // amber-600
+const BRAND = "#b45309"; // amber-700
+const BRAND_LIGHT = "#fef3c7"; // amber-100
+const AMBER = "#d97706"; // amber-600 (guest-side invitations)
 const AMBER_LIGHT = "#fef3c7"; // amber-100
 const TEXT = "#111827";
 const MUTED = "#6b7280";

@@ -125,7 +125,7 @@ export function HostDetailDialog({
             <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
               <a
                 href={`tel:${host.phoneNumber}`}
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-primary transition-colors"
               >
                 {RPNInput.formatPhoneNumberIntl(host.phoneNumber) ||
                   host.phoneNumber}

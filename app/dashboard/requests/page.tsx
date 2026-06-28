@@ -388,7 +388,7 @@ function RequestDetailDialog({
                   <DetailRow icon={Phone} tone="blue" label={t.form.phoneNumber}>
                     <a
                       href={`tel:${p.phoneNumber}`}
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-primary transition-colors"
                     >
                       {RPNInput.formatPhoneNumberIntl(p.phoneNumber) ||
                         p.phoneNumber}

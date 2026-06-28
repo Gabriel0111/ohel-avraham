@@ -11,7 +11,7 @@ export function AuthPage({ children }: PropsWithChildren) {
 
   return (
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
-      <div className="relative hidden h-full flex-col border-r p-10 lg:flex overflow-hidden bg-[oklch(0.141_0.006_248)]">
+      <div className="relative hidden h-full flex-col border-r p-10 lg:flex overflow-hidden bg-[oklch(0.141_0.008_50)]">
         <AuthIllustration />
 
         <Link href="/" className="z-20 relative">

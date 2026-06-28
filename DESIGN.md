@@ -2,20 +2,20 @@
 name: Ohel Avraham
 description: A warm, trustworthy, dignified platform connecting Shabbat hosts and guests in Israel.
 colors:
-  havdalah-violet: "oklch(0.541 0.281 293.009)"
-  havdalah-violet-hover: "oklch(0.606 0.25 292.717)"
-  on-violet: "oklch(0.98 0.005 293)"
-  ring-violet: "oklch(0.702 0.183 293.541)"
-  threshold-white: "oklch(0.985 0.002 280)"
+  candlelight-amber: "oklch(0.541 0.175 46)"
+  candlelight-amber-hover: "oklch(0.606 0.165 46)"
+  on-amber: "oklch(0.985 0.008 75)"
+  ring-amber: "oklch(0.702 0.13 46)"
+  threshold-white: "oklch(0.985 0.003 72)"
   card-white: "oklch(1 0 0)"
-  ink: "oklch(0.145 0.005 285.823)"
-  surface-muted: "oklch(0.96 0.005 286)"
-  on-surface-muted: "oklch(0.21 0.006 285.885)"
-  muted-ink: "oklch(0.5 0.02 286)"
-  hairline: "oklch(0.915 0.006 286)"
+  ink: "oklch(0.145 0.008 50)"
+  surface-muted: "oklch(0.96 0.008 72)"
+  on-surface-muted: "oklch(0.21 0.018 55)"
+  muted-ink: "oklch(0.50 0.022 60)"
+  hairline: "oklch(0.915 0.008 70)"
   destructive: "oklch(0.577 0.245 27.325)"
-  night-bg: "oklch(0.141 0.005 285.823)"
-  night-card: "oklch(0.21 0.006 285.885)"
+  night-bg: "oklch(0.141 0.008 50)"
+  night-card: "oklch(0.21 0.012 50)"
 typography:
   display:
     fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
@@ -66,14 +66,14 @@ spacing:
   lg: "24px"
 components:
   button-primary:
-    backgroundColor: "{colors.havdalah-violet}"
-    textColor: "{colors.on-violet}"
+    backgroundColor: "{colors.candlelight-amber}"
+    textColor: "{colors.on-amber}"
     rounded: "{rounded.lg}"
     padding: "8px 16px"
     height: "36px"
   button-primary-hover:
-    backgroundColor: "{colors.havdalah-violet-hover}"
-    textColor: "{colors.on-violet}"
+    backgroundColor: "{colors.candlelight-amber-hover}"
+    textColor: "{colors.on-amber}"
   button-secondary:
     backgroundColor: "{colors.surface-muted}"
     textColor: "{colors.on-surface-muted}"
@@ -103,12 +103,12 @@ components:
 **Creative North Star: "The Open Door"**
 
 Ohel Avraham is a threshold you cross, not a panel you operate. The whole system answers
-to the moment of arrival — *you are expected; you are safe here.* Surfaces are open and
-unguarded: generous spacing, clear entry points, a calm near-white field with one warm
-violet that signals "this way in." The product carries the quiet dignity of a tradition of
-hospitality (*hachnasat orchim*) without ever performing piety. Warmth is a functional
-requirement, not decoration — it lives strongest in the empty states, the first profile a
-user sees, and the onboarding path.
+to the moment of arrival — *you are expected; you are safe here.* Surfaces are warm and
+open: generous spacing, clear entry points, a near-white field touched by a breath of warmth,
+and one amber that signals "this way in" — the color of candlelight, of an open door at dusk.
+The product carries the quiet dignity of hospitality (*hachnasat orchim*) without performing piety.
+Warmth is a functional requirement, not decoration — it lives strongest in the empty states,
+the first profile a user sees, and the onboarding path.
 
 This is a **product** register: design serves the task. Hosts publish a profile and want to
 feel they're welcoming the right guests safely; guests arrive in an unfamiliar city, often
@@ -125,8 +125,8 @@ no gold-on-navy "holy" clichés, no clip-art Judaica, no heavy-handed Stars of D
 never **corporate or sterile** — cold, gray, impersonal chrome works against the entire premise.
 
 **Key Characteristics:**
-- Open, unguarded layouts with generous spacing — the feeling of being welcomed in
-- One warm violet (Havdalah Violet) as the only accent; everything else is calm neutral
+- Open, warm layouts with generous spacing — the feeling of being welcomed in
+- One candlelight amber as the only accent; everything else is a warm neutral
 - Soft, ambient depth — gentle shadows, never dramatic
 - Plus Jakarta Sans throughout; warmth from a single humanist sans, not display pairing
 - RTL-first: logical properties only, no hard-coded left/right
@@ -134,39 +134,39 @@ never **corporate or sterile** — cold, gray, impersonal chrome works against t
 
 ## 2. Colors
 
-A calm near-white field carrying a single warm violet accent, with a cool-neutral support layer
+A near-white warm field carrying a single amber accent, with a warm-neutral support layer
 for panels and sidebars. Restrained by default — color is meaning, not decoration.
 
 ### Primary
-- **Havdalah Violet** (`oklch(0.541 0.281 293.009)`): The twilight-violet of the sky as Shabbat
-  departs. The system's one accent — primary actions, the current selection, active nav, focus,
-  and trust/verification cues. On dark surfaces it lifts to `oklch(0.606 0.25 292.717)` for
-  contrast. Hover deepens to the same lifted tone. Never used as a decorative fill across panels.
-- **On Violet** (`oklch(0.98 0.005 293)`): Near-white text/icons that sit on Havdalah Violet.
+- **Candlelight Amber** (`oklch(0.541 0.175 46)`): The warm glow of candlelight through a tent
+  doorway. The system's one accent — primary actions, the current selection, active nav, focus,
+  and trust/verification cues. On dark surfaces it lifts to `oklch(0.606 0.165 46)` for
+  contrast. Never used as a decorative fill across panels.
+- **On Amber** (`oklch(0.985 0.008 75)`): Near-white text/icons that sit on Candlelight Amber.
 
 ### Neutral
-- **Threshold White** (`oklch(0.985 0.002 280)`): The body background — the calm field you arrive
-  into. Faintly cool, never warm-cream.
+- **Threshold White** (`oklch(0.985 0.003 72)`): The body background — a near-white field with
+  an imperceptible breath of warmth. Never cream or sand.
 - **Card White** (`oklch(1 0 0)`): Pure white for cards and inputs, lifting one step above the
   Threshold field.
-- **Ink** (`oklch(0.145 0.005 285.823)`): Near-black body and heading text. The default reading color.
-- **Surface Muted** (`oklch(0.96 0.005 286)`): The cool support layer — secondary buttons, ghost
+- **Ink** (`oklch(0.145 0.008 50)`): Near-black body and heading text, warm-tinted. The default reading color.
+- **Surface Muted** (`oklch(0.96 0.008 72)`): The warm support layer — secondary buttons, ghost
   hovers, sidebars, toolbars, chips at rest.
-- **On Surface Muted** (`oklch(0.21 0.006 285.885)`): Text on the muted support layer.
-- **Muted Ink** (`oklch(0.5 0.02 286)`): Secondary/supporting text and placeholders. **Contrast-gated**
+- **On Surface Muted** (`oklch(0.21 0.018 55)`): Text on the muted support layer.
+- **Muted Ink** (`oklch(0.50 0.022 60)`): Secondary/supporting text and placeholders. **Contrast-gated**
   — see the rule below.
-- **Hairline** (`oklch(0.915 0.006 286)`): Borders, dividers, input strokes. A whisper, not a line.
+- **Hairline** (`oklch(0.915 0.008 70)`): Borders, dividers, input strokes. A whisper, not a line.
 
 ### Tertiary
 - **Destructive** (`oklch(0.577 0.245 27.325)`): Warm red for destructive actions and errors only.
   Never decorative.
 
 ### Dark theme
-The dark theme inverts onto **Night BG** (`oklch(0.141 0.005 285.823)`) with **Night Card**
-(`oklch(0.21 0.006 285.885)`) surfaces and the lifted violet primary. Same roles, same restraint.
+The dark theme inverts onto **Night BG** (`oklch(0.141 0.008 50)`) with **Night Card**
+(`oklch(0.21 0.012 50)`) surfaces and the lifted amber primary. Same roles, same restraint.
 
 ### Named Rules
-**The One Welcome Rule.** Havdalah Violet appears on ≤10% of any screen. It marks the way in —
+**The One Welcome Rule.** Candlelight Amber appears on ≤10% of any screen. It marks the way in —
 the primary action, the active item, the verified badge — and nowhere else. Its rarity is what
 makes it read as a welcome rather than chrome.
 
@@ -175,8 +175,8 @@ text and placeholders only, and must still clear **4.5:1** against the surface i
 drop body copy to Muted Ink "for elegance" — the most common way this UI would start to feel hard
 to read.
 
-**The No-Cream Rule.** The background is faintly cool Threshold White, never warm cream, sand, or
-parchment. Warmth comes from the violet, the type, and the copy — never from a beige body field.
+**The No-Cream Rule.** The background is near-achromatic Threshold White (C ≈ 0.003). Warmth
+comes from the amber accent, the type, and the copy — the body field must never read as beige.
 
 ## 3. Typography
 
@@ -230,8 +230,8 @@ hover, focus-visible, active, disabled, and (where it loads) loading and error s
 
 ### Buttons
 - **Shape:** Gently curved (`rounded-lg`, 10px); small/large variants ease to `rounded-md` (8px).
-- **Primary:** Havdalah Violet fill with On-Violet text; default height 36px (`h-9`), padding 8px 16px.
-- **Hover / Focus:** Hover deepens the fill (`primary/90`); focus-visible shows a 3px violet ring
+- **Primary:** Candlelight Amber fill with On-Amber text; default height 36px (`h-9`), padding 8px 16px.
+- **Hover / Focus:** Hover deepens the fill (`primary/90`); focus-visible shows a 3px amber ring
   (`ring-ring/50`) plus border shift. Transitions ~150–200ms.
 - **Secondary:** Surface Muted fill, On-Surface-Muted text, hover to `secondary/80`.
 - **Outline / Ghost:** Outline is a Hairline border on the background with a Whisper shadow; Ghost is
@@ -247,7 +247,7 @@ hover, focus-visible, active, disabled, and (where it loads) loading and error s
 ### Inputs / Fields
 - **Style:** Card White (transparent over light surfaces) with a Hairline border, `rounded-md` (8px),
   36px tall (`h-9`), padding 4px 12px, plus a Whisper shadow.
-- **Focus:** Border shifts to violet (`ring`) with a 3px violet ring (`ring-ring/50`). Calm, not glowy.
+- **Focus:** Border shifts to amber (`ring`) with a 3px amber ring (`ring-ring/50`). Calm, not glowy.
 - **Error / Disabled:** Error shows a destructive border + ring (`aria-invalid`). Disabled drops to 50%
   opacity with `cursor-not-allowed`. Placeholders use Muted Ink and must clear the contrast floor.
 
@@ -258,13 +258,13 @@ hover, focus-visible, active, disabled, and (where it loads) loading and error s
   RTL — directional icons and motion flip with the layout.
 
 ### Verification Cue (signature)
-Trust is visible but never a checkpoint. A verified host/guest carries a small Havdalah Violet badge or
+Trust is visible but never a checkpoint. A verified host/guest carries a small Candlelight Amber badge or
 check beside their name — quiet, legible, reassuring. It reads as a welcome credential, not a security gate.
 
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** keep Havdalah Violet to ≤10% of any screen — primary action, active item, focus, verification.
+- **Do** keep Candlelight Amber to ≤10% of any screen — primary action, active item, focus, verification.
 - **Do** run body text on Ink and verify every text/placeholder color clears **4.5:1** (large text 3:1).
 - **Do** use logical properties (`margin-inline`, `padding-inline`, `start`/`end`) everywhere — Hebrew
   RTL is a hard requirement, not an afterthought. Test every layout mirrored.

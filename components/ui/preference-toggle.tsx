@@ -34,9 +34,9 @@ const COLORS: Record<
       "bg-rose-500/10 text-rose-600 ring-rose-500/15 dark:text-rose-300",
   },
   blue: {
-    on: "bg-blue-500/15 text-blue-600 ring-blue-500/30 dark:text-blue-300",
-    off: "bg-muted/40 text-muted-foreground ring-border/60 hover:bg-blue-500/10 hover:text-blue-600 hover:ring-blue-500/20 dark:hover:text-blue-300",
-    badge: "bg-blue-500/10 text-blue-600 ring-blue-500/15 dark:text-blue-300",
+    on: "bg-primary/15 text-primary ring-primary/30",
+    off: "bg-muted/40 text-muted-foreground ring-border/60 hover:bg-primary/10 hover:text-primary hover:ring-primary/20",
+    badge: "bg-primary/10 text-primary ring-primary/15",
   },
 };
 
