@@ -47,9 +47,9 @@ function Stepper({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2">
-      <span className="text-sm font-medium">{label}</span>
-      <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-border/60 px-3 py-2">
+      <span className="truncate text-sm font-medium">{label}</span>
+      <div className="flex shrink-0 items-center gap-2">
         <Button
           type="button"
           variant="outline"
@@ -180,7 +180,9 @@ export function RequestDialog({
             {/* Party size */}
             <Field>
               <FieldLabel>{t.requests.partySize}</FieldLabel>
-              <div className="grid grid-cols-2 gap-3">
+              {/* Stacked on narrow phones — two side-by-side pills don't fit
+                  the label + stepper controls under ~400px. */}
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
                 <Stepper
                   label={t.requests.adults}
                   value={adults}

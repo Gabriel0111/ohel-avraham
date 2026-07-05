@@ -48,5 +48,7 @@ export default defineSchema({
     .index("by_host", ["hostAuthUserId"])
     .index("by_host_status", ["hostAuthUserId", "status"])
     .index("by_guest_status", ["guestAuthUserId", "status"])
-    .index("by_guest_host", ["guestAuthUserId", "hostAuthUserId"]),
+    .index("by_guest_host", ["guestAuthUserId", "hostAuthUserId"])
+    // Latest accepted match for the public hero teaser, ordered by response time.
+    .index("by_status_respondedAt", ["status", "respondedAt"]),
 });

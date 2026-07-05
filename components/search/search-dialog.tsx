@@ -254,9 +254,6 @@ function HostSearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 {selectedCity === ALL_CITIES
                   ? t.search.allCities
                   : selectedCity}
-                <span className="text-primary/60">
-                  · {t.search.changeCity}
-                </span>
               </button>
               <LanguageSelect
                 value={selectedLanguages}
@@ -335,10 +332,13 @@ function HostSearchDialog({ open, onOpenChange }: SearchDialogProps) {
               </div>
             </ScrollArea>
           ) : (
-            /* Step 2 — host list + map for the chosen city */
+            /* Step 2 — host list + map for the chosen city. Mobile: compact
+               map pinned on top (order-first) + the list scrolling under it —
+               without a height bound of its own the list used to grow past
+               the dialog and clip both itself and the map out of reach. */
             <>
               <div className="flex flex-1 min-h-0 flex-col sm:flex-row">
-                <ScrollArea className="w-full sm:w-[38%] shrink-0">
+                <ScrollArea className="flex-1 min-h-0 w-full sm:flex-none sm:min-h-full sm:w-[38%]">
                   <div className="p-4 flex flex-col gap-2">
                     {filteredHosts.length === 0 ? (
                       <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-3 text-muted-foreground">
@@ -362,7 +362,7 @@ function HostSearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
                 <Separator orientation="vertical" className="hidden sm:block" />
 
-                <div className="flex-1 min-h-[250px] sm:min-h-0 p-4">
+                <div className="order-first h-[220px] shrink-0 p-4 pb-2 sm:order-none sm:h-auto sm:min-h-0 sm:flex-1 sm:pb-4">
                   <div className="size-full rounded-xl overflow-hidden border border-border/60">
                     <HostMapGoogle
                       hosts={filteredHosts}

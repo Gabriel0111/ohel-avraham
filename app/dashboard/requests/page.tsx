@@ -23,7 +23,7 @@ import {
   SectorBadge,
 } from "@/components/ui/enum-badges";
 import { toast } from "sonner";
-import * as RPNInput from "react-phone-number-input";
+import { formatPhone } from "@/lib/format-phone";
 import {
   CalendarDays,
   Users,
@@ -43,6 +43,7 @@ import {
   CalendarOff,
   ChevronRight,
 } from "lucide-react";
+import { GuestVisitHistory } from "@/components/requests/guest-visit-history";
 import type { FunctionReturnType } from "convex/server";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
@@ -341,6 +342,12 @@ function RequestDetailDialog({
           />
           <MessageBlock message={r.message} />
 
+          {/* Reference check: the guest's past stays, with former hosts'
+              contact details. Whenever the counterparty is a guest, the viewer
+              is the host side of the thread — incoming request or sent
+              invitation alike. */}
+          {isGuest && <GuestVisitHistory requestId={r._id} />}
+
           {/* Contact / details — revealed once accepted, withheld once past */}
           {r.status === "accepted" &&
             (r.isExpired ? (
@@ -390,8 +397,7 @@ function RequestDetailDialog({
                       href={`tel:${p.phoneNumber}`}
                       className="hover:text-primary transition-colors"
                     >
-                      {RPNInput.formatPhoneNumberIntl(p.phoneNumber) ||
-                        p.phoneNumber}
+                      {formatPhone(p.phoneNumber)}
                     </a>
                   </DetailRow>
                 )}

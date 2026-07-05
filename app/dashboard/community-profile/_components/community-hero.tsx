@@ -125,11 +125,6 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
               {initials(user.name)}
             </AvatarFallback>
           </Avatar>
-          {user.isVerified && (
-            <span className="absolute -bottom-1 -end-1 flex size-6 items-center justify-center rounded-full bg-green-500 ring-2 ring-background shadow-sm">
-              <CheckCircle2 className="size-3.5 text-white" />
-            </span>
-          )}
         </div>
 
         {/* Identity + match dimensions */}
@@ -163,7 +158,7 @@ export function CommunityHero({ user, host, guest }: CommunityHeroProps) {
             {guest && <GenderBadge value={guest.gender} />}
             {host?.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
-                {t.people.access}
+                {t.hostProfile.stepFreeAccess}
               </EnumPill>
             )}
             {host?.likesSinging && (

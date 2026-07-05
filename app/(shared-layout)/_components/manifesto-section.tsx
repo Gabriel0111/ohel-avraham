@@ -12,7 +12,9 @@ export function ManifestoSection() {
   const reduce = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden border-y border-border">
+    // A single-statement viewport: the quote gets room to breathe and sit
+    // centred (~60% of the screen), without forcing a full fold of dead space.
+    <section className="relative flex min-h-[60svh] flex-col justify-center overflow-hidden border-y border-border">
       {/* Warm centred glow */}
       <div
         aria-hidden

@@ -173,7 +173,7 @@ const HostForm = () => {
                     className="text-sm cursor-pointer leading-tight"
                   >
                     <Accessibility className="size-3.5 inline mr-1.5 text-muted-foreground" />
-                    {t.form.disabilityAccess}
+                    {t.hostProfile.stepFreeAccess}
                   </Label>
                   <Switch
                     id="disability-switch"

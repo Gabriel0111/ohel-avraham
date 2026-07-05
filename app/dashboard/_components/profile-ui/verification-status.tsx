@@ -94,7 +94,6 @@ export const VerificationStatus = ({
           </p>
           {isVerified && verifiedBy && verifiedDate ? (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <CheckCircle2 className="size-3 text-green-500 shrink-0" />
               {t.profile.verifiedByLabel}{" "}
               <span className="font-medium text-foreground">{verifiedBy}</span>
               {" · "}

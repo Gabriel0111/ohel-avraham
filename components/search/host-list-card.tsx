@@ -116,7 +116,7 @@ export function HostListCard({
             <EthnicityBadge value={host.ethnicity} />
             {host.hasDisabilityAccess && (
               <EnumPill color="green" icon={Accessibility}>
-                {t.people.access}
+                {t.hostProfile.stepFreeAccess}
               </EnumPill>
             )}
           </div>

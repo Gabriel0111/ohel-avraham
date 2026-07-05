@@ -7,6 +7,7 @@ import type { Icon } from "@tabler/icons-react";
 import { useAuth } from "@/app/ConvexClientProvider";
 import { RoleType } from "@/convex/enums";
 import { canAccess } from "@/convex/helpers/canAccessRole";
+import { useSidebar } from "@/components/ui/sidebar";
 
 type SidebarNavProps = {
   items: {
@@ -21,6 +22,7 @@ type SidebarNavProps = {
 export function SidebarNav({ items }: SidebarNavProps) {
   const { user } = useAuth();
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   const filteredItems = items.filter((item) => {
     if (!item.minRole) return true;
@@ -39,6 +41,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
           <Link
             key={item.url}
             href={item.url}
+            onClick={() => setOpenMobile(false)}
             className={cn(
               "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
               "transition-all duration-200 ease-in-out",
