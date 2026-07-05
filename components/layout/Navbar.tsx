@@ -27,7 +27,12 @@ import { navigationData } from "@/lib/navigation-data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
-import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
+import {
+  Authenticated,
+  AuthLoading,
+  Unauthenticated,
+  useQuery,
+} from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
@@ -35,7 +40,9 @@ import { Logo } from "@/components/icons/logo";
 import { toast } from "sonner";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
+  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -91,9 +98,10 @@ const Navbar = () => {
       )}
     >
       <nav className="relative mx-auto flex h-16 max-w-7xl items-center w-full px-4 md:px-8 lg:px-12">
-        {/* Logo — left */}
+        {/* Logo — left; a notch smaller on phones so it never squeezes the
+            control cluster */}
         <Link href="/" className="shrink-0">
-          <Logo />
+          <Logo className="text-lg min-[380px]:text-xl md:text-2xl" />
         </Link>
 
         {/* Navigation — truly centered via absolute positioning */}
@@ -119,18 +127,19 @@ const Navbar = () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Right side controls — ms-auto pour gérer LTR et RTL */}
-        <div className="ms-auto flex items-center gap-1.5">
+        {/* Right side controls — ms-auto pour gérer LTR et RTL. On phones the
+            cluster collapses to uniform square icon buttons. */}
+        <div className="ms-auto flex items-center gap-5 md:gap-1.5">
           <SearchTriggerButton />
-          <AnimatedThemeToggler />
+          {/* Theme + language live inside the mobile menu sheet on phones */}
+          <AnimatedThemeToggler className="size-9 px-0 max-md:hidden" />
 
-          {/* Language selector — DropdownMenu for full styling control */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 gap-1.5 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="hidden h-8 gap-1.5 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground md:inline-flex"
               >
                 <span>{currentLang.flag}</span>
                 <span>{currentLang.label}</span>
@@ -221,20 +230,21 @@ const Navbar = () => {
                   <span className="sr-only">{t.nav.menu}</span>
                 </Button>
               </SheetTrigger>
-              <SheetTitle className="hidden">
-                <p>{t.nav.menu}</p>
-              </SheetTitle>
-              <SheetContent side="right" className="w-64 p-5">
-                <nav className="flex flex-col gap-3 mt-8">
+              <SheetContent side="right" className="w-72 p-5">
+                <SheetHeader className="p-0">
+                  <SheetTitle className="sr-only">{t.nav.menu}</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-1 mt-6 overflow-y-auto">
                   {navigationData.map((item) => {
                     const link = (
-                      <Link
-                        key={item.titleKey}
-                        href={item.href}
-                        className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors py-1"
-                      >
-                        {t.nav[item.titleKey]}
-                      </Link>
+                      <SheetClose asChild key={item.titleKey}>
+                        <Link
+                          href={item.href}
+                          className="rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        >
+                          {t.nav[item.titleKey]}
+                        </Link>
+                      </SheetClose>
                     );
                     return item.requiresAuth ? (
                       <Authenticated key={item.titleKey}>{link}</Authenticated>
@@ -242,20 +252,44 @@ const Navbar = () => {
                       link
                     );
                   })}
-                  <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
-                    <Unauthenticated>
-                      <>
+                  <Unauthenticated>
+                    <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
+                      <SheetClose asChild>
                         <Link
                           href="/login"
                           className={buttonVariants({ variant: "outline" })}
                         >
                           {t.nav.login}
                         </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
                         <Link href="/sign-up" className={buttonVariants()}>
                           {t.nav.signup}
                         </Link>
-                      </>
-                    </Unauthenticated>
+                      </SheetClose>
+                    </div>
+                  </Unauthenticated>
+
+                  {/* Language switch + theme toggle — these controls are
+                      hidden from the header bar on phones and live here */}
+                  <div className="mt-4 pt-4 border-t border-border flex items-center gap-1.5">
+                    {LANGUAGES.map((l) => (
+                      <Button
+                        key={l.value}
+                        variant={lang === l.value ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setLang(l.value)}
+                        className={cn(
+                          "flex-1 gap-1.5 text-xs font-medium",
+                          lang === l.value && "text-primary font-semibold",
+                        )}
+                      >
+                        <span>{l.flag}</span>
+                        <span>{l.label}</span>
+                      </Button>
+                    ))}
+                    <div className="h-5 w-px bg-border" />
+                    <AnimatedThemeToggler className="size-8 px-0" />
                   </div>
                 </nav>
               </SheetContent>

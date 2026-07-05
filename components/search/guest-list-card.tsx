@@ -20,6 +20,8 @@ export interface PublicGuest {
   name?: string;
   image?: string;
   region: string;
+  lat?: number;
+  lng?: number;
   sector: string;
   ethnicity: string;
   gender: string;

@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { RequestStatusV } from "./validators/request";
 import type { Doc } from "./_generated/dataModel";
+import { extractLocation } from "./hosts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -429,6 +430,202 @@ export const getMyOutgoingRequests = query({
     ].sort((a, b) => b.createdAt - a.createdAt);
 
     return Promise.all(outgoing.map((r) => enrichRequest(ctx, r, me)));
+  },
+});
+
+// ─── Guest visit history (reference check for hosts) ────────────────────────
+// A guest's past accepted stays ("chez qui il est allé") with each former
+// host's contact details, so a host can take references BEFORE accepting a
+// request or sending an invitation.
+
+const VisitHistoryReturns = v.array(
+  v.object({
+    requestId: v.id("requests"),
+    date: v.number(),
+    hostName: v.optional(v.string()),
+    hostImage: v.optional(v.string()),
+    hostEmail: v.optional(v.string()),
+    hostPhoneNumber: v.optional(v.string()),
+    hostSector: v.optional(v.string()),
+    hostKashrout: v.optional(v.string()),
+  }),
+);
+
+// Completed visits only (accepted AND the date has passed), most recent
+// first, capped. Includes stays at the viewer's own table — the counter must
+// reflect the guest's full track record.
+async function buildVisitHistory(ctx: QueryCtx, guestAuthUserId: string) {
+  const accepted = await ctx.db
+    .query("requests")
+    .withIndex("by_guest_status", (q) =>
+      q.eq("guestAuthUserId", guestAuthUserId).eq("status", "accepted"),
+    )
+    .collect();
+
+  const now = Date.now();
+  const visits = accepted
+    .filter((r) => r.date < now)
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 20);
+
+  return Promise.all(
+    visits.map(async (r) => {
+      const [hostUser, host] = await Promise.all([
+        getUserByAuthId(ctx, r.hostAuthUserId),
+        ctx.db
+          .query("hosts")
+          .withIndex("by_authUserId", (q) =>
+            q.eq("authUserId", r.hostAuthUserId),
+          )
+          .unique(),
+      ]);
+      return {
+        requestId: r._id,
+        date: r.date,
+        hostName: hostUser?.name,
+        hostImage: hostUser?.image,
+        hostEmail: hostUser?.email,
+        hostPhoneNumber: host?.phoneNumber,
+        hostSector: host?.sector as string | undefined,
+        hostKashrout: host?.kashrout as string | undefined,
+      };
+    }),
+  );
+}
+
+// Via an existing thread: only the host side of that request may look.
+export const getGuestVisitHistory = query({
+  args: { requestId: v.id("requests") },
+  returns: VisitHistoryReturns,
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
+
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new ConvexError({ code: "requestNotFound" });
+    // Only the host of this thread may check this guest's references.
+    if (request.hostAuthUserId !== identity.subject) {
+      throw new ConvexError({ code: "forbidden" });
+    }
+
+    return buildVisitHistory(ctx, request.guestAuthUserId);
+  },
+});
+
+// Via the guest search, before any thread exists: reserved for admin-verified
+// hosts — the same bar as being allowed to invite at all.
+export const getGuestVisitHistoryByGuestId = query({
+  args: { guestId: v.id("guests") },
+  returns: VisitHistoryReturns,
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError({ code: "unauthorized" });
+
+    const viewer = await getUserByAuthId(ctx, identity.subject);
+    const isHost = viewer?.role === "host" || viewer?.role === "guest:host";
+    if (!viewer?.isVerified || !isHost) {
+      throw new ConvexError({ code: "forbidden" });
+    }
+
+    const guest = await ctx.db.get(args.guestId);
+    if (!guest) throw new ConvexError({ code: "guestNotFound" });
+
+    return buildVisitHistory(ctx, guest.authUserId);
+  },
+});
+
+// ─── Public latest match (landing hero) ─────────────────────────────────────
+
+// "First-name L." — enough to feel real on the public landing page without
+// exposing full identities to signed-out visitors.
+function publicName(name?: string) {
+  if (!name) return undefined;
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
+}
+
+function initialsOf(name?: string) {
+  if (!name) return "?";
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+// The single most recently ACCEPTED invitation/request, sanitized for the
+// public hero illustration: abbreviated names, city/region only (never a
+// precise address), and the parties' matching traits. Null when no match has
+// been accepted yet (the hero falls back to a demo composition).
+export const getLatestAcceptedMatch = query({
+  args: {},
+  returns: v.union(
+    v.null(),
+    v.object({
+      matchId: v.id("requests"),
+      matchedAt: v.number(),
+      host: v.object({
+        name: v.optional(v.string()),
+        initials: v.string(),
+        city: v.optional(v.string()),
+        kashrout: v.optional(v.string()),
+        ethnicity: v.optional(v.string()),
+      }),
+      guest: v.object({
+        name: v.optional(v.string()),
+        initials: v.string(),
+        region: v.optional(v.string()),
+        sector: v.optional(v.string()),
+        ethnicity: v.optional(v.string()),
+      }),
+    }),
+  ),
+  handler: async (ctx) => {
+    const latest = await ctx.db
+      .query("requests")
+      .withIndex("by_status_respondedAt", (q) => q.eq("status", "accepted"))
+      .order("desc")
+      .first();
+    if (!latest) return null;
+
+    const [hostUser, guestUser, host, guest] = await Promise.all([
+      getUserByAuthId(ctx, latest.hostAuthUserId),
+      getUserByAuthId(ctx, latest.guestAuthUserId),
+      ctx.db
+        .query("hosts")
+        .withIndex("by_authUserId", (q) =>
+          q.eq("authUserId", latest.hostAuthUserId),
+        )
+        .unique(),
+      ctx.db
+        .query("guests")
+        .withIndex("by_authUserId", (q) =>
+          q.eq("authUserId", latest.guestAuthUserId),
+        )
+        .unique(),
+    ]);
+
+    return {
+      matchId: latest._id,
+      matchedAt: latest.respondedAt ?? latest.createdAt,
+      host: {
+        name: publicName(hostUser?.name),
+        initials: initialsOf(hostUser?.name),
+        city: host ? extractLocation(host.address).city : undefined,
+        kashrout: host?.kashrout as string | undefined,
+        ethnicity: host?.ethnicity as string | undefined,
+      },
+      guest: {
+        name: publicName(guestUser?.name),
+        initials: initialsOf(guestUser?.name),
+        region: guest ? extractLocation(guest.region).city : undefined,
+        sector: guest?.sector as string | undefined,
+        ethnicity: guest?.ethnicity as string | undefined,
+      },
+    };
   },
 });
 

@@ -14,6 +14,8 @@ import { api } from "@/convex/_generated/api";
 import { useCallback, useMemo, useState } from "react";
 import { GuestListCard, type PublicGuest } from "./guest-list-card";
 import { InviteDialog } from "@/components/requests/invite-dialog";
+import { GuestVisitHistoryButton } from "@/components/requests/guest-visit-history";
+import type { Id } from "@/convex/_generated/dataModel";
 import {
   Search,
   MapPin,
@@ -189,7 +191,6 @@ export function GuestSearchDialog({
                 {selectedRegion === ALL_REGIONS
                   ? t.search.allRegions
                   : selectedRegion}
-                <span className="text-primary/60">· {t.search.changeCity}</span>
               </button>
               <LanguageSelect
                 value={selectedLanguages}
@@ -302,14 +303,22 @@ export function GuestSearchDialog({
                   </p>
                 </div>
                 {isVerified ? (
-                  <Button
-                    size="sm"
-                    className="gap-2 shrink-0"
-                    onClick={() => setInviteGuest(selectedGuest)}
-                  >
-                    <Send className="size-4" />
-                    {t.search.inviteAction}
-                  </Button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Reference check before inviting: past visits count +
+                        former hosts' contacts on click. */}
+                    <GuestVisitHistoryButton
+                      guestId={selectedGuest._id as Id<"guests">}
+                      guestName={selectedGuest.name}
+                    />
+                    <Button
+                      size="sm"
+                      className="h-8 gap-2 shrink-0"
+                      onClick={() => setInviteGuest(selectedGuest)}
+                    >
+                      <Send className="size-4" />
+                      {t.search.inviteAction}
+                    </Button>
+                  </div>
                 ) : (
                   <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground max-w-[55%] text-end">
                     <ShieldAlert className="size-4 shrink-0 text-amber-500" />

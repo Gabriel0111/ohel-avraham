@@ -352,7 +352,9 @@ export function HostsTable({
                       </TableCell>
                       <TableCell className="hidden lg:table-cell py-3">
                         {host.hasDisabilityAccess ? (
-                          <Accessibility className="size-4 text-green-600" />
+                          <EnumPill color="green" icon={Accessibility}>
+                            {t.hostProfile.stepFreeAccess}
+                          </EnumPill>
                         ) : (
                           <span className="text-xs text-muted-foreground/40">
                             —

@@ -18,6 +18,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/icons/logo";
 import { useAuth } from "@/app/ConvexClientProvider";
@@ -39,6 +40,7 @@ interface NavItem {
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
   const { t, lang } = useT();
+  const { setOpenMobile } = useSidebar();
   const pendingCount = useQuery(api.requests.getIncomingPendingCount);
 
   const items: NavItem[] = [
@@ -71,7 +73,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem className="px-6 pt-2">
-            <Link href="/">
+            <Link href="/" onClick={() => setOpenMobile(false)}>
               <Logo />
             </Link>
           </SidebarMenuItem>

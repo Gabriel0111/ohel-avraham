@@ -7,6 +7,7 @@ import { attachUsers } from "./helpers/attachUsers";
 
 export const getAllHosts = query({
   args: {},
+  returns: v.union(v.null(), v.array(v.any())),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
@@ -23,6 +24,7 @@ export const createHost = mutation({
   args: {
     data: v.object(HostFields),
   },
+  returns: v.object({ success: v.boolean(), id: v.id("hosts") }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
@@ -44,6 +46,10 @@ export const upsertHost = mutation({
   args: {
     data: v.object(HostFields),
   },
+  returns: v.union(
+    v.object({ updated: v.boolean() }),
+    v.object({ created: v.boolean(), id: v.id("hosts") }),
+  ),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
@@ -71,7 +77,8 @@ export const upsertHost = mutation({
 
 // Parse a Google `formattedAddress` into city + neighborhood.
 // Format is typically: "<street> <number>, [neighborhood,] <city>[, postal], <country>"
-function extractLocation(address: string): {
+// Exported for reuse (e.g. the public latest-match teaser in requests.ts).
+export function extractLocation(address: string): {
   city: string;
   neighborhood?: string;
   street?: string;
@@ -177,6 +184,7 @@ async function toPublicHost(ctx: QueryCtx, host: HostDoc, redact: boolean) {
 // `search_address` full-text index instead of shipping the whole table.
 export const searchPublicHosts = query({
   args: { query: v.optional(v.string()) },
+  returns: v.array(v.any()),
   handler: async (ctx, { query }) => {
     const trimmed = query?.trim();
     const identity = await ctx.auth.getUserIdentity();
@@ -266,6 +274,7 @@ export const setHostAvailability = mutation({
 
 export const deleteHost = mutation({
   args: {},
+  returns: v.object({ deleted: v.boolean() }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });

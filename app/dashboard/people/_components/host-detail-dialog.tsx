@@ -20,7 +20,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
-import * as RPNInput from "react-phone-number-input";
+import { formatPhone } from "@/lib/format-phone";
 import { type Id } from "@/convex/_generated/dataModel";
 import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { EnumPill } from "@/components/ui/enum-pill";
@@ -79,7 +79,7 @@ export function HostDetailDialog({
                   <EthnicityBadge value={host.ethnicity} />
                   {host.hasDisabilityAccess && (
                     <EnumPill color="green" icon={Accessibility}>
-                      {t.people.access}
+                      {t.hostProfile.stepFreeAccess}
                     </EnumPill>
                   )}
                   {host.likesSinging && (
@@ -127,8 +127,7 @@ export function HostDetailDialog({
                 href={`tel:${host.phoneNumber}`}
                 className="hover:text-primary transition-colors"
               >
-                {RPNInput.formatPhoneNumberIntl(host.phoneNumber) ||
-                  host.phoneNumber}
+                {formatPhone(host.phoneNumber)}
               </a>
             </DetailRow>
             {host.email && (

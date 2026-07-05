@@ -32,7 +32,7 @@ export function NavUser({
   user: Doc<"users"> | null | undefined;
   pendingCount?: number;
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
   const router = useRouter();
   const hasNewRequest = pendingCount > 0;
 
@@ -112,7 +112,10 @@ export function NavUser({
             sideOffset={8}
           >
             <DropdownMenuItem
-              onClick={() => router.push("/dashboard/profile")}
+              onClick={() => {
+                setOpenMobile(false);
+                router.push("/dashboard/profile");
+              }}
               className="cursor-pointer gap-3 rounded-lg"
             >
               <IconUserCircle className="size-4 text-muted-foreground" />

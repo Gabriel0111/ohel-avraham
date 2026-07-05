@@ -119,7 +119,11 @@ export function GuestProfileCard({
                 <div className="w-full">
                   <AutocompleteAddress
                     defaultValue={field.value}
-                    onPlaceSelect={(place) => field.onChange(place.address)}
+                    onPlaceSelect={(place) => {
+                      field.onChange(place.address);
+                      form.setValue("lat", place.lat, { shouldValidate: true });
+                      form.setValue("lng", place.lng, { shouldValidate: true });
+                    }}
                   />
                 </div>
               )}

@@ -40,7 +40,6 @@ export const translations = {
       address: "Address",
       floor: "Floor",
       entrance: "Entrance",
-      disabilityAccess: "Disability Access",
       likesSinging: "Enjoys singing",
       likesDivreiTorah: "Enjoys Divrei Torah",
       kashrout: "Kashrout",
@@ -113,7 +112,6 @@ export const translations = {
       chooseCityHint: "Choose a city to see its hosts",
       cityPlaceholder: "Filter cities...",
       allCities: "All cities",
-      changeCity: "change",
       signIn: "Sign in",
       filterByLanguage: "Filter by language",
       // Host → guest search mode
@@ -186,6 +184,13 @@ export const translations = {
       invitedYouLabel: "Invites you to their table",
       youRequestedLabel: "You asked to be hosted",
       youInvitedLabel: "You invited to your table",
+      // Guest visit history (reference check for hosts)
+      visitHistory: "Visit history",
+      visitHistoryShort: "History",
+      visitHistoryHint:
+        "Past hosts of this guest — feel free to contact them for references.",
+      visitHistoryEmpty: "No past visits yet — this would be their first stay.",
+      hostedOn: "Hosted on",
     },
     hero: {
       badge: "Bringing the spirit of Abraham's hospitality to life",
@@ -197,7 +202,7 @@ export const translations = {
       getStarted: "Get Started",
       learnMore: "Learn More",
       illustration: {
-        latestMatch: "Latest match",
+        latestMatch: "Latest accepted invitation",
         hostLabel: "Host",
         guestLabel: "Guest",
         invitation: "Invitation!",
@@ -457,7 +462,7 @@ export const translations = {
       accessibilityDesc:
         "Does your home have step-free access for wheelchairs?",
       stepFreeAccess: "Step-free access",
-      noSpecializedAccess: "No disability access",
+      noSpecializedAccess: "No step-free access",
       preferences: "At the table",
       preferencesDesc: "The atmosphere you like to share with your guests.",
       notesDesc: "Any specific details your guests should know beforehand.",
@@ -694,7 +699,6 @@ export const translations = {
       address: "Adresse",
       floor: "Étage",
       entrance: "Entrée",
-      disabilityAccess: "Accès handicapé",
       likesSinging: "Aime chanter",
       likesDivreiTorah: "Aime les Divré Torah",
       kashrout: "Cacherout",
@@ -771,7 +775,6 @@ export const translations = {
       chooseCityHint: "Choisissez une ville pour voir ses hôtes",
       cityPlaceholder: "Filtrer les villes...",
       allCities: "Toutes les villes",
-      changeCity: "changer",
       signIn: "Se connecter",
       filterByLanguage: "Filtrer par langue",
       // Mode recherche hôte → invité
@@ -844,6 +847,14 @@ export const translations = {
       invitedYouLabel: "Vous invite à sa table",
       youRequestedLabel: "Vous avez demandé à être reçu(e)",
       youInvitedLabel: "Vous avez invité à votre table",
+      // Historique des visites de l'invité (prise de références pour l'hôte)
+      visitHistory: "Historique des visites",
+      visitHistoryShort: "Historique",
+      visitHistoryHint:
+        "Anciens hôtes de cet invité — n'hésitez pas à les contacter pour des références.",
+      visitHistoryEmpty:
+        "Aucune visite passée — ce serait sa première fois.",
+      hostedOn: "Reçu(e) le",
     },
     hero: {
       badge: "Faire vivre l'esprit d'hospitalité d'Avraham",
@@ -855,7 +866,7 @@ export const translations = {
       getStarted: "Commencer",
       learnMore: "En savoir plus",
       illustration: {
-        latestMatch: "Dernier Chidoukh",
+        latestMatch: "Dernière invitation acceptée",
         hostLabel: "Hôte",
         guestLabel: "Invité",
         invitation: "Invitation !",
@@ -1125,7 +1136,7 @@ export const translations = {
       accessibilityDesc:
         "Votre domicile dispose-t-il d'un accès sans marches pour les fauteuils roulants ?",
       stepFreeAccess: "Accès sans marches",
-      noSpecializedAccess: "Pas d'accès PMR",
+      noSpecializedAccess: "Pas d'accès sans marches",
       preferences: "À la table",
       preferencesDesc: "L'ambiance que vous aimez partager avec vos invités.",
       notesDesc:
@@ -1371,7 +1382,6 @@ export const translations = {
       address: "כתובת",
       floor: "קומה",
       entrance: "כניסה",
-      disabilityAccess: "נגישות לנכים",
       likesSinging: "אוהב לשיר",
       likesDivreiTorah: "אוהב דברי תורה",
       kashrout: "כשרות",
@@ -1442,7 +1452,6 @@ export const translations = {
       chooseCityHint: "בחר עיר כדי לראות את המארחים בה",
       cityPlaceholder: "סינון ערים...",
       allCities: "כל הערים",
-      changeCity: "שינוי",
       signIn: "התחבר",
       filterByLanguage: "סינון לפי שפה",
       // מצב חיפוש מארח → אורח
@@ -1513,6 +1522,13 @@ export const translations = {
       invitedYouLabel: "מזמין/ה אותך לשולחנו",
       youRequestedLabel: "ביקשת להתארח",
       youInvitedLabel: "הזמנת לשולחן שלך",
+      // היסטוריית אירוחים של האורח (בדיקת המלצות למארח)
+      visitHistory: "היסטוריית אירוחים",
+      visitHistoryShort: "היסטוריה",
+      visitHistoryHint:
+        "מארחים קודמים של אורח זה — ניתן לפנות אליהם לקבלת המלצות.",
+      visitHistoryEmpty: "אין אירוחים קודמים — זה יהיה האירוח הראשון.",
+      hostedOn: "התארח/ה בתאריך",
     },
     hero: {
       badge: "מביאים לחיים את רוח האירוח של אברהם",
@@ -1524,7 +1540,7 @@ export const translations = {
       getStarted: "בואו נתחיל",
       learnMore: "קרא עוד",
       illustration: {
-        latestMatch: "השידוך האחרון",
+        latestMatch: "ההזמנה האחרונה שאושרה",
         hostLabel: "מארח",
         guestLabel: "אורח",
         invitation: "הזמנה!",
@@ -1774,7 +1790,7 @@ export const translations = {
       accessibility: "נגישות",
       accessibilityDesc: "האם לביתך יש גישה ללא מדרגות לכיסאות גלגלים?",
       stepFreeAccess: "גישה ללא מדרגות",
-      noSpecializedAccess: "ללא גישה לנכים",
+      noSpecializedAccess: "אין גישה ללא מדרגות",
       preferences: "סביב השולחן",
       preferencesDesc: "האווירה שאתה אוהב לחלוק עם האורחים שלך.",
       notesDesc: "כל פרטים ספציפיים שהאורחים שלך צריכים לדעת מראש.",

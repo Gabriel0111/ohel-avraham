@@ -35,7 +35,11 @@ import { HostAvailability } from "./host-availability";
 import { SettingsRow } from "../../_components/profile-ui/settings-row";
 import { ViewValue } from "@/app/dashboard/_components/profile-ui/view-value";
 import { EditButton } from "@/app/dashboard/_components/profile-ui/edit-button";
-import { MapLink } from "@/app/dashboard/_components/profile-ui/map-link";
+import {
+  ContactLink,
+  MapLink,
+} from "@/app/dashboard/_components/profile-ui/map-link";
+import { formatPhone } from "@/lib/format-phone";
 import { SECTORS } from "@/app/enums/sector";
 import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { FieldError, FieldLabel } from "@/components/ui/field";
@@ -44,7 +48,6 @@ import { KASHROUT } from "@/app/enums/kashrout";
 import { Doc } from "@/convex/_generated/dataModel";
 import { Input } from "@/components/ui/input";
 import { useWarnIfUnsavedChanges } from "@/hooks/use-warn-if-unsaved-changes";
-import Link from "next/link";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 
 interface HostProfileCardProps {
@@ -206,13 +209,11 @@ export function HostProfileCard({ hostData }: HostProfileCardProps) {
               )}
             />
           ) : (
-            <ViewValue
-              value={
-                <Link href={`tel:${hostData.phoneNumber}`}>
-                  {RPNInput.formatPhoneNumberIntl(hostData.phoneNumber)}
-                </Link>
-              }
-              icon={<Phone className="size-4" />}
+            <ContactLink
+              href={`tel:${hostData.phoneNumber}`}
+              icon={Phone}
+              tone="blue"
+              label={formatPhone(hostData.phoneNumber)}
             />
           )}
         </SettingsRow>

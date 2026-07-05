@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import {
   ArrowRight,
   CheckCircle2,
+  Clock,
   Flame,
   Home,
   MapPin,
@@ -15,97 +16,58 @@ import {
 } from "lucide-react";
 import { SearchBarTrigger } from "@/components/search/search-trigger";
 import { EnumPill } from "@/components/ui/enum-pill";
-import { EthnicityBadge, KashroutBadge } from "@/components/ui/enum-badges";
+import {
+  EthnicityBadge,
+  KashroutBadge,
+  SectorBadge,
+} from "@/components/ui/enum-badges";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useT } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { Sparkles } from "./sparkles";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { ReactNode, CSSProperties } from "react";
 
-// The illustration shows the single latest shidduch (Chidoukh) found between a
-// host and a guest. Each time a new match lands, the whole composition replays
-// its spring entrance with a burst of sparkles — a deliberately dramatic "a new
-// match just formed" moment. Kashrout/ethnicity use the same enum values and
-// localized system badges as the rest of the app.
+const emptySubscribe = () => () => {};
+
+// The illustration shows THE single latest accepted invitation between a host
+// and a guest, live from the backend. When a newer acceptance lands, the whole
+// composition replays its spring entrance with a burst of sparkles — one
+// deliberate "a new match just formed" moment; it never cycles on its own.
+// Badges use the same enum values and localized system badges as the app.
 type Person = {
   initials: string;
   name: string;
-  /** City for the host, "Origin → Destination" route for the guest. */
+  /** City for the host, region for the guest. */
   sub: string;
-  /** Kashrout enum value (see app/enums/kashrout.ts). */
-  kashrout: string;
+  /** Kashrout enum value — hosts only (see app/enums/kashrout.ts). */
+  kashrout?: string;
+  /** Sector enum value — guests only (see app/enums/sector.ts). */
+  sector?: string;
   /** Ethnicity enum value (see app/enums/ethnicity.ts). */
-  ethnicity: string;
+  ethnicity?: string;
 };
 
 type Match = { host: Person; guest: Person };
 
-const MATCHES: Match[] = [
-  {
-    host: {
-      initials: "ML",
-      name: "Moshé Lévi",
-      sub: "Rehavia, Jérusalem",
-      kashrout: "Mehadrin",
-      ethnicity: "Ashkenazi",
-    },
-    guest: {
-      initials: "SC",
-      name: "Sarah Cohen",
-      sub: "Paris → Jérusalem",
-      kashrout: "Badatz",
-      ethnicity: "Sefardi",
-    },
+// Demo composition shown until a first real match exists in the database.
+const FALLBACK_MATCH: Match = {
+  host: {
+    initials: "ML",
+    name: "Moshé L.",
+    sub: "Jérusalem",
+    kashrout: "Mehadrin",
+    ethnicity: "Ashkenazi",
   },
-  {
-    host: {
-      initials: "DA",
-      name: "David Azoulay",
-      sub: "Old Katamon, Jérusalem",
-      kashrout: "Badatz",
-      ethnicity: "Sefardi",
-    },
-    guest: {
-      initials: "RB",
-      name: "Rachel Berman",
-      sub: "New York → Jérusalem",
-      kashrout: "Mehadrin",
-      ethnicity: "Ashkenazi",
-    },
+  guest: {
+    initials: "SC",
+    name: "Sarah C.",
+    sub: "Jérusalem",
+    sector: "Dati",
+    ethnicity: "Sefardi",
   },
-  {
-    host: {
-      initials: "YF",
-      name: "Yossi Friedman",
-      sub: "Florentin, Tel Aviv",
-      kashrout: "Mehadrin",
-      ethnicity: "Ashkenazi",
-    },
-    guest: {
-      initials: "LH",
-      name: "Léa Hadad",
-      sub: "Marseille → Tel Aviv",
-      kashrout: "Rabbanut",
-      ethnicity: "Mizrahi",
-    },
-  },
-  {
-    host: {
-      initials: "AM",
-      name: "Avi Mizrahi",
-      sub: "Neve Tzedek, Tel Aviv",
-      kashrout: "Rabbanut",
-      ethnicity: "Mizrahi",
-    },
-    guest: {
-      initials: "DK",
-      name: "Daniel Klein",
-      sub: "Londres → Tel Aviv",
-      kashrout: "Badatz",
-      ethnicity: "Ashkenazi",
-    },
-  },
-];
+};
 
 // A radial burst of candlelight sparks (host blue / guest amber) thrown out
 // from the centre when a new match forms. Deterministic positions keep SSR and
@@ -200,30 +162,105 @@ function FloatingCard({
   );
 }
 
-function HeroIllustration() {
+// Shared source for the illustration and the plaque: the single latest
+// accepted match, live. The subscription pushes a new value the moment a newer
+// acceptance lands — that key change is the ONLY thing that replays the
+// entrance transition (no autonomous carousel). Convex dedupes the underlying
+// subscription across callers.
+function useLatestMatch() {
   const { t, lang } = useT();
   const ill = t.hero.illustration;
-  const reduce = useReducedMotion() ?? false;
-  const [index, setIndex] = useState(0);
-  // When the active match was "found". Set on mount (client-only, so it never
-  // mismatches SSR) and refreshed on every new match.
-  const [matchedAt, setMatchedAt] = useState<Date | null>(null);
-  const match = MATCHES[index];
+  const latest = useQuery(api.requests.getLatestAcceptedMatch);
+  // `mounted` gates client-only bits (the local-timezone timestamp) so SSR
+  // never mismatches: false on the server snapshot, true after hydration.
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
-  useEffect(() => {
-    setMatchedAt(new Date());
-    if (reduce) return;
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % MATCHES.length);
-      setMatchedAt(new Date());
-    }, 4600);
-    return () => clearInterval(id);
-  }, [reduce]);
+  const match: Match = latest
+    ? {
+        host: {
+          initials: latest.host.initials,
+          name: latest.host.name ?? ill.hostLabel,
+          sub: latest.host.city ?? "",
+          kashrout: latest.host.kashrout,
+          ethnicity: latest.host.ethnicity,
+        },
+        guest: {
+          initials: latest.guest.initials,
+          name: latest.guest.name ?? ill.guestLabel,
+          sub: latest.guest.region ?? "",
+          sector: latest.guest.sector,
+          ethnicity: latest.guest.ethnicity,
+        },
+      }
+    : FALLBACK_MATCH;
+  // Keying by match id makes the composition remount (with transition) only
+  // when the latest match actually changes.
+  const matchKey = latest?.matchId ?? "fallback";
 
   const dateLocale = lang === "fr" ? fr : lang === "he" ? he : enUS;
-  const matchedLabel = matchedAt
-    ? format(matchedAt, "d MMM · HH:mm", { locale: dateLocale })
-    : null;
+  const matchedLabel =
+    mounted && latest
+      ? format(new Date(latest.matchedAt), "d MMM · HH:mm", {
+          locale: dateLocale,
+        })
+      : null;
+
+  return { match, matchKey, matchedLabel };
+}
+
+// The "latest match" plaque: live-pulse dot + label + timestamp in one quiet
+// pill. Sits UNDER the illustration on desktop and under the CTAs on mobile
+// (where the illustration is hidden). The timestamp crossfades when a newer
+// match lands; the pulse pauses under prefers-reduced-motion.
+function LatestMatchPlaque({ className }: { className?: string }) {
+  const { t } = useT();
+  const { matchKey, matchedLabel } = useLatestMatch();
+
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-2.5 rounded-full border border-border/70 bg-card/85 ps-3.5 pe-4 py-2 shadow-sm backdrop-blur-sm",
+        className,
+      )}
+    >
+      <span className="relative flex size-2 shrink-0" aria-hidden>
+        <span className="absolute inline-flex size-full rounded-full bg-primary/50 motion-safe:animate-ping" />
+        <span className="relative inline-flex size-2 rounded-full bg-primary" />
+      </span>
+      <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+        {t.hero.illustration.latestMatch}
+      </span>
+      {matchedLabel && (
+        <>
+          <span className="h-3.5 w-px bg-border" aria-hidden />
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={matchKey}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground tabular-nums whitespace-nowrap"
+            >
+              <Clock className="size-3 shrink-0" />
+              {matchedLabel}
+            </motion.span>
+          </AnimatePresence>
+        </>
+      )}
+    </div>
+  );
+}
+
+function HeroIllustration() {
+  const { t } = useT();
+  const ill = t.hero.illustration;
+  const reduce = useReducedMotion() ?? false;
+  const { match, matchKey } = useLatestMatch();
 
   // Triangle vertices, ordered host → invitation → guest so the connection
   // spark travels along the match as it forms.
@@ -234,12 +271,12 @@ function HeroIllustration() {
   ];
 
   return (
-    <div className="relative w-full h-[580px]">
-      {/* Lueur centrale + pulse à chaque nouveau Chidoukh */}
+    <div className="relative w-full h-[560px]">
+      {/* Lueur centrale + pulse à chaque nouvelle invitation acceptée */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-64 rounded-full bg-primary/12 blur-3xl pointer-events-none" />
       {!reduce && (
         <motion.div
-          key={`glow-${index}`}
+          key={`glow-${matchKey}`}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-40 rounded-full bg-primary/25 blur-2xl pointer-events-none"
           initial={{ scale: 0.7, opacity: 0.55 }}
           animate={{ scale: 1.5, opacity: 0 }}
@@ -250,24 +287,9 @@ function HeroIllustration() {
       {/* Étoiles — lueurs de bougie autour de l'anneau (hôte sky / invité ambre) */}
       <Sparkles />
 
-      {/* « Dernier Chidoukh » + date/heure du match — libellé live en haut */}
-      <div className="absolute left-1/2 top-1 z-20 flex -translate-x-1/2 flex-col items-center gap-1">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
-          <motion.span
-            className="size-1.5 rounded-full bg-primary"
-            animate={
-              reduce ? undefined : { opacity: [1, 0.3, 1], scale: [1, 0.85, 1] }
-            }
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {ill.latestMatch}
-        </span>
-        {/* Always rendered (nbsp placeholder) so the header doesn't shift when
-            the client-only timestamp lands a tick after mount. */}
-        <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
-          {matchedLabel ?? " "}
-        </span>
-      </div>
+      {/* « Dernière invitation acceptée » + date/heure — plaque calme SOUS la
+          composition */}
+      <LatestMatchPlaque className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2" />
 
       {/* Anneau extérieur statique (profondeur) */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[440px] rounded-full border border-primary/6" />
@@ -289,7 +311,7 @@ function HeroIllustration() {
           <div className="size-3 rounded-full bg-primary ring-4 ring-primary/15" />
           {!reduce && (
             <motion.div
-              key={`pulse-${index}`}
+              key={`pulse-${matchKey}`}
               className="absolute inset-0 rounded-full ring-2 ring-primary/50"
               initial={{ scale: 1, opacity: 0.7 }}
               animate={{ scale: 3, opacity: 0 }}
@@ -304,7 +326,7 @@ function HeroIllustration() {
           s'efface en parallèle (les cartes sont en absolute, pas de saut). */}
       <AnimatePresence>
         <motion.div
-          key={index}
+          key={matchKey}
           className="absolute inset-0"
           initial={false}
           exit={
@@ -358,8 +380,12 @@ function HeroIllustration() {
               </div>
 
               <div className="flex flex-wrap gap-1">
-                <KashroutBadge value={match.host.kashrout} />
-                <EthnicityBadge value={match.host.ethnicity} />
+                {match.host.kashrout && (
+                  <KashroutBadge value={match.host.kashrout} />
+                )}
+                {match.host.ethnicity && (
+                  <EthnicityBadge value={match.host.ethnicity} />
+                )}
                 <span className="inline-flex items-center whitespace-nowrap rounded-full border border-transparent bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {ill.seats}
                 </span>
@@ -444,8 +470,10 @@ function HeroIllustration() {
               </div>
 
               <div className="flex flex-wrap gap-1 mb-2.5">
-                <KashroutBadge value={match.guest.kashrout} />
-                <EthnicityBadge value={match.guest.ethnicity} />
+                {match.guest.sector && <SectorBadge value={match.guest.sector} />}
+                {match.guest.ethnicity && (
+                  <EthnicityBadge value={match.guest.ethnicity} />
+                )}
               </div>
 
               <div className="flex items-center gap-1 pt-2 border-t border-border/60">
@@ -466,7 +494,10 @@ export function HeroSection() {
   const { t } = useT();
 
   return (
-    <section className="relative flex flex-col justify-start">
+    // First fold: the hero owns the full viewport below the fixed navbar
+    // (4rem), its content centred within it. `svh` keeps mobile toolbars from
+    // causing overflow; on short viewports the section simply grows.
+    <section className="relative flex flex-col min-h-[calc(100svh-4rem)]">
       {/* Fond pleine largeur (breakout du container max-w-7xl) */}
       <div
         className="absolute inset-y-0 pointer-events-none"
@@ -476,10 +507,10 @@ export function HeroSection() {
         <div className="absolute top-0 right-0 w-1/2 h-3/4 bg-gradient-to-bl from-primary/5 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full px-4 pt-8 pb-20 md:pt-10">
+      <div className="relative z-10 flex w-full flex-1 flex-col justify-center px-4 py-8 md:py-10">
         {/* Barre de recherche — point d'entrée principal, tout en haut */}
         <motion.div
-          className="mb-12 md:mb-16"
+          className="mb-10 md:mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -549,6 +580,17 @@ export function HeroSection() {
               >
                 {t.hero.learnMore}
               </Link>
+            </motion.div>
+
+            {/* Mobile: the illustration is hidden, so the live "latest match"
+                plaque carries the social proof here instead. */}
+            <motion.div
+              className="md:hidden"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <LatestMatchPlaque />
             </motion.div>
           </div>
 

@@ -9,6 +9,8 @@ export const buildGuestSchema = (m: ValidationMessages) =>
     dob: z.coerce.date({ message: m.dobInvalid }),
 
     region: z.string({ message: m.regionInvalid }).min(3, m.regionInvalid),
+    lat: z.number().optional(),
+    lng: z.number().optional(),
     gender: z.literal(GENDERS, { message: m.genderRequired }),
     sector: z.literal(SECTORS, { message: m.sectorRequired }),
     ethnicity: z.literal(ETHNICITIES, { message: m.ethnicityRequired }),

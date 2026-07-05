@@ -15,6 +15,10 @@ export const LanguageV = literalUnion(LANGUAGE_VALUES);
 export const GuestFields = {
   dob: v.number(), // timestamp (ms)
   region: v.string(),
+  // Geocoded coordinates of the region (mirrors hosts.lat/lng) — set from the
+  // address autocomplete, used to place guests on the search map.
+  lat: v.optional(v.number()),
+  lng: v.optional(v.number()),
   gender: GenderV,
   sector: SectorV,
   ethnicity: EthnicityV,

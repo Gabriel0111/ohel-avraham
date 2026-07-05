@@ -43,6 +43,8 @@ async function enrichGuests(ctx: QueryCtx, guests: Doc<"guests">[]) {
       name: user?.name,
       image: user?.image,
       region: g.region,
+      lat: g.lat,
+      lng: g.lng,
       sector: g.sector,
       ethnicity: g.ethnicity,
       gender: g.gender,
@@ -54,6 +56,7 @@ async function enrichGuests(ctx: QueryCtx, guests: Doc<"guests">[]) {
 
 export const getAllGuests = query({
   args: {},
+  returns: v.union(v.null(), v.array(v.any())),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
@@ -70,6 +73,7 @@ export const createGuest = mutation({
   args: {
     data: v.object(GuestFields),
   },
+  returns: v.object({ success: v.boolean(), id: v.id("guests") }),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
@@ -91,6 +95,10 @@ export const upsertGuest = mutation({
   args: {
     data: v.object(GuestFields),
   },
+  returns: v.union(
+    v.object({ updated: v.boolean() }),
+    v.object({ created: v.boolean(), id: v.id("guests") }),
+  ),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
@@ -118,6 +126,7 @@ export const upsertGuest = mutation({
 
 export const deleteGuest = mutation({
   args: {},
+  returns: v.object({ deleted: v.boolean() }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "unauthorized" });
@@ -146,6 +155,8 @@ export const searchPublicGuests = query({
       name: v.optional(v.string()),
       image: v.optional(v.string()),
       region: v.string(),
+      lat: v.optional(v.number()),
+      lng: v.optional(v.number()),
       sector: SectorV,
       ethnicity: EthnicityV,
       gender: GenderV,

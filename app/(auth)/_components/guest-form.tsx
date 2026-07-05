@@ -117,7 +117,11 @@ const GuestForm = () => {
                 <FieldLabel>{t.form.region}</FieldLabel>
                 <AutocompleteAddress
                   defaultValue={field.value}
-                  onPlaceSelect={(place) => field.onChange(place.address)}
+                  onPlaceSelect={(place) => {
+                    form.setValue("region", place.address, { shouldValidate: true });
+                    form.setValue("lat", place.lat, { shouldValidate: true });
+                    form.setValue("lng", place.lng, { shouldValidate: true });
+                  }}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
