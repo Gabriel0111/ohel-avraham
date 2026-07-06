@@ -26,6 +26,7 @@ export const submitContact = mutation({
     await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
       to: CONTACT_RECIPIENT,
       subject: `Contact – ${cleanName}`,
+      replyTo: cleanEmail,
       payload: { type: "contact", name: cleanName, email: cleanEmail, message: cleanMessage },
     });
 
