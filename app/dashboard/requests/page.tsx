@@ -124,7 +124,7 @@ function PartyDateRow({
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
       <span className="inline-flex items-center gap-1.5">
         <CalendarDays className="size-3.5" />
-        <span className={cn(expired && "line-through decoration-1")}>
+        <span className={cn(expired && "text-muted-foreground/50")}>
           {formatDate(date, lang)}
         </span>
         {expired && <EnumPill color="slate">{t.requests.expired}</EnumPill>}
@@ -198,7 +198,13 @@ function RequestRow({
     <button
       type="button"
       onClick={onClick}
-      className="group w-full cursor-pointer rounded-2xl border border-border/60 bg-card p-4 text-start transition-colors hover:bg-accent/60 active:bg-accent"
+      className={cn(
+        "group w-full cursor-pointer rounded-2xl border p-4 text-start transition-colors active:bg-accent",
+        expired
+          ? // Past dates: the whole card recedes rather than the date alone.
+            "border-border/40 bg-muted/40 text-muted-foreground opacity-70 hover:opacity-100 hover:bg-accent/40"
+          : "border-border/60 bg-card hover:bg-accent/60",
+      )}
     >
       <div className="flex items-center gap-3">
         <Avatar className="size-10 shrink-0 border border-border/50">
