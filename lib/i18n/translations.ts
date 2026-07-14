@@ -2,6 +2,13 @@ export type Language = "en" | "fr" | "he";
 
 export const translations = {
   en: {
+    // Read server-side by `generateMetadata` — never through `useT()`.
+    seo: {
+      title: "Ohel Avraham — Shabbat hosts and guests in Israel",
+      description:
+        "Find a table for Shabbat, or open your own. Ohel Avraham connects hosts and guests across Israel by region, community and level of kashrut.",
+      ogAlt: "Ohel Avraham — Shabbat hosts and guests in Israel",
+    },
     nav: {
       login: "Login",
       signup: "Sign up",
@@ -661,6 +668,12 @@ export const translations = {
   },
 
   fr: {
+    seo: {
+      title: "Ohel Avraham — Hôtes et invités pour Chabbat en Israël",
+      description:
+        "Trouvez une table pour Chabbat, ou ouvrez la vôtre. Ohel Avraham met en relation hôtes et invités partout en Israël, par région, communauté et niveau de cacherout.",
+      ogAlt: "Ohel Avraham — Hôtes et invités pour Chabbat en Israël",
+    },
     nav: {
       login: "Connexion",
       signup: "S'inscrire",
@@ -1344,6 +1357,12 @@ export const translations = {
   },
 
   he: {
+    seo: {
+      title: "אוהל אברהם — מארחים ואורחים לשבת בישראל",
+      description:
+        "מצאו שולחן לשבת, או פתחו את שלכם. אוהל אברהם מחבר בין מארחים לאורחים בכל רחבי ישראל — לפי אזור, מגזר ורמת כשרות.",
+      ogAlt: "אוהל אברהם — מארחים ואורחים לשבת בישראל",
+    },
     nav: {
       login: "כניסה",
       signup: "הרשמה",
