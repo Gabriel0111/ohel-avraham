@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/lib/env";
 
 export async function GET(
   _req: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
       {
         headers: {
           "Content-Type": "application/json",
-          "X-Goog-Api-Key": process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+          "X-Goog-Api-Key": env.GOOGLE_MAPS_API_KEY,
           "X-Goog-FieldMask": "location,addressComponents,formattedAddress",
         },
       },

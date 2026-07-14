@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/lib/env";
 
 interface AutocompleteSuggestion {
   placePrediction: {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Goog-Api-Key": process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+          "X-Goog-Api-Key": env.GOOGLE_MAPS_API_KEY,
           "X-Goog-FieldMask":
             "suggestions.placePrediction.placeId,suggestions.placePrediction.text",
         },

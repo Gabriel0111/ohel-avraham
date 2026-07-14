@@ -19,8 +19,13 @@ const nextConfig: NextConfig = {
         port: "",
       },
       {
+        // Avatars live in Convex storage, and each deployment (dev, preview,
+        // production) serves them from its own subdomain — so this is matched
+        // by pattern rather than pinned to one deployment. Narrowed to the
+        // storage path: nothing else on a Convex host is an image.
         protocol: "https",
-        hostname: "woozy-roadrunner-140.convex.cloud",
+        hostname: "**.convex.cloud",
+        pathname: "/api/storage/**",
       },
     ],
   },
