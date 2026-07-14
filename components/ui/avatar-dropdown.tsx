@@ -9,7 +9,7 @@ import {
 import { ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { getRoleRingClass, isRegistrationIncomplete } from "@/lib/role-style";
+import { getStatusRingClass, isRegistrationIncomplete } from "@/lib/role-style";
 
 interface DropdownItems {
   icon: ReactNode;
@@ -26,6 +26,8 @@ interface AvatarDropdownProps {
   pendingCount?: number;
   requestsLabel?: string;
   role?: string;
+  isVerified?: boolean;
+  isBlocked?: boolean;
   incompleteLabel?: string;
 }
 
@@ -37,6 +39,8 @@ const AvatarDropdown = ({
   pendingCount = 0,
   requestsLabel,
   role,
+  isVerified,
+  isBlocked,
   incompleteLabel,
 }: AvatarDropdownProps) => {
   const hasNewRequest = pendingCount > 0;
@@ -50,8 +54,8 @@ const AvatarDropdown = ({
         >
           <Avatar
             className={cn(
-              "size-8 shadow-sm ring-2 ring-offset-2 ring-offset-background",
-              getRoleRingClass(role),
+              "size-8 shadow-sm ring-2 ring-offset-2 ring-offset-background transition-colors",
+              getStatusRingClass({ role, isVerified, isBlocked }),
             )}
           >
             <AvatarImage

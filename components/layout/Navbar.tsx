@@ -172,6 +172,8 @@ const Navbar = () => {
               email={user?.email}
               imageSrc={user?.image}
               role={user?.role}
+              isVerified={user?.isVerified}
+              isBlocked={user?.isBlocked}
               incompleteLabel={t.nav.finishRegistration}
               pendingCount={pendingCount ?? 0}
               requestsLabel={t.nav.requests}

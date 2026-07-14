@@ -8,6 +8,7 @@ import { RoleBadge } from "@/app/dashboard/_components/profile-ui/role-badge";
 import { EditButton } from "@/app/dashboard/_components/profile-ui/edit-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { getStatusRingClass } from "@/lib/role-style";
 import { PageHeader } from "@/app/dashboard/_components/dashboard-page-ui/page-header";
 import { PageSection } from "@/app/dashboard/_components/dashboard-page-ui/page-section";
 import { ProfileLoading } from "@/app/dashboard/_components/profile-ui/profile-loading";
@@ -98,7 +99,7 @@ export default function ProfilePage() {
               <Avatar
                 className={cn(
                   "size-20 shrink-0 shadow-sm ring-2",
-                  user.isVerified ? "ring-green-500/40" : "ring-border",
+                  getStatusRingClass(user),
                 )}
               >
                 <AvatarImage src={user.image} alt={user.name ?? ""} />
