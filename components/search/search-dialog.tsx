@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import { isRegistrationIncomplete } from "@/lib/role-style";
+import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LanguageSelect } from "@/components/ui/language-select";
@@ -66,7 +67,15 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   if (currentUser === undefined) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[calc(100%-2rem)] sm:max-w-3xl h-[80vh] sm:h-[78vh] flex items-center justify-center rounded-2xl">
+        <DialogContent
+          className={cn(
+            // Full-screen takeover on mobile (no floating card, no wasted margin);
+            // back to the centered card from `sm:` up.
+            "inset-0 top-0 left-0 h-[100dvh] w-full translate-x-0 translate-y-0 rounded-none border-0",
+            "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-[78vh] sm:w-[calc(100%-2rem)] sm:max-w-3xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border",
+            "flex items-center justify-center",
+          )}
+        >
           <DialogTitle className="sr-only">{t.search.title}</DialogTitle>
           <Loader2 className="size-5 animate-spin text-muted-foreground" />
         </DialogContent>
@@ -198,7 +207,13 @@ function HostSearchDialog({ open, onOpenChange }: SearchDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-[calc(100%-2rem)] sm:max-w-5xl h-[80vh] max-h-[calc(100dvh-2rem)] sm:h-[78vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl"
+        className={cn(
+          // Full-screen takeover on mobile — see the loading-state DialogContent
+          // above for why (no floating card, no wasted margin on a primary flow).
+          "inset-0 top-0 left-0 h-[100dvh] max-h-[100dvh] w-full translate-x-0 translate-y-0 rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+          "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-[78vh] sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-5xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:pt-0 sm:pb-0",
+          "flex flex-col p-0 gap-0 overflow-hidden",
+        )}
         showCloseButton
       >
         {/* Header — gradient accent (host = sky, cohérent avec le dashboard) */}

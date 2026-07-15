@@ -30,6 +30,7 @@ import {
 import { useT } from "@/lib/i18n/context";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LanguageSelect } from "@/components/ui/language-select";
+import { cn } from "@/lib/utils";
 
 // Sentinel for the "all regions" choice in the region step.
 const ALL_REGIONS = "__all__";
@@ -135,7 +136,13 @@ export function GuestSearchDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-[calc(100%-2rem)] sm:max-w-3xl h-[80vh] max-h-[calc(100dvh-2rem)] sm:h-[78vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl"
+        className={cn(
+          // Full-screen takeover on mobile — no floating card, no wasted
+          // margin on a primary flow; the centered card returns at `sm:`.
+          "inset-0 top-0 left-0 h-[100dvh] max-h-[100dvh] w-full translate-x-0 translate-y-0 rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
+          "sm:inset-auto sm:top-[50%] sm:left-[50%] sm:h-[78vh] sm:max-h-[calc(100dvh-2rem)] sm:w-[calc(100%-2rem)] sm:max-w-3xl sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:pt-0 sm:pb-0",
+          "flex flex-col p-0 gap-0 overflow-hidden",
+        )}
         showCloseButton
       >
         <DialogHeader className="relative bg-gradient-to-b from-primary/8 to-transparent px-6 pt-6 pb-4 shrink-0 text-start border-b border-border/50">
