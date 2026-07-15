@@ -12,3 +12,12 @@ export function isLanguage(
 ): value is Language {
   return value != null && (LANGUAGES as readonly string[]).includes(value);
 }
+
+// Flag + short label per UI language — shown as-is (not translated) in the
+// nav language switcher and the admin people table, same convention a native
+// language switcher uses (each language names itself).
+export const LANGUAGE_META: Record<Language, { label: string; flag: string }> = {
+  en: { label: "EN", flag: "🇬🇧" },
+  fr: { label: "FR", flag: "🇫🇷" },
+  he: { label: "HE", flag: "🇮🇱" },
+};

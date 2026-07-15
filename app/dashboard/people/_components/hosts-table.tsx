@@ -38,6 +38,7 @@ import { type Id } from "@/convex/_generated/dataModel";
 import { EnumPill } from "@/components/ui/enum-pill";
 import {
   EthnicityBadge,
+  InterfaceLanguageBadge,
   KashroutBadge,
   SectorBadge,
 } from "@/components/ui/enum-badges";
@@ -271,6 +272,9 @@ export function HostsTable({
                   <TableHead className="hidden xl:table-cell">
                     {t.people.registeredAt}
                   </TableHead>
+                  <TableHead className="hidden xl:table-cell">
+                    {t.people.interfaceLanguage}
+                  </TableHead>
                   {isAdmin && <TableHead>{t.people.status}</TableHead>}
                   {isAdmin && (
                     <TableHead className="pr-5 text-right">
@@ -368,6 +372,9 @@ export function HostsTable({
                         <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {formatDate(host._creationTime)}
                         </span>
+                      </TableCell>
+                      <TableCell className="hidden xl:table-cell py-3">
+                        <InterfaceLanguageBadge value={host.language} />
                       </TableCell>
                       {isAdmin && (
                         <TableCell className="py-3">

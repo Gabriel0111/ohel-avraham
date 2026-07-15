@@ -43,7 +43,10 @@ export function AuthSync() {
       !isDeletingAccount()
     ) {
       isCreating.current = true;
-      createUser()
+      // Whatever language the sign-up/login screen is currently in becomes
+      // the account's stored preference (also covers Google's implicit
+      // sign-up, which never sees the email/password form).
+      createUser({ language: lang })
         .catch(() => {
           // Swallow transient auth races (e.g. JWT refresh); the effect
           // re-runs once Convex auth settles and will retry.
@@ -70,7 +73,7 @@ export function AuthSync() {
       // it navigates to /dashboard itself once the user is done.
       router.replace("/");
     }
-  }, [session?.user?.id, isAuthenticated, isLoading, isConvexLoading, isConvexAuthenticated, user?.role, pathname]);
+  }, [session?.user?.id, isAuthenticated, isLoading, isConvexLoading, isConvexAuthenticated, user?.role, pathname, lang]);
 
   // Language preference follows the account across devices. On the first
   // resolved auth state per page load, a stored preference that differs from

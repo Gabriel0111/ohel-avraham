@@ -12,6 +12,7 @@ export type AttachedUserFields = {
   isBlocked: boolean;
   verifiedBy: Doc<"users">["verifiedBy"];
   verifiedAt: Doc<"users">["verifiedAt"];
+  language: Doc<"users">["language"];
 };
 
 /**
@@ -42,6 +43,7 @@ export async function attachUsers<T extends { authUserId: string }>(
         isBlocked: user.isBlocked ?? false,
         verifiedBy: user.verifiedBy,
         verifiedAt: user.verifiedAt,
+        language: user.language,
       },
     ];
   });

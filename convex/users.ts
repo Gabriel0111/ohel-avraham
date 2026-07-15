@@ -93,9 +93,9 @@ export const getFullProfile = query({
 });
 
 export const createUser = mutation({
-  args: {},
+  args: { language: v.optional(UILanguage) },
   returns: v.null(),
-  handler: async (ctx) => {
+  handler: async (ctx, { language }) => {
     // Guard against the JWT-refresh race: the client may think it is
     // authenticated while the token is momentarily invalid on the server.
     // In that case bail out quietly instead of erroring.
@@ -140,6 +140,10 @@ export const createUser = mutation({
       email,
       name: name ?? "",
       image: image ?? "",
+      // Whatever language the sign-up/login screen was in — set at creation
+      // so it's correct immediately, rather than relying solely on the
+      // follow-up reconciliation in components/auth-sync.tsx.
+      language,
     });
     return null;
   },

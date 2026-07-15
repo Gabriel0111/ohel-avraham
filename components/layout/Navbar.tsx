@@ -52,12 +52,11 @@ import { SearchTriggerButton } from "@/components/search/search-trigger";
 import { useRouter } from "next/navigation";
 import { useErrorMessage, useT } from "@/lib/i18n/context";
 import type { Language } from "@/lib/i18n/translations";
+import { LANGUAGE_META } from "@/lib/i18n/lang";
 
-const LANGUAGES: { value: Language; label: string; flag: string }[] = [
-  { value: "en", label: "EN", flag: "🇬🇧" },
-  { value: "fr", label: "FR", flag: "🇫🇷" },
-  { value: "he", label: "HE", flag: "🇮🇱" },
-];
+const LANGUAGES: { value: Language; label: string; flag: string }[] = (
+  Object.entries(LANGUAGE_META) as [Language, (typeof LANGUAGE_META)[Language]][]
+).map(([value, meta]) => ({ value, ...meta }));
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
