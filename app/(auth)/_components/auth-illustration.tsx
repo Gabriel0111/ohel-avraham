@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { cn } from "@/lib/utils";
 
 /**
  * "La lumière au seuil" — Configuration globale et design tokens.
@@ -18,11 +19,11 @@ const CONFIG = {
   MIN_STAR_DISTANCE: 4.6,
   CLUSTER_COUNT: 2,
   colors: {
-    // Ciel nocturne : indigo profond -> prune -> ambre chaud à l'horizon
-    skyTop: "oklch(0.11 0.038 282)",
-    skyMid: "oklch(0.15 0.045 320)",
-    skyWarm: "oklch(0.20 0.06 20)",
-    skyBottom: "oklch(0.23 0.075 45)",
+    // Ciel nocturne : bleu nuit profond -> ambre chaud à l'horizon
+    skyTop: "oklch(0.16 0.05 258)",
+    skyMid: "oklch(0.19 0.06 275)",
+    skyWarm: "oklch(0.21 0.07 30)",
+    skyBottom: "oklch(0.24 0.08 45)",
     horizonGlow: "oklch(0.52 0.16 55)",
     starBright: "oklch(0.98 0.02 82)",
     starDim: "oklch(0.86 0.015 72)",
@@ -155,7 +156,7 @@ export function AuthIllustration() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid slice"
-      className="ohel-avraham-illu absolute inset-0 h-full w-full bg-[#131019]"
+      className="ohel-avraham-illu absolute inset-0 h-full w-full bg-[#0d1424]"
       aria-hidden
     >
       <style>{`
@@ -163,6 +164,31 @@ export function AuthIllustration() {
           .ohel-avraham-illu { dynamic-range-limit: no-limit; }
           .hdr-hearth { fill: color(rec2100-pq 0.8 0.55 0.15); }
           .star-bright { fill: color(rec2100-pq 0.8 0.8 0.9); }
+        }
+        /* Stars twinkle on plain CSS animations (not per-element framer-motion
+           instances) — with ~100 stars on screen, driving each one from JS was
+           the actual cause of the slowdown; the compositor handles this fine. */
+        @keyframes star-twinkle-bright {
+          0%, 100% { opacity: 0.25; transform: scale(0.85); }
+          50% { opacity: 0.9; transform: scale(1.15); }
+        }
+        @keyframes star-twinkle-dim {
+          0%, 100% { opacity: var(--op-lo); }
+          50% { opacity: var(--op-hi); }
+        }
+        .star-twinkle {
+          animation: star-twinkle-bright var(--dur) ease-in-out var(--delay) infinite;
+          /* SVG shapes default to transform-box: view-box in some browsers,
+             so a CSS scale() would pivot around the whole illustration's
+             origin instead of the star itself — fill-box anchors it correctly. */
+          transform-box: fill-box;
+          transform-origin: center;
+        }
+        .star-twinkle-dim {
+          animation: star-twinkle-dim var(--dur) ease-in-out var(--delay) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .star-twinkle, .star-twinkle-dim { animation: none; }
         }
       `}</style>
 
@@ -333,30 +359,19 @@ export function AuthIllustration() {
               opacity={0.12}
               filter="url(#bloom)"
             />
-            <motion.path
+            <path
               d={sparkle(s.r * 3)}
               fill={CONFIG.colors.starBright}
-              className="star-bright"
-              initial={{
-                opacity: reduce ? 0.4 : 0.25,
-                scale: reduce ? 1 : 0.85,
-              }}
-              animate={
+              className={cn("star-bright", !reduce && "star-twinkle")}
+              opacity={reduce ? 0.4 : undefined}
+              style={
                 reduce
                   ? undefined
-                  : { opacity: [0.25, 0.9, 0.25], scale: [0.85, 1.15, 0.85] }
+                  : ({
+                      "--dur": `${s.dur}s`,
+                      "--delay": `${s.delay}s`,
+                    } as React.CSSProperties)
               }
-              transition={
-                reduce
-                  ? undefined
-                  : {
-                      duration: s.dur,
-                      delay: s.delay,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }
-              }
-              style={{ transformOrigin: "center" }}
             />
             <circle
               r={s.r}
@@ -365,27 +380,23 @@ export function AuthIllustration() {
             />
           </g>
         ) : (
-          <motion.circle
+          <circle
             key={i}
             cx={s.x}
             cy={s.y}
             r={s.r}
             fill={CONFIG.colors.starDim}
-            initial={{ opacity: reduce ? s.base : s.base * 0.4 }}
-            animate={
+            className={!reduce ? "star-twinkle-dim" : undefined}
+            opacity={reduce ? s.base : undefined}
+            style={
               reduce
                 ? undefined
-                : { opacity: [s.base * 0.4, s.base * 1.2, s.base * 0.4] }
-            }
-            transition={
-              reduce
-                ? undefined
-                : {
-                    duration: s.dur * 1.2,
-                    delay: s.delay,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }
+                : ({
+                    "--op-lo": s.base * 0.4,
+                    "--op-hi": s.base * 1.2,
+                    "--dur": `${s.dur * 1.2}s`,
+                    "--delay": `${s.delay}s`,
+                  } as React.CSSProperties)
             }
           />
         ),
