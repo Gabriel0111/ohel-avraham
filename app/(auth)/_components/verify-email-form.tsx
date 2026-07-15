@@ -16,37 +16,69 @@ import { useT } from "@/lib/i18n/context";
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN_S = 60;
+// Must mirror convex/auth.ts's emailOTP `expiresIn` — past this, the last
+// code sent is dead regardless of the resend cooldown, so it's worth
+// silently sending a fresh one rather than showing an input for a code that
+// can only ever fail.
+const OTP_EXPIRES_S = 60 * 10;
 
 /**
- * Sign-up just sent a code (sendVerificationOnSignUp) — this flag lets the
- * form skip the automatic re-send when the user lands here right after.
+ * When the last code for this email was sent, so a page refresh doesn't
+ * reset the cooldown and fire off a brand new email every time — only the
+ * remaining wait is recomputed from this stamp.
  */
-export const OTP_JUST_SENT_KEY = "ohel:otp-just-sent";
+function lastSentKey(email: string) {
+  return `ohel:otp-sent-at:${email}`;
+}
+
+/** Marks "a code was just sent for this email" — called at every send site
+ * (sign-up's implicit send, the auto-send on arrival, and manual resend). */
+export function markOtpSent(email: string) {
+  sessionStorage.setItem(lastSentKey(email), String(Date.now()));
+}
 
 type VerifyEmailFormProps = {
   email: string;
   onVerified: () => void;
 };
 
+/** How long ago (seconds) the last code for this email was sent, or
+ * `Infinity` if none is on record — read once at mount, so a page refresh
+ * picks up the correct remaining cooldown from the very first render. */
+function elapsedSinceLastSent(email: string): number {
+  const lastSentAt = Number(sessionStorage.getItem(lastSentKey(email)) ?? 0);
+  return lastSentAt ? (Date.now() - lastSentAt) / 1000 : Infinity;
+}
+
 const VerifyEmailForm = ({ email, onVerified }: VerifyEmailFormProps) => {
   const { t } = useT();
   const [otp, setOtp] = useState("");
-  const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_S);
+  // Lazy initializer (not an effect): a page refresh must show the correct
+  // remaining cooldown on the very first render, not a flash of 60s that
+  // then corrects itself. Mirrors the mount effect below: past OTP_EXPIRES_S
+  // (or no code on record) a fresh one is about to be sent, so the cooldown
+  // starts full rather than at 0.
+  const [cooldown, setCooldown] = useState(() => {
+    const elapsed = elapsedSinceLastSent(email);
+    return elapsed >= OTP_EXPIRES_S
+      ? RESEND_COOLDOWN_S
+      : Math.max(0, Math.ceil(RESEND_COOLDOWN_S - elapsed));
+  });
   const [isVerifying, startVerify] = useTransition();
   const [isResending, startResend] = useTransition();
-  const sentOnce = useRef(false);
+  const checkedOnMount = useRef(false);
 
-  // A code was either just sent by sign-up, or the user came back later and
-  // the old one is likely expired — send a fresh one on arrival.
+  // A code was either just sent (by sign-up or a previous mount of this same
+  // form) or it's genuinely time for a fresh one. `lastSentAt` survives a
+  // page refresh (sessionStorage), so reloading the page while a code is
+  // still fresh must NOT fire another send.
   useEffect(() => {
-    if (sentOnce.current) return;
-    sentOnce.current = true;
+    if (checkedOnMount.current) return;
+    checkedOnMount.current = true;
 
-    if (sessionStorage.getItem(OTP_JUST_SENT_KEY)) {
-      sessionStorage.removeItem(OTP_JUST_SENT_KEY);
-      return;
-    }
+    if (elapsedSinceLastSent(email) < OTP_EXPIRES_S) return;
 
+    markOtpSent(email);
     authClient.emailOtp.sendVerificationOtp({
       email,
       type: "email-verification",
@@ -85,6 +117,7 @@ const VerifyEmailForm = ({ email, onVerified }: VerifyEmailFormProps) => {
       });
 
       if (!error) {
+        markOtpSent(email);
         toast.success(t.auth.codeSent);
         setCooldown(RESEND_COOLDOWN_S);
       }
