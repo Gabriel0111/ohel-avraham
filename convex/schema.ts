@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { SystemRole } from "./enums";
+import { SystemRole, UILanguage } from "./enums";
 import { GuestFields } from "./validators/guest";
 import { HostFields } from "./validators/host";
 import { RequestFields } from "./validators/request";
@@ -16,6 +16,7 @@ export default defineSchema({
     email: v.optional(v.string()),
     name: v.optional(v.string()),
     image: v.optional(v.string()),
+    language: v.optional(UILanguage),
   }).index("by_authUserId", ["authUserId"]),
 
   hosts: defineTable({

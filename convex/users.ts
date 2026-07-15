@@ -1,4 +1,4 @@
-import { SystemRole } from "./enums";
+import { SystemRole, UILanguage } from "./enums";
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { api, components } from "./_generated/api";
@@ -25,6 +25,7 @@ const UserDoc = v.object({
   email: v.optional(v.string()),
   name: v.optional(v.string()),
   image: v.optional(v.string()),
+  language: v.optional(UILanguage),
 });
 
 const HostDoc = v.object({
@@ -272,6 +273,30 @@ export const updateUserProfile = mutation({
     }
 
     await ctx.db.patch(user._id, updates);
+    return null;
+  },
+});
+
+// Syncs the caller's UI language preference so it follows them across
+// devices — see components/auth-sync.tsx for the client-side reconciliation
+// (pulls the stored value on login if it differs, pushes local changes back).
+export const setLanguage = mutation({
+  args: { language: UILanguage },
+  returns: v.null(),
+  handler: async (ctx, { language }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+
+    // No user doc yet (e.g. mid sign-up race) — nothing to persist to; the
+    // caller will retry once the doc exists.
+    if (!user) return null;
+
+    await ctx.db.patch(user._id, { language });
     return null;
   },
 });

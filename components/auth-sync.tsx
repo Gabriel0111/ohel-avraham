@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import { api } from "@/convex/_generated/api";
 import { isDeletingAccount } from "@/lib/account-deletion";
 import { isJustRegistered } from "@/lib/registration-success";
+import { useT } from "@/lib/i18n/context";
 import { useMutation, useConvexAuth } from "convex/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -21,6 +22,9 @@ export function AuthSync() {
   const { isLoading: isConvexLoading, isAuthenticated: isConvexAuthenticated } = useConvexAuth();
   const createUser = useMutation(api.users.createUser);
   const isCreating = useRef(false);
+  const { lang, setLang } = useT();
+  const setLanguage = useMutation(api.users.setLanguage);
+  const langReconciled = useRef(false);
 
   useEffect(() => {
     if (isLoading || isConvexLoading) return;
@@ -67,6 +71,31 @@ export function AuthSync() {
       router.replace("/");
     }
   }, [session?.user?.id, isAuthenticated, isLoading, isConvexLoading, isConvexAuthenticated, user?.role, pathname]);
+
+  // Language preference follows the account across devices. On the first
+  // resolved auth state per page load, a stored preference that differs from
+  // the current cookie/localStorage value wins (e.g. logging in on a new
+  // device) — adopted once via `setLang`, never overwritten again this
+  // session. From then on, any local change (the account had none yet, or
+  // the user just switched it in the nav) is pushed back up to Convex.
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user) return;
+
+    if (!langReconciled.current) {
+      langReconciled.current = true;
+      if (user.language && user.language !== lang) {
+        setLang(user.language);
+        return;
+      }
+    }
+
+    if (user.language !== lang) {
+      setLanguage({ language: lang }).catch(() => {
+        // Best-effort: worst case the preference just doesn't follow this
+        // account to another device yet; local cookie/localStorage still work.
+      });
+    }
+  }, [isLoading, isAuthenticated, user?.language, lang]);
 
   return null;
 }
