@@ -1,14 +1,12 @@
 /**
- * The avatar ring is the one place a user's standing with the platform is
- * always visible, so it tracks account *status*, not role: amber while the
- * account can't yet act (registration unfinished, or awaiting an admin's
- * review), green once verified, destructive once blocked. Role is carried by
- * `role-badge.tsx` instead.
+ * The avatar ring tracks the user's role — the same mapping as
+ * `role-badge.tsx`'s `ROLE_COLORS`, so the ring and the badge always agree:
+ * admin = red, host/guest:host = primary, guest = amber, unset/incomplete
+ * = slate. The separate pulsing "!" badge (see `isRegistrationIncomplete`)
+ * still covers the "registration unfinished" case on top of the slate ring.
  *
  * Class names are written as full literals so the Tailwind JIT keeps them.
  */
-
-export type AccountStatus = "blocked" | "incomplete" | "pending" | "verified";
 
 export interface AccountStatusInput {
   role?: string | null;
@@ -21,29 +19,16 @@ export function isRegistrationIncomplete(role?: string | null): boolean {
   return !role || role === "user";
 }
 
-export function getAccountStatus({
-  role,
-  isVerified,
-  isBlocked,
-}: AccountStatusInput): AccountStatus {
-  if (isBlocked) return "blocked";
-  if (isRegistrationIncomplete(role)) return "incomplete";
-  // Admins are verified by construction — the members table already reads them
-  // that way, and no admin ever waits on someone else's review.
-  if (isVerified || role === "admin") return "verified";
-  return "pending";
-}
-
-const STATUS_RING: Record<AccountStatus, string> = {
-  blocked: "ring-destructive",
-  // Both amber states mean "cannot act yet"; only `incomplete` also carries the
-  // pulsing "!" badge, which is what tells them apart at a glance.
-  incomplete: "ring-amber-500/70",
-  pending: "ring-amber-500/70",
-  verified: "ring-green-500/60",
+// Mirrors role-badge.tsx's ROLE_COLORS: host's "sky" is the primary brand
+// token (bg-primary/10 text-primary), not literal sky-blue.
+const ROLE_RING: Record<string, string> = {
+  admin: "ring-red-500/60",
+  host: "ring-primary/60",
+  "guest:host": "ring-primary/60",
+  guest: "ring-amber-500/70",
 };
 
-/** Tailwind ring-color class for the given account's avatar status ring. */
-export function getStatusRingClass(user: AccountStatusInput): string {
-  return STATUS_RING[getAccountStatus(user)];
+/** Tailwind ring-color class for the given account's role. */
+export function getStatusRingClass({ role }: AccountStatusInput): string {
+  return ROLE_RING[role ?? ""] ?? "ring-slate-400/50";
 }
