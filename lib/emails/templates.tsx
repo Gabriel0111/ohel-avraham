@@ -279,7 +279,86 @@ function DashboardButton({
   );
 }
 
+/** Big lettered code block — shared by every OTP-style email. */
+function CodeBlock({ code }: { code: string }) {
+  return (
+    <div style={{ textAlign: "center", margin: "4px 0 24px" }}>
+      <div
+        style={{
+          display: "inline-block",
+          backgroundColor: SURFACE,
+          borderRadius: 12,
+          padding: "16px 28px",
+        }}
+      >
+        <Text
+          style={{
+            margin: 0,
+            fontSize: 32,
+            fontWeight: 700,
+            letterSpacing: 10,
+            color: INK,
+          }}
+        >
+          {code}
+        </Text>
+      </div>
+    </div>
+  );
+}
+
 // ─── Templates ────────────────────────────────────────────────────────────────
+
+/** Password reset link */
+export function ResetPasswordEmail({ url }: { url: string }) {
+  return (
+    <EmailLayout preview="Réinitialisez votre mot de passe">
+      <TitleBlock
+        title="Réinitialisez votre mot de passe"
+        subtitle="Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe. Ce lien expire dans 1 heure."
+      />
+
+      <Button
+        href={url}
+        style={{
+          display: "inline-block",
+          backgroundColor: AMBER,
+          color: ON_AMBER,
+          borderRadius: 10,
+          padding: "11px 24px",
+          fontSize: 14,
+          fontWeight: 600,
+          textDecoration: "none",
+        }}
+      >
+        Réinitialiser mon mot de passe
+      </Button>
+
+      <Text style={{ marginTop: 24, fontSize: 13, color: MUTED, lineHeight: "1.6" }}>
+        Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet email — votre
+        mot de passe restera inchangé.
+      </Text>
+    </EmailLayout>
+  );
+}
+
+/** Email verification code — sign-up, and every "resend code" */
+export function VerifyOtpEmail({ otp }: { otp: string }) {
+  return (
+    <EmailLayout preview={`${otp} est votre code de vérification`}>
+      <TitleBlock
+        title="Confirmez votre email"
+        subtitle="Saisissez ce code pour vérifier votre adresse et poursuivre votre inscription. Il expire dans 10 minutes."
+      />
+
+      <CodeBlock code={otp} />
+
+      <Text style={{ fontSize: 13, color: MUTED, lineHeight: "1.6" }}>
+        Si vous n’êtes pas à l’origine de cette inscription, vous pouvez ignorer cet email.
+      </Text>
+    </EmailLayout>
+  );
+}
 
 /** Guest requests a host — sent to the host */
 export function NewRequestEmail({
@@ -488,10 +567,16 @@ export type EmailPayload =
   | { type: "invitation"; hostName: string; date: string; message?: string }
   | { type: "request_response"; hostName: string; date: string; accepted: boolean }
   | { type: "invitation_response"; guestName: string; date: string; accepted: boolean }
-  | { type: "contact"; name: string; email: string; message: string };
+  | { type: "contact"; name: string; email: string; message: string }
+  | { type: "reset_password"; url: string }
+  | { type: "verify_otp"; otp: string };
 
 export async function renderEmail(payload: EmailPayload): Promise<string> {
   switch (payload.type) {
+    case "reset_password":
+      return await render(<ResetPasswordEmail url={payload.url} />);
+    case "verify_otp":
+      return await render(<VerifyOtpEmail otp={payload.otp} />);
     case "new_request":
       return await render(
         <NewRequestEmail

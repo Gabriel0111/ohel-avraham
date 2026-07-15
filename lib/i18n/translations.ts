@@ -391,6 +391,15 @@ export const translations = {
       resetPasswordSuccess: "Password updated. You can now log in.",
       invalidResetLink: "This reset link is invalid or has expired.",
       requestNewResetLink: "Request a new link",
+      verifyCodeTitle: "Confirm your email",
+      verifyCodeDesc:
+        "We sent a 6-digit code to {email}. Enter it below to continue your registration.",
+      verifyCodeButton: "Verify",
+      verifyCodeInvalid: "This code is invalid or has expired.",
+      verifyCodeSuccess: "Email verified!",
+      resendCode: "Resend code",
+      resendCodeIn: "Resend code in {seconds}s",
+      codeSent: "A new code has been sent to your email.",
     },
     errors: {
       invalidCredentials: "Incorrect email or password.",
@@ -1068,6 +1077,15 @@ export const translations = {
         "Mot de passe mis à jour. Vous pouvez maintenant vous connecter.",
       invalidResetLink: "Ce lien de réinitialisation est invalide ou a expiré.",
       requestNewResetLink: "Demander un nouveau lien",
+      verifyCodeTitle: "Confirmez votre email",
+      verifyCodeDesc:
+        "Nous avons envoyé un code à 6 chiffres à {email}. Saisissez-le ci-dessous pour poursuivre votre inscription.",
+      verifyCodeButton: "Vérifier",
+      verifyCodeInvalid: "Ce code est invalide ou a expiré.",
+      verifyCodeSuccess: "Email vérifié !",
+      resendCode: "Renvoyer le code",
+      resendCodeIn: "Renvoyer le code dans {seconds}s",
+      codeSent: "Un nouveau code a été envoyé à votre adresse email.",
     },
     errors: {
       invalidCredentials: "Email ou mot de passe incorrect.",
@@ -1737,6 +1755,15 @@ export const translations = {
       resetPasswordSuccess: "הסיסמה עודכנה. כעת תוכל להתחבר.",
       invalidResetLink: "קישור איפוס זה אינו תקין או שפג תוקפו.",
       requestNewResetLink: "בקש קישור חדש",
+      verifyCodeTitle: "אמת את האימייל שלך",
+      verifyCodeDesc:
+        "שלחנו קוד בן 6 ספרות אל {email}. הזן אותו למטה כדי להמשיך בהרשמה.",
+      verifyCodeButton: "אמת",
+      verifyCodeInvalid: "הקוד שגוי או שפג תוקפו.",
+      verifyCodeSuccess: "האימייל אומת!",
+      resendCode: "שלח קוד מחדש",
+      resendCodeIn: "שלח קוד מחדש בעוד {seconds} שניות",
+      codeSent: "קוד חדש נשלח לכתובת האימייל שלך.",
     },
     errors: {
       invalidCredentials: "אימייל או סיסמה שגויים.",

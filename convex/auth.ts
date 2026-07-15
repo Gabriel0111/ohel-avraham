@@ -1,8 +1,10 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
-import { components } from "./_generated/api";
+import { requireActionCtx } from "@convex-dev/better-auth/utils";
+import { components, internal } from "./_generated/api";
 import { DataModel } from "./_generated/dataModel";
 import { betterAuth } from "better-auth";
+import { emailOTP } from "better-auth/plugins";
 import authConfig from "./auth.config";
 
 import { nextCookies } from "better-auth/next-js";
@@ -21,56 +23,19 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
       enabled: true,
       requireEmailVerification: false,
       sendResetPassword: async ({ user, url }) => {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Ohel Avraham <noreply@mail.ohel-avraham.com>",
-            to: user.email,
-            subject: "Reset your password – Ohel Avraham",
-            html: `
-              <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#111;">
-                <h1 style="font-size:22px;font-weight:600;margin-bottom:8px;">Reset your password</h1>
-                <p style="color:#555;line-height:1.6;margin-bottom:28px;">
-                  We received a request to reset the password for your <strong>Ohel Avraham</strong> account. Click the button below to choose a new password. This link expires in 1 hour.
-                </p>
-                <a href="${url}" style="display:inline-block;background:#111;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;">Reset my password</a>
-                <p style="color:#999;margin-top:28px;font-size:13px;">If you did not request a password reset, you can safely ignore this email — your password will stay the same.</p>
-              </div>
-            `,
-          }),
+        // Rendering (React components, in convex/emails.tsx) needs Node APIs
+        // this httpAction's default runtime doesn't have, so it's delegated
+        // to the "use node" internal action instead of rendered inline.
+        await requireActionCtx(ctx).scheduler.runAfter(0, internal.emails.sendEmail, {
+          to: user.email,
+          subject: "Reset your password – Ohel Avraham",
+          payload: { type: "reset_password", url },
         });
       },
     },
-    emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: "Ohel Avraham <noreply@mail.ohel-avraham.com>",
-            to: user.email,
-            subject: "Verify your email – Ohel Avraham",
-            html: `
-              <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#111;">
-                <h1 style="font-size:22px;font-weight:600;margin-bottom:8px;">Verify your email</h1>
-                <p style="color:#555;line-height:1.6;margin-bottom:28px;">
-                  Thank you for joining <strong>Ohel Avraham</strong>. Click the button below to verify your email address and complete your registration.
-                </p>
-                <a href="${url}" style="display:inline-block;background:#111;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;">Verify my email</a>
-                <p style="color:#999;margin-top:28px;font-size:13px;">If you did not create an account, you can safely ignore this email.</p>
-              </div>
-            `,
-          }),
-        });
-      },
-    },
+    // No `emailVerification.sendVerificationEmail` here: the emailOTP plugin's
+    // `overrideDefaultEmailVerification` below takes over email verification
+    // entirely and routes it through `sendVerificationOTP`.
     user: {
       deleteUser: {
         enabled: true,
@@ -93,5 +58,21 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
     plugins: [
       convex({ authConfig }),
       nextCookies(),
+      emailOTP({
+        // Sends the verification code right after email/password sign-up,
+        // and routes every "verify email" flow through a code instead of a link.
+        sendVerificationOnSignUp: true,
+        overrideDefaultEmailVerification: true,
+        otpLength: 6,
+        expiresIn: 60 * 10, // 10 minutes
+        sendVerificationOTP: async ({ email, otp, type }) => {
+          if (type !== "email-verification") return;
+          await requireActionCtx(ctx).scheduler.runAfter(0, internal.emails.sendEmail, {
+            to: email,
+            subject: `${otp} is your verification code – Ohel Avraham`,
+            payload: { type: "verify_otp", otp },
+          });
+        },
+      }),
     ],
   });

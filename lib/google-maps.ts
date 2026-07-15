@@ -1,10 +1,6 @@
 // Google Maps API type definitions
-declare global {
-  interface Window {
-    google: typeof google;
-  }
-}
-
+// (No `Window.google` augmentation here: better-auth's one-tap client plugin
+// already declares it globally and the two definitions would conflict.)
 declare namespace google {
   namespace maps {
     class Map {

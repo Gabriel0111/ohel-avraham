@@ -9,6 +9,17 @@ export const dynamic = "force-dynamic";
 
 const SAMPLES: { label: string; payload: EmailPayload }[] = [
   {
+    label: "Réinitialisation du mot de passe",
+    payload: {
+      type: "reset_password",
+      url: "https://ohel-avraham.com/reset-password?token=sample",
+    },
+  },
+  {
+    label: "Code de vérification email",
+    payload: { type: "verify_otp", otp: "482913" },
+  },
+  {
     label: "Nouvelle demande (→ hôte)",
     payload: {
       type: "new_request",

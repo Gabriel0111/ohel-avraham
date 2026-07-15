@@ -16,9 +16,20 @@ import { useAuth } from "@/app/ConvexClientProvider";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { LogOutIcon } from "lucide-react";
+import VerifyEmailForm from "@/app/(auth)/_components/verify-email-form";
 
 const CompleteRegistration = () => {
   const [selectedUserType, setSelectedUserType] = useState<string>();
+  // Un compte email/mot de passe doit confirmer son adresse (code OTP) avant
+  // de choisir son rôle. `justVerified` évite d'attendre le refetch de session.
+  const { data: session, isPending: isSessionPending } =
+    authClient.useSession();
+  const [justVerified, setJustVerified] = useState(false);
+  const needsEmailVerification =
+    !isSessionPending &&
+    !!session?.user &&
+    !session.user.emailVerified &&
+    !justVerified;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -94,8 +105,22 @@ const CompleteRegistration = () => {
       </div>
 
       <div className="mx-auto space-y-5 w-full max-w-md px-2 mt-10">
+        {needsEmailVerification && (
+          <motion.div
+            key="verify-email"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <VerifyEmailForm
+              email={session.user.email}
+              onVerified={() => setJustVerified(true)}
+            />
+          </motion.div>
+        )}
+
         <AnimatePresence mode="wait">
-          {!userType && (
+          {!needsEmailVerification && !userType && (
             <motion.div
               key="host"
               initial={{ opacity: 0, x: 20 }}
@@ -126,7 +151,7 @@ const CompleteRegistration = () => {
         </AnimatePresence>
 
         <AnimatePresence mode="wait">
-          {userType === "host" && (
+          {!needsEmailVerification && userType === "host" && (
             <motion.div
               key="host"
               initial={{ opacity: 0, x: 20 }}
@@ -138,7 +163,7 @@ const CompleteRegistration = () => {
             </motion.div>
           )}
 
-          {userType === "guest" && (
+          {!needsEmailVerification && userType === "guest" && (
             <motion.div
               key="guest"
               initial={{ opacity: 0, x: 20 }}

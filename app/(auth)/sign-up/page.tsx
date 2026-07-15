@@ -35,6 +35,7 @@ import GoogleIcon from "@/components/icons/google";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useErrorMessage, useT } from "@/lib/i18n/context";
+import { OTP_JUST_SENT_KEY } from "@/app/(auth)/_components/verify-email-form";
 
 const SignUpPage = () => {
   const [isGoogleLoading, startGoogle] = useTransition();
@@ -95,6 +96,9 @@ const SignUpPage = () => {
       }
 
       toast.success(t.auth.signedUpSuccess);
+      // Better Auth already sent the verification code (sendVerificationOnSignUp);
+      // this flag stops the verify form from immediately re-sending one.
+      sessionStorage.setItem(OTP_JUST_SENT_KEY, "1");
       router.push("/complete-registration");
     });
   };
