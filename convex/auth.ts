@@ -18,6 +18,10 @@ export const authComponent = createClient<DataModel>(components.betterAuth);
 export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth({
     baseURL: siteUrl,
+    trustedOrigins: [
+      "https://ohel-avraham.com",
+      "https://www.ohel-avraham.com",
+    ],
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,
@@ -26,11 +30,15 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
         // Rendering (React components, in convex/emails.tsx) needs Node APIs
         // this httpAction's default runtime doesn't have, so it's delegated
         // to the "use node" internal action instead of rendered inline.
-        await requireActionCtx(ctx).scheduler.runAfter(0, internal.emails.sendEmail, {
-          to: user.email,
-          subject: "Reset your password – Ohel Avraham",
-          payload: { type: "reset_password", url },
-        });
+        await requireActionCtx(ctx).scheduler.runAfter(
+          0,
+          internal.emails.sendEmail,
+          {
+            to: user.email,
+            subject: "Reset your password – Ohel Avraham",
+            payload: { type: "reset_password", url },
+          },
+        );
       },
     },
     // No `emailVerification.sendVerificationEmail` here: the emailOTP plugin's
@@ -67,11 +75,15 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
         expiresIn: 60 * 10, // 10 minutes
         sendVerificationOTP: async ({ email, otp, type }) => {
           if (type !== "email-verification") return;
-          await requireActionCtx(ctx).scheduler.runAfter(0, internal.emails.sendEmail, {
-            to: email,
-            subject: `${otp} is your verification code – Ohel Avraham`,
-            payload: { type: "verify_otp", otp },
-          });
+          await requireActionCtx(ctx).scheduler.runAfter(
+            0,
+            internal.emails.sendEmail,
+            {
+              to: email,
+              subject: `${otp} is your verification code – Ohel Avraham`,
+              payload: { type: "verify_otp", otp },
+            },
+          );
         },
       }),
     ],

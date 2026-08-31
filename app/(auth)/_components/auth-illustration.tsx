@@ -1,15 +1,22 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * "La lumière au seuil" — Configuration globale et design tokens.
  *
- * La scène : la tente d'Abraham ouverte sur la nuit du désert. À l'intérieur,
+ * La scène : la tente d'Abraham ouverte sur le désert. À l'intérieur,
  * une table dressée, des bougies, des convives déjà installés. Au seuil, l'hôte
  * fait signe à deux voyageurs qui approchent. Au-dessus, une colonne de lumière
  * très discrète — la Présence que l'hospitalité « dépasse » (Chabbat 127a).
+ *
+ * Toutes les animations sont en CSS pur (@keyframes), jamais pilotées par
+ * React/JS — avec ~100 étoiles à l'écran, une instance de motion par étoile
+ * était le vrai coût ; le compositeur du navigateur gère ça sans effort.
+ * Le mode réduit (`prefers-reduced-motion`) coupe simplement les animations
+ * via media query : chaque élément porte déjà, en attribut de présentation,
+ * l'opacité de repos qui doit s'afficher quand l'animation est coupée.
  */
 const CONFIG = {
   STAR_MIN_RADIUS: 0.18,
@@ -18,19 +25,33 @@ const CONFIG = {
   TOTAL_STAR_LIMIT: 105,
   MIN_STAR_DISTANCE: 4.6,
   CLUSTER_COUNT: 2,
-  colors: {
-    // Ciel nocturne : bleu nuit profond -> ambre chaud à l'horizon
-    skyTop: "oklch(0.16 0.05 258)",
-    skyMid: "oklch(0.19 0.06 275)",
-    skyWarm: "oklch(0.21 0.07 30)",
-    skyBottom: "oklch(0.24 0.08 45)",
+};
+
+// Ciel nocturne (bleu nuit -> ambre chaud à l'horizon) et ciel de fin d'après-midi
+// avant Chabbat (bleu doux -> or) — même composition, deux moments du jour.
+const SKY = {
+  dark: {
+    top: "oklch(0.16 0.05 258)",
+    mid: "oklch(0.19 0.06 275)",
+    warm: "oklch(0.21 0.07 30)",
+    bottom: "oklch(0.24 0.08 45)",
     horizonGlow: "oklch(0.52 0.16 55)",
-    starBright: "oklch(0.98 0.02 82)",
-    starDim: "oklch(0.86 0.015 72)",
-    starHalo: "oklch(0.82 0.10 58)",
-    silhouette: "oklch(0.12 0.045 38)",
-    flame: "oklch(0.96 0.16 88)",
   },
+  light: {
+    top: "oklch(0.72 0.07 240)",
+    mid: "oklch(0.80 0.07 70)",
+    warm: "oklch(0.86 0.09 55)",
+    bottom: "oklch(0.90 0.09 48)",
+    horizonGlow: "oklch(0.88 0.13 55)",
+  },
+};
+
+const COLORS = {
+  starBright: "oklch(0.98 0.02 82)",
+  starDim: "oklch(0.86 0.015 72)",
+  starHalo: "oklch(0.82 0.10 58)",
+  silhouette: "oklch(0.12 0.045 38)",
+  flame: "oklch(0.96 0.16 88)",
 };
 
 function mulberry32(seed: number) {
@@ -147,8 +168,42 @@ const EMBERS = [
   { x: 53.5, y: 104.5, drift: 0.9, dur: 8, delay: 5.5 },
 ];
 
+// Nuages — quelques touffes ovales superposées, soufflées très doucement.
+// x > 32 pour rester hors de la zone du logo (voir `reserved` pour les étoiles).
+const CLOUDS = [
+  { x: 46, y: 12, scale: 0.85, drift: 3, dur: 46, delay: 0 },
+  { x: 74, y: 9, scale: 0.7, drift: -2.4, dur: 52, delay: 6 },
+  { x: 40, y: 24, scale: 0.6, drift: 2, dur: 60, delay: 12 },
+];
+
+/** Reads the theme straight off `<html class>` instead of next-themes'
+ * `useTheme()` — `AnimatedThemeToggler` flips that class (and localStorage)
+ * directly, bypassing next-themes' own React state entirely, so a component
+ * subscribed via `useTheme()` never re-renders when the toggle is pressed. */
+function useIsLightTheme() {
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    const update = () =>
+      setIsLight(!document.documentElement.classList.contains("dark"));
+    update();
+
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return isLight;
+}
+
 export function AuthIllustration() {
-  const reduce = useReducedMotion();
+  // False on the server and on first paint (matches the SVG's dark fallback
+  // background below), then corrected on mount.
+  const isLight = useIsLightTheme();
+  const sky = isLight ? SKY.light : SKY.dark;
 
   return (
     <svg
@@ -165,9 +220,7 @@ export function AuthIllustration() {
           .hdr-hearth { fill: color(rec2100-pq 0.8 0.55 0.15); }
           .star-bright { fill: color(rec2100-pq 0.8 0.8 0.9); }
         }
-        /* Stars twinkle on plain CSS animations (not per-element framer-motion
-           instances) — with ~100 stars on screen, driving each one from JS was
-           the actual cause of the slowdown; the compositor handles this fine. */
+
         @keyframes star-twinkle-bright {
           0%, 100% { opacity: 0.25; transform: scale(0.85); }
           50% { opacity: 0.9; transform: scale(1.15); }
@@ -176,19 +229,95 @@ export function AuthIllustration() {
           0%, 100% { opacity: var(--op-lo); }
           50% { opacity: var(--op-hi); }
         }
+        @keyframes column-breathe {
+          0%, 100% { opacity: 0.7; }
+          50% { opacity: 1; }
+        }
+        @keyframes lamp-flicker {
+          0%, 100% { opacity: 0.75; }
+          25%, 75% { opacity: 1; }
+          50% { opacity: 0.85; }
+        }
+        @keyframes candle-flicker {
+          0%, 100% { opacity: 0.8; }
+          33% { opacity: 1; }
+          66% { opacity: 0.9; }
+        }
+        @keyframes ember-rise {
+          0% { opacity: 0; transform: translate(0px, 0px); }
+          15% { opacity: 0.7; }
+          100% { opacity: 0; transform: translate(var(--drift), -7px); }
+        }
+        @keyframes spill-breathe {
+          0%, 100% { opacity: 0.75; }
+          50% { opacity: 0.88; }
+        }
+
+        .star-twinkle,
+        .star-twinkle-dim,
+        .column-breathe,
+        .lamp-flicker,
+        .candle-flicker,
+        .ember-rise,
+        .spill-breathe {
+          animation-fill-mode: backwards;
+        }
+        /* SVG shapes default to transform-box: view-box in some browsers, so a
+           CSS scale() would pivot around the whole illustration's origin
+           instead of the shape itself — fill-box anchors it correctly. */
         .star-twinkle {
-          animation: star-twinkle-bright var(--dur) ease-in-out var(--delay) infinite;
-          /* SVG shapes default to transform-box: view-box in some browsers,
-             so a CSS scale() would pivot around the whole illustration's
-             origin instead of the star itself — fill-box anchors it correctly. */
+          animation-name: star-twinkle-bright;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          animation-duration: var(--dur);
+          animation-delay: var(--delay);
           transform-box: fill-box;
           transform-origin: center;
         }
         .star-twinkle-dim {
-          animation: star-twinkle-dim var(--dur) ease-in-out var(--delay) infinite;
+          animation-name: star-twinkle-dim;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+          animation-duration: var(--dur);
+          animation-delay: var(--delay);
+        }
+        .column-breathe {
+          animation: column-breathe 11s ease-in-out infinite;
+        }
+        .lamp-flicker {
+          animation: lamp-flicker 2.3s ease-in-out infinite;
+        }
+        .candle-flicker {
+          animation: candle-flicker 3.1s ease-in-out infinite;
+        }
+        .ember-rise {
+          animation-name: ember-rise;
+          animation-timing-function: ease-out;
+          animation-iteration-count: infinite;
+          animation-duration: var(--dur);
+          animation-delay: var(--delay);
+        }
+        .spill-breathe {
+          animation: spill-breathe 5s ease-in-out infinite;
+        }
+        @keyframes cloud-drift {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(var(--drift)); }
+        }
+        .cloud-drift {
+          animation: cloud-drift var(--dur) ease-in-out var(--delay) infinite backwards;
         }
         @media (prefers-reduced-motion: reduce) {
-          .star-twinkle, .star-twinkle-dim { animation: none; }
+          .star-twinkle,
+          .star-twinkle-dim,
+          .column-breathe,
+          .lamp-flicker,
+          .candle-flicker,
+          .ember-rise,
+          .spill-breathe,
+          .cloud-drift {
+            animation: none;
+          }
         }
       `}</style>
 
@@ -223,23 +352,15 @@ export function AuthIllustration() {
 
         {/* Dégradé du ciel */}
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={CONFIG.colors.skyTop} />
-          <stop offset="42%" stopColor={CONFIG.colors.skyMid} />
-          <stop offset="72%" stopColor={CONFIG.colors.skyWarm} />
-          <stop offset="100%" stopColor={CONFIG.colors.skyBottom} />
+          <stop offset="0%" stopColor={sky.top} />
+          <stop offset="42%" stopColor={sky.mid} />
+          <stop offset="72%" stopColor={sky.warm} />
+          <stop offset="100%" stopColor={sky.bottom} />
         </linearGradient>
 
         <radialGradient id="horizonGlow" cx="50%" cy="70%" r="52%">
-          <stop
-            offset="0%"
-            stopColor={CONFIG.colors.horizonGlow}
-            stopOpacity="0.45"
-          />
-          <stop
-            offset="100%"
-            stopColor={CONFIG.colors.horizonGlow}
-            stopOpacity="0"
-          />
+          <stop offset="0%" stopColor={sky.horizonGlow} stopOpacity="0.45" />
+          <stop offset="100%" stopColor={sky.horizonGlow} stopOpacity="0" />
         </radialGradient>
 
         {/* Colonne de lumière descendante — la Présence, en retrait */}
@@ -328,79 +449,113 @@ export function AuthIllustration() {
           <stop offset="0%" stopColor="oklch(0.09 0.02 42)" stopOpacity="0" />
           <stop offset="100%" stopColor="oklch(0.09 0.02 42)" stopOpacity="0.85" />
         </linearGradient>
+
+        {/* Assombrit le haut pour le logo — sans ça le texte clair devient
+            illisible sur un ciel de jour pâle ; sans effet notable sur le
+            ciel nocturne, déjà sombre à cet endroit. */}
+        <linearGradient id="topScrim" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="oklch(0.05 0.02 42)" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="oklch(0.05 0.02 42)" stopOpacity="0" />
+        </linearGradient>
+
+        {/* Lavis de jour — dégradé plutôt qu'un aplat, pour que le lift de
+            luminosité s'estompe au lieu de couper net à son bord supérieur. */}
+        <linearGradient id="dayWash" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="oklch(0.93 0.05 75)" stopOpacity="0" />
+          <stop offset="25%" stopColor="oklch(0.93 0.05 75)" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="oklch(0.93 0.05 75)" stopOpacity="0.55" />
+        </linearGradient>
+
+        <filter id="cloudBlur" x="-40%" y="-80%" width="180%" height="260%">
+          <feGaussianBlur stdDeviation="0.8" />
+        </filter>
       </defs>
 
       {/* Fond du Ciel */}
       <rect width="100" height="150" fill="url(#sky)" />
       <rect width="100" height="150" fill="url(#horizonGlow)" />
 
+      {/* Nuages — le ciel de jour, sans étoiles, avait besoin de quelques
+          présences. Position (translate/scale, statique) sur le <g>
+          extérieur ; l'animation CSS (qui pose sa propre transform) reste
+          sur un enfant — sinon elle remplace entièrement le translate au
+          lieu de s'y ajouter, et l'élément saute à l'origine du SVG. */}
+      {isLight &&
+        CLOUDS.map((c, i) => (
+          <g key={i} transform={`translate(${c.x} ${c.y}) scale(${c.scale})`}>
+            <g
+              filter="url(#cloudBlur)"
+              className="cloud-drift"
+              style={
+                {
+                  "--drift": `${c.drift}px`,
+                  "--dur": `${c.dur}s`,
+                  "--delay": `${c.delay}s`,
+                } as React.CSSProperties
+              }
+            >
+              <ellipse cx="0" cy="0" rx="7" ry="2.1" fill="oklch(0.98 0.02 80)" opacity="0.55" />
+              <ellipse cx="-4" cy="0.6" rx="4.2" ry="1.6" fill="oklch(0.98 0.02 80)" opacity="0.5" />
+              <ellipse cx="4.2" cy="0.7" rx="4.6" ry="1.7" fill="oklch(0.98 0.02 80)" opacity="0.5" />
+            </g>
+          </g>
+        ))}
+
       {/* Colonne de lumière divine, très subtile, au-dessus de la tente */}
-      <motion.path
+      <path
         d="M24.5 -6 L68.5 -6 L54.5 52 L38.5 52 Z"
         fill="url(#shekhinah)"
         filter="url(#columnBlur)"
+        className="column-breathe"
+        opacity={0.85}
         style={{ mixBlendMode: "screen" }}
-        initial={{ opacity: reduce ? 0.85 : 0.7 }}
-        animate={reduce ? undefined : { opacity: [0.7, 1, 0.7] }}
-        transition={
-          reduce
-            ? undefined
-            : { duration: 11, repeat: Infinity, ease: "easeInOut" }
-        }
       />
 
-      {/* Étoiles */}
-      {STARS.map((s, i) =>
-        s.bright ? (
-          <g key={i} transform={`translate(${s.x} ${s.y})`}>
+      {/* Étoiles — masquées de jour */}
+      {!isLight &&
+        STARS.map((s, i) =>
+          s.bright ? (
+            <g key={i} transform={`translate(${s.x} ${s.y})`}>
+              <circle
+                r={s.r * 2.8}
+                fill={COLORS.starHalo}
+                opacity={0.12}
+                filter="url(#bloom)"
+              />
+              <path
+                d={sparkle(s.r * 3)}
+                fill={COLORS.starBright}
+                className={cn("star-bright", "star-twinkle")}
+                opacity={0.4}
+                style={
+                  {
+                    "--dur": `${s.dur}s`,
+                    "--delay": `${s.delay}s`,
+                  } as React.CSSProperties
+                }
+              />
+              <circle r={s.r} fill={COLORS.starBright} className="star-bright" />
+            </g>
+          ) : (
             <circle
-              r={s.r * 2.8}
-              fill={CONFIG.colors.starHalo}
-              opacity={0.12}
-              filter="url(#bloom)"
-            />
-            <path
-              d={sparkle(s.r * 3)}
-              fill={CONFIG.colors.starBright}
-              className={cn("star-bright", !reduce && "star-twinkle")}
-              opacity={reduce ? 0.4 : undefined}
+              key={i}
+              cx={s.x}
+              cy={s.y}
+              r={s.r}
+              fill={COLORS.starDim}
+              className="star-twinkle-dim"
+              opacity={s.base}
               style={
-                reduce
-                  ? undefined
-                  : ({
-                      "--dur": `${s.dur}s`,
-                      "--delay": `${s.delay}s`,
-                    } as React.CSSProperties)
+                {
+                  "--op-lo": s.base * 0.4,
+                  "--op-hi": s.base * 1.2,
+                  "--dur": `${s.dur * 1.2}s`,
+                  "--delay": `${s.delay}s`,
+                } as React.CSSProperties
               }
             />
-            <circle
-              r={s.r}
-              fill={CONFIG.colors.starBright}
-              className="star-bright"
-            />
-          </g>
-        ) : (
-          <circle
-            key={i}
-            cx={s.x}
-            cy={s.y}
-            r={s.r}
-            fill={CONFIG.colors.starDim}
-            className={!reduce ? "star-twinkle-dim" : undefined}
-            opacity={reduce ? s.base : undefined}
-            style={
-              reduce
-                ? undefined
-                : ({
-                    "--op-lo": s.base * 0.4,
-                    "--op-hi": s.base * 1.2,
-                    "--dur": `${s.dur * 1.2}s`,
-                    "--delay": `${s.delay}s`,
-                  } as React.CSSProperties)
-            }
-          />
-        ),
-      )}
+          ),
+        )}
 
       {/* Dunes lointaines */}
       <path
@@ -457,23 +612,15 @@ export function AuthIllustration() {
             d="M48.9 65.2 L51.1 65.2 L50.7 67 Q50 67.6 49.3 67 Z"
             fill="oklch(0.16 0.05 38)"
           />
-          <motion.ellipse
+          <ellipse
             cx="50"
             cy="64.5"
             rx="0.5"
             ry="0.85"
-            fill={CONFIG.colors.flame}
-            className="hdr-hearth"
+            fill={COLORS.flame}
+            className={cn("hdr-hearth", "lamp-flicker")}
             filter="url(#bloom)"
-            initial={{ opacity: reduce ? 0.95 : 0.8 }}
-            animate={
-              reduce ? undefined : { opacity: [0.75, 1, 0.85, 1, 0.75] }
-            }
-            transition={
-              reduce
-                ? undefined
-                : { duration: 2.3, repeat: Infinity, ease: "easeInOut" }
-            }
+            opacity={0.95}
           />
 
           {/* Table basse */}
@@ -491,21 +638,13 @@ export function AuthIllustration() {
             d="M48.2 97.6 L48.8 97.6 L48.8 99.8 L48.2 99.8 Z M51.2 97.6 L51.8 97.6 L51.8 99.8 L51.2 99.8 Z"
             fill="oklch(0.25 0.06 45)"
           />
-          <motion.g
-            initial={{ opacity: reduce ? 0.95 : 0.85 }}
-            animate={reduce ? undefined : { opacity: [0.8, 1, 0.9, 0.8] }}
-            transition={
-              reduce
-                ? undefined
-                : { duration: 3.1, repeat: Infinity, ease: "easeInOut" }
-            }
-          >
+          <g className="candle-flicker" opacity={0.95}>
             <ellipse
               cx="48.5"
               cy="97"
               rx="0.32"
               ry="0.6"
-              fill={CONFIG.colors.flame}
+              fill={COLORS.flame}
               className="hdr-hearth"
               filter="url(#bloom)"
             />
@@ -514,11 +653,11 @@ export function AuthIllustration() {
               cy="97"
               rx="0.32"
               ry="0.6"
-              fill={CONFIG.colors.flame}
+              fill={COLORS.flame}
               className="hdr-hearth"
               filter="url(#bloom)"
             />
-          </motion.g>
+          </g>
           {/* Carafe */}
           <path
             d="M53.2 98.2 Q53.9 98.5 53.8 99.2 L53.6 99.8 L52.9 99.8 Q52.6 98.9 53.2 98.2 Z"
@@ -611,7 +750,7 @@ export function AuthIllustration() {
         />
 
         {/* L'hôte au seuil, geste d'invitation vers les arrivants */}
-        <g fill={CONFIG.colors.silhouette}>
+        <g fill={COLORS.silhouette}>
           <circle cx="60.5" cy="87.9" r="1.45" />
           <path d="M58.8 106 Q58.4 96.5 59.6 91.8 Q60.1 90.4 60.9 90.4 Q61.9 90.4 62.4 92.4 L66.9 91.9 Q67.5 92.2 67.2 93 L63.1 94.3 Q63.7 99.4 63.7 106 Q61.2 106.35 58.8 106 Z" />
         </g>
@@ -628,39 +767,35 @@ export function AuthIllustration() {
           fill="oklch(0.22 0.04 42)"
         />
 
-        {/* Braises portées par l'air chaud devant l'entrée */}
-        {!reduce &&
-          EMBERS.map((e, i) => (
-            <motion.circle
-              key={i}
-              cx={e.x}
-              cy={e.y}
-              r="0.28"
-              fill="oklch(0.85 0.16 70)"
-              initial={{ opacity: 0, y: 0 }}
-              animate={{ opacity: [0, 0.7, 0], y: -7, x: e.drift }}
-              transition={{
-                duration: e.dur,
-                delay: e.delay,
-                repeat: Infinity,
-                ease: "easeOut",
-              }}
-            />
-          ))}
+        {/* Braises portées par l'air chaud devant l'entrée — invisibles au
+            repos (opacity 0), l'animation les fait apparaître */}
+        {EMBERS.map((e, i) => (
+          <circle
+            key={i}
+            cx={e.x}
+            cy={e.y}
+            r="0.28"
+            fill="oklch(0.85 0.16 70)"
+            className="ember-rise"
+            opacity={0}
+            style={
+              {
+                "--drift": `${e.drift}px`,
+                "--dur": `${e.dur}s`,
+                "--delay": `${e.delay}s`,
+              } as React.CSSProperties
+            }
+          />
+        ))}
 
         {/* Lumière volumétrique qui s'échappe vers le sol */}
-        <motion.path
+        <path
           d="M39.5 106 L60.5 106 L91 150 L11 150 Z"
           fill="url(#volumetricSpill)"
           filter="url(#spillBlur)"
+          className="spill-breathe"
+          opacity={0.8}
           style={{ mixBlendMode: "screen" }}
-          initial={{ opacity: 0.8 }}
-          animate={reduce ? undefined : { opacity: [0.75, 0.88, 0.75] }}
-          transition={
-            reduce
-              ? undefined
-              : { duration: 5, repeat: Infinity, ease: "easeInOut" }
-          }
         />
         {/* Cœur de la lumière au seuil */}
         <ellipse
@@ -716,6 +851,25 @@ export function AuthIllustration() {
           fill="none"
         />
       </g>
+
+      {/* Lavis chaud qui éclaircit tente/sol/dunes en journée, sans retoucher
+          chaque teinte une à une : soft-light lève les tons sombres tout en
+          laissant les zones déjà claires (bougies, lueur intérieure)
+          quasiment intactes. Dégradé en haut du rect pour ne pas couper net
+          la transition avec le ciel au-dessus. */}
+      {isLight && (
+        <rect
+          x="0"
+          y="30"
+          width="100"
+          height="120"
+          fill="url(#dayWash)"
+          style={{ mixBlendMode: "soft-light" }}
+        />
+      )}
+
+      {/* Scrim haut pour la lisibilité du logo */}
+      <rect x="0" y="0" width="100" height="26" fill="url(#topScrim)" />
 
       {/* Scrim bas pour la lisibilité de la citation */}
       <rect x="0" y="114" width="100" height="36" fill="url(#bottomScrim)" />
