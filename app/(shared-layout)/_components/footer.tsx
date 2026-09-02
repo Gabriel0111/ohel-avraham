@@ -3,6 +3,7 @@
 import { Logo } from "@/components/icons/logo";
 import Link from "next/link";
 import { useT } from "@/lib/i18n/context";
+import { openCookieSettings } from "@/lib/cookie-consent";
 
 export function Footer() {
   const { t } = useT();
@@ -17,7 +18,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex gap-16">
+        <div className="flex flex-wrap gap-10 sm:gap-16">
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">{t.footer.platform}</h4>
             <Link
@@ -53,6 +54,40 @@ export function Footer() {
             >
               {t.nav.login}
             </Link>
+          </div>
+          <div className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-foreground">{t.footer.legal}</h4>
+            <Link
+              href="/help"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.footer.help}
+            </Link>
+            <Link
+              href="/terms"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.footer.terms}
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.footer.privacy}
+            </Link>
+            <Link
+              href="/cookies"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.footer.cookies}
+            </Link>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="text-start text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.footer.cookieSettings}
+            </button>
           </div>
         </div>
       </div>

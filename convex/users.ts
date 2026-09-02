@@ -1,7 +1,9 @@
 import { SystemRole, UILanguage } from "./enums";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
-import { api, components } from "./_generated/api";
+import { api, components, internal } from "./_generated/api";
+import { isConvexStorageUrl, isIngestibleImageUrl } from "./helpers/avatarUrl";
 import { canAccess } from "./helpers/canAccessRole";
 import { authComponent } from "./auth";
 import { deleteUserData } from "./helpers/deleteUserData";
@@ -25,6 +27,9 @@ const UserDoc = v.object({
   email: v.optional(v.string()),
   name: v.optional(v.string()),
   image: v.optional(v.string()),
+  imageStorageId: v.optional(v.id("_storage")),
+  oauthImage: v.optional(v.string()),
+  imageIsCustom: v.optional(v.boolean()),
   language: v.optional(UILanguage),
 });
 
@@ -139,12 +144,24 @@ export const createUser = mutation({
       isVerified: false,
       email,
       name: name ?? "",
+      // Raw provider URL for now — used as the fallback until the scheduled
+      // ingest below copies the photo into Convex storage and rewrites this.
       image: image ?? "",
       // Whatever language the sign-up/login screen was in — set at creation
       // so it's correct immediately, rather than relying solely on the
       // follow-up reconciliation in components/auth-sync.tsx.
       language,
     });
+
+    // Copy the OAuth avatar into our own storage so we're not hotlinking a
+    // provider CDN that 429s. `oauthImage` is left unset until the ingest
+    // succeeds, which gives us a free retry on the next `syncOAuthAvatar`.
+    if (isIngestibleImageUrl(image)) {
+      await ctx.scheduler.runAfter(0, internal.avatars.ingestFromUrl, {
+        authUserId,
+        sourceUrl: image,
+      });
+    }
     return null;
   },
 });
@@ -269,14 +286,73 @@ export const updateUserProfile = mutation({
 
     if (!user) throw new ConvexError({ code: "userNotFound" });
 
-    const updates: { name?: string; image?: string } = {};
+    const updates: {
+      name?: string;
+      image?: string;
+      imageStorageId?: Id<"_storage">;
+      imageIsCustom?: boolean;
+    } = {};
     if (name !== undefined) updates.name = name;
     if (storageId !== undefined) {
       const url = await ctx.storage.getUrl(storageId);
-      if (url) updates.image = url;
+      if (url) {
+        updates.image = url;
+        updates.imageStorageId = storageId;
+        // The user picked their own photo — the OAuth sync must never
+        // overwrite it from here on.
+        updates.imageIsCustom = true;
+        // Drop the previously stored file (a prior upload or an ingested
+        // OAuth avatar) so it doesn't linger as an orphan.
+        if (user.imageStorageId && user.imageStorageId !== storageId) {
+          await ctx.storage.delete(user.imageStorageId);
+        }
+      }
     }
 
     await ctx.db.patch(user._id, updates);
+    return null;
+  },
+});
+
+// Re-checks the caller's OAuth provider photo and, if it changed since we last
+// ingested it, schedules a fresh copy into Convex storage. Called once per page
+// load from components/auth-sync.tsx. Takes no args on purpose: the source URL
+// is read server-side (never trusted from the client, which would be an SSRF
+// vector on the `fetch` inside the ingest action).
+export const syncOAuthAvatar = mutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_authUserId", (q) => q.eq("authUserId", identity.subject))
+      .unique();
+    if (!user) return null;
+
+    // The user uploaded their own photo — leave it alone. Treat a pre-existing
+    // Convex-hosted avatar with no `oauthImage` as custom too (covers uploads
+    // made before this field existed).
+    if (user.imageIsCustom) return null;
+    if (isConvexStorageUrl(user.image) && !user.oauthImage) return null;
+
+    let providerImage: string | undefined;
+    try {
+      const authUser = await authComponent.getAuthUser(ctx);
+      providerImage = authUser?.image ?? undefined;
+    } catch {
+      providerImage = (identity.pictureUrl as string | undefined) ?? undefined;
+    }
+
+    if (!isIngestibleImageUrl(providerImage)) return null;
+    if (providerImage === user.oauthImage) return null;
+
+    await ctx.scheduler.runAfter(0, internal.avatars.ingestFromUrl, {
+      authUserId: user.authUserId,
+      sourceUrl: providerImage,
+    });
     return null;
   },
 });

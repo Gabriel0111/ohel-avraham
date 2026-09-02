@@ -10,7 +10,11 @@ export function AuthPage({ children }: PropsWithChildren) {
   const { t } = useT();
 
   return (
-    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2 outline-none"
+    >
       <div className="relative hidden h-full flex-col border-r p-10 lg:flex overflow-hidden bg-[oklch(0.141_0.008_50)]">
         <AuthIllustration />
 

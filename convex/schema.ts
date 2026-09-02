@@ -16,6 +16,16 @@ export default defineSchema({
     email: v.optional(v.string()),
     name: v.optional(v.string()),
     image: v.optional(v.string()),
+    // Avatar hosting: `image` is the URL rendered everywhere. For OAuth users
+    // we copy the provider photo into Convex storage (Google rate-limits
+    // hotlinking with 429s) and keep:
+    //  - `imageStorageId`: the stored file, so we can delete it on replace/delete
+    //  - `oauthImage`: the last provider URL we successfully ingested, to detect
+    //    when the user changes their Google photo (written only on success)
+    //  - `imageIsCustom`: the user uploaded their own photo — never auto-override
+    imageStorageId: v.optional(v.id("_storage")),
+    oauthImage: v.optional(v.string()),
+    imageIsCustom: v.optional(v.boolean()),
     language: v.optional(UILanguage),
   }).index("by_authUserId", ["authUserId"]),
 

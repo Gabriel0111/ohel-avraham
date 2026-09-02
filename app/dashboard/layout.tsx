@@ -19,7 +19,7 @@ const Layout = ({ children }: PropsWithChildren) => {
       <AppSidebar variant="inset" />
       <SidebarInset className="border-0 md:border border-border shadow-none md:shadow-md m-0 md:m-6 bg-card rounded-none md:rounded-2xl">
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div id="main-content" tabIndex={-1} className="flex flex-1 flex-col outline-none">
           <DashboardContainer>
             <BlockedGuard>
               <ProfileProvider>{children}</ProfileProvider>

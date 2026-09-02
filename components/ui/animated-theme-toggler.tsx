@@ -6,6 +6,7 @@ import { flushSync } from "react-dom";
 
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
+import { useT } from "@/lib/i18n/context";
 
 interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
   duration?: number;
@@ -18,6 +19,7 @@ export const AnimatedThemeToggler = ({
 }: AnimatedThemeTogglerProps) => {
   const [isDark, setIsDark] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { t } = useT();
 
   useEffect(() => {
     const updateTheme = () => {
@@ -56,7 +58,13 @@ export const AnimatedThemeToggler = ({
       localStorage.setItem("theme", newTheme ? "dark" : "light");
     };
 
-    if (typeof document.startViewTransition !== "function") {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (
+      prefersReducedMotion ||
+      typeof document.startViewTransition !== "function"
+    ) {
       applyTheme();
       return;
     }
@@ -94,7 +102,7 @@ export const AnimatedThemeToggler = ({
       {...props}
     >
       {isDark ? <Sun /> : <Moon />}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t.common.toggleTheme}</span>
     </Button>
   );
 };

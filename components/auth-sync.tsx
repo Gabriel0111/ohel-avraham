@@ -25,6 +25,8 @@ export function AuthSync() {
   const { lang, setLang } = useT();
   const setLanguage = useMutation(api.users.setLanguage);
   const langReconciled = useRef(false);
+  const syncOAuthAvatar = useMutation(api.users.syncOAuthAvatar);
+  const avatarReconciled = useRef(false);
 
   useEffect(() => {
     if (isLoading || isConvexLoading) return;
@@ -74,6 +76,18 @@ export function AuthSync() {
       router.replace("/");
     }
   }, [session?.user?.id, isAuthenticated, isLoading, isConvexLoading, isConvexAuthenticated, user?.role, pathname, lang]);
+
+  // Once per page load, ask the server to re-check the OAuth provider photo and
+  // re-copy it into Convex storage if the user changed it. No-op for custom
+  // uploads and when nothing changed — see api.users.syncOAuthAvatar.
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user) return;
+    if (avatarReconciled.current) return;
+    avatarReconciled.current = true;
+    syncOAuthAvatar().catch(() => {
+      // Best-effort; retried on the next page load.
+    });
+  }, [isLoading, isAuthenticated, user]);
 
   // Language preference follows the account across devices. On the first
   // resolved auth state per page load, a stored preference that differs from

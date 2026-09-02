@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { createContext, useContext, useId, useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -78,19 +78,69 @@ const fieldVariants = cva(
   }
 )
 
+/**
+ * Wires a `Field`'s label, control and error together for assistive tech.
+ * `Field` generates the ids; `FieldLabel` / `FieldError` read them, and any
+ * control rendered inside a `Field` picks up `id` + `aria-describedby` via
+ * `useFieldControl` (Input, Textarea, NativeSelect, AutocompleteAddress).
+ */
+type FieldContextValue = {
+  controlId: string
+  labelId: string
+  errorId: string
+}
+
+const FieldContext = createContext<FieldContextValue | null>(null)
+
+export function useFieldContext() {
+  return useContext(FieldContext)
+}
+
+/**
+ * Ids a form control should inherit from its surrounding `Field`. Returns an
+ * empty object outside a `Field`. Spread these BEFORE the caller's own props so
+ * an explicit `id` / `aria-describedby` still wins. `aria-describedby` only
+ * points at the error node when the control is marked invalid.
+ */
+export function useFieldControl(opts?: {
+  invalid?: React.AriaAttributes["aria-invalid"]
+}): { id?: string; "aria-describedby"?: string } {
+  const ctx = useContext(FieldContext)
+  if (!ctx) return {}
+  const invalid =
+    opts?.invalid !== undefined &&
+    opts.invalid !== false &&
+    opts.invalid !== "false"
+  return {
+    id: ctx.controlId,
+    "aria-describedby": invalid ? ctx.errorId : undefined,
+  }
+}
+
 function Field({
   className,
   orientation = "vertical",
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>) {
+  const id = useId()
+  const context = useMemo<FieldContextValue>(
+    () => ({
+      controlId: `field-${id}`,
+      labelId: `field-${id}-label`,
+      errorId: `field-${id}-error`,
+    }),
+    [id]
+  )
   return (
-    <div
-      role="group"
-      data-slot="field"
-      data-orientation={orientation}
-      className={cn(fieldVariants({ orientation }), className)}
-      {...props}
-    />
+    <FieldContext.Provider value={context}>
+      <div
+        role="group"
+        data-slot="field"
+        data-orientation={orientation}
+        className={cn(fieldVariants({ orientation }), className)}
+        {...props}
+      />
+    </FieldContext.Provider>
   )
 }
 
@@ -109,11 +159,16 @@ function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
 
 function FieldLabel({
   className,
+  htmlFor,
+  id,
   ...props
 }: React.ComponentProps<typeof Label>) {
+  const ctx = useContext(FieldContext)
   return (
     <Label
       data-slot="field-label"
+      htmlFor={htmlFor ?? ctx?.controlId}
+      id={id ?? ctx?.labelId}
       className={cn(
         "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border [&>*]:data-[slot=field]:p-4",
@@ -223,13 +278,28 @@ function FieldError({
   }
 
   return (
+    <FieldErrorNode className={className} {...props}>
+      {content}
+    </FieldErrorNode>
+  )
+}
+
+function FieldErrorNode({
+  className,
+  id,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  const ctx = useContext(FieldContext)
+  return (
     <div
       role="alert"
+      id={id ?? ctx?.errorId}
       data-slot="field-error"
       className={cn("text-destructive text-sm font-normal", className)}
       {...props}
     >
-      {content}
+      {children}
     </div>
   )
 }

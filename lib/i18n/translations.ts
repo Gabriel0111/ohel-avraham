@@ -36,6 +36,8 @@ export const translations = {
       logoutSuccess: "Logout successfully.",
       or: "OR",
       home: "Home",
+      skipToContent: "Skip to main content",
+      toggleTheme: "Toggle theme",
       back: "Back",
       notProvided: "Not provided",
     },
@@ -62,6 +64,7 @@ export const translations = {
       selectLanguages: "Select languages",
       notes: "Notes",
       notesPlaceholder: "Notes for further explanations",
+      country: "Country",
       searchCountry: "Search country...",
       noCountryFound: "No country found.",
       firstName: "First Name",
@@ -278,24 +281,48 @@ export const translations = {
       sectionLabel: "Testimonials",
       sectionTitle: "Stories from our community",
       lead: "Real tables, real welcomes.",
+      readMore: "Read the full story",
+      dialogTitle: "Their story",
       items: [
         {
-          name: "Sarah L.",
-          role: "Guest",
+          name: "Sarah",
+          role: "Host family · Kiryat Moshe, Jerusalem",
           quote:
-            "I was new to the city and didn't know anyone. Through Ohel Avraham, I found a family that welcomed me like their own. It changed my Shabbat completely.",
+            "I found Ohel Avraham through the radio, and when I joined as a host I felt the organization had truly opened the gates of hospitality to everyone. I always had someone to turn to with any question, with warm, personal guidance.",
+          fullQuote:
+            "I found Ohel Avraham through the radio, and when I joined as a host I felt the organization had truly opened the gates of hospitality to everyone. Welcoming people I didn't know into my home was something that required guidance, and here I felt I always had someone to turn to with any question. The person who runs the project, who prefers to remain unnamed, takes real personal responsibility and genuinely cares that each stay goes well — from the first calls and messages, through the preparation, to the Shabbat itself. Whenever I needed advice or encouragement, I found an attentive, encouraging ear that made sure everything went smoothly and pleasantly — for the guests and for me as a host. I'm grateful to be part of this special effort that connects people and lets everyone take part in the mitzvah of hospitality.",
         },
         {
-          name: "David & Miriam K.",
-          role: "Hosts",
+          name: "Tamar, 29",
+          role: "Guest · Jerusalem",
           quote:
-            "We have extra seats at our table every week. Now those seats are filled with wonderful people we would never have met otherwise. It enriches our Shabbat.",
+            "I stayed with a lovely Chabad family in Ramat Shlomo. A warm, uplifting atmosphere — a blessed initiative run wholeheartedly.",
+          fullQuote:
+            "I stayed with a lovely Chabad family in Ramat Shlomo. A warm, uplifting atmosphere — a blessed initiative run wholeheartedly.",
         },
         {
-          name: "Yonatan R.",
-          role: "Guest",
+          name: "Sarah, 50",
+          role: "Guest · Tel Aviv",
           quote:
-            "As a student far from home, Shabbat could feel lonely. This platform gave me a community. Now I look forward to every Friday night.",
+            "I had genuinely spiritual Shabbatot, with an uplifting atmosphere of holiness and wonderful hosts who make you feel at home. Delicious food seasoned with words of Torah. Warmly recommended.",
+          fullQuote:
+            "I had genuinely spiritual Shabbatot, with an uplifting atmosphere of holiness and wonderful hosts who make you feel at home. Delicious food seasoned with words of Torah. Warmly recommended.",
+        },
+        {
+          name: "Tehila, 38",
+          role: "Guest · Beit Shemesh",
+          quote:
+            "I stayed with a young, lively Hasidic family in Beitar. An open and lovely couple, a good atmosphere, a beautiful Shabbat table, and bright, sweet children. An excellent Shabbat.",
+          fullQuote:
+            "I stayed with a young, lively Hasidic family in Beitar. An open and lovely couple, a good atmosphere, a beautiful Shabbat table, and bright, sweet children. An excellent Shabbat.",
+        },
+        {
+          name: "Gilat, 43",
+          role: "Guest & Host · Kiryat HaYovel, Jerusalem",
+          quote:
+            "The people I met through Ohel Avraham are warm and host with real joy, wholeheartedly. I stayed with them many times and it was always a good, pleasant experience — and I've hosted too, and met lovely people.",
+          fullQuote:
+            "The people I met through Ohel Avraham are warm and host with real joy, wholeheartedly. I stayed with them many times and it was always a good, pleasant experience — and I've hosted too, and met lovely people.",
         },
       ],
     },
@@ -311,11 +338,25 @@ export const translations = {
         "Connecting hearts and homes for a warmer Shabbat experience. Inspired by the hospitality of Avraham Avinu.",
       platform: "Platform",
       account: "Account",
+      legal: "Legal",
+      help: "Help",
+      terms: "Terms of Use",
+      privacy: "Privacy",
+      cookies: "Cookies",
+      cookieSettings: "Cookie settings",
       signUp: "Sign Up",
       rights: "Ohel Avraham. All rights reserved.",
       builtWith: "Built with",
       love: "love",
       forCommunity: "for the community",
+    },
+    cookieBanner: {
+      title: "Cookies",
+      message:
+        "We use cookies that are strictly necessary to run the site, plus Google cookies when you use sign-in or the map. We don't use advertising or analytics cookies.",
+      learnMore: "Cookie Policy",
+      acceptAll: "Accept all",
+      necessaryOnly: "Necessary only",
     },
     contact: {
       title: "Contact us",
@@ -711,6 +752,8 @@ export const translations = {
       logoutSuccess: "Déconnexion réussie.",
       or: "OU",
       home: "Accueil",
+      skipToContent: "Aller au contenu principal",
+      toggleTheme: "Changer de thème",
       back: "Retour",
       notProvided: "Non renseigné",
     },
@@ -737,6 +780,7 @@ export const translations = {
       selectLanguages: "Sélectionner les langues",
       notes: "Notes",
       notesPlaceholder: "Notes pour des précisions supplémentaires",
+      country: "Pays",
       searchCountry: "Rechercher un pays...",
       noCountryFound: "Aucun pays trouvé.",
       firstName: "Prénom",
@@ -875,8 +919,7 @@ export const translations = {
       visitHistoryShort: "Historique",
       visitHistoryHint:
         "Anciens hôtes de cet invité — n'hésitez pas à les contacter pour des références.",
-      visitHistoryEmpty:
-        "Aucune visite passée — ce serait sa première fois.",
+      visitHistoryEmpty: "Aucune visite passée — ce serait sa première fois.",
       hostedOn: "Reçu(e) le",
     },
     hero: {
@@ -958,24 +1001,48 @@ export const translations = {
       sectionLabel: "Témoignages",
       sectionTitle: "Les histoires de notre communauté",
       lead: "De vraies tables, de vrais accueils.",
+      readMore: "Lire le témoignage complet",
+      dialogTitle: "Son témoignage",
       items: [
         {
-          name: "Sarah L.",
-          role: "Invitée",
+          name: "Sarah",
+          role: "Hôte · Kiryat Moshé, Jérusalem",
           quote:
-            "J'étais nouvelle dans la ville et je ne connaissais personne. Grâce à Ohel Avraham, j'ai trouvé une famille qui m'a accueillie comme l'une des leurs. Ça a complètement changé mon Chabbat.",
+            "J'ai connu Ohel Avraham par la radio, et en rejoignant l'organisation comme hôte, j'ai senti qu'elle ouvrait vraiment les portes de l'hospitalité à tous. J'ai toujours eu quelqu'un vers qui me tourner pour la moindre question, avec un accompagnement personnel et chaleureux.",
+          fullQuote:
+            "J'ai connu Ohel Avraham par la radio, et en rejoignant l'organisation comme hôte, j'ai senti qu'elle ouvrait vraiment les portes de l'hospitalité à tous. Accueillir chez moi des personnes que je ne connaissais pas demandait un accompagnement, et j'ai senti ici que j'avais toujours quelqu'un vers qui me tourner pour la moindre question. La personne qui dirige le projet, qui préfère rester anonyme, fait preuve d'une vraie responsabilité personnelle et se soucie sincèrement que chaque accueil se passe bien — des premiers appels et messages, à la préparation, jusqu'au Chabbat lui-même. Chaque fois que j'avais besoin d'un conseil ou d'un encouragement, j'ai trouvé une oreille attentive et bienveillante, qui veillait à ce que tout se passe bien et agréablement — pour les invités comme pour moi en tant qu'hôte. Je suis heureuse de faire partie de cette œuvre particulière qui relie les gens et permet à chacun de prendre part à la mitsva de l'hospitalité.",
         },
         {
-          name: "David & Miriam K.",
-          role: "Hôtes",
+          name: "Tamar, 29",
+          role: "Invitée · Jérusalem",
           quote:
-            "Nous avons des places libres à notre table chaque semaine. Maintenant ces places sont occupées par des personnes merveilleuses que nous n'aurions jamais rencontrées autrement. Cela enrichit notre Chabbat.",
+            "J'ai été accueillie par une famille Habad adorable à Ramat Shlomo. Une atmosphère chaleureuse et élevée — une belle initiative menée de tout cœur.",
+          fullQuote:
+            "J'ai été accueillie par une famille Habad adorable à Ramat Shlomo. Une atmosphère chaleureuse et élevée — une belle initiative menée de tout cœur.",
         },
         {
-          name: "Yonatan R.",
-          role: "Invité",
+          name: "Sarah, 50",
+          role: "Invitée · Tel Aviv",
           quote:
-            "En tant qu'étudiant loin de chez moi, le Chabbat pouvait sembler solitaire. Cette plateforme m'a donné une communauté. Maintenant j'attends chaque vendredi soir avec impatience.",
+            "J'ai vécu des Chabbatot vraiment spirituels, avec une atmosphère de sainteté et des hôtes merveilleux qui vous mettent à l'aise comme chez vous. Une cuisine délicieuse relevée de paroles de Torah. Je recommande chaleureusement.",
+          fullQuote:
+            "J'ai vécu des Chabbatot vraiment spirituels, avec une atmosphère de sainteté et des hôtes merveilleux qui vous mettent à l'aise comme chez vous. Une cuisine délicieuse relevée de paroles de Torah. Je recommande chaleureusement.",
+        },
+        {
+          name: "Tehila, 38",
+          role: "Invitée · Beit Shemesh",
+          quote:
+            "J'ai été accueillie par une jeune famille hassidique pleine de vie à Beitar. Un couple ouvert et charmant, une bonne ambiance, une belle table de Chabbat et des enfants vifs et adorables. Un excellent Chabbat.",
+          fullQuote:
+            "J'ai été accueillie par une jeune famille hassidique pleine de vie à Beitar. Un couple ouvert et charmant, une bonne ambiance, une belle table de Chabbat et des enfants vifs et adorables. Un excellent Chabbat.",
+        },
+        {
+          name: "Gilat, 43",
+          role: "Invitée et hôte · Kiryat HaYovel, Jérusalem",
+          quote:
+            "Les personnes que j'ai rencontrées grâce à Ohel Avraham sont chaleureuses et accueillent avec une vraie joie, de tout cœur. J'ai séjourné chez elles de nombreuses fois et ce fut toujours une expérience agréable — et j'ai moi aussi accueilli, et rencontré des gens formidables.",
+          fullQuote:
+            "Les personnes que j'ai rencontrées grâce à Ohel Avraham sont chaleureuses et accueillent avec une vraie joie, de tout cœur. J'ai séjourné chez elles de nombreuses fois et ce fut toujours une expérience agréable — et j'ai moi aussi accueilli, et rencontré des gens formidables.",
         },
       ],
     },
@@ -992,11 +1059,25 @@ export const translations = {
         "Relier les cœurs et les foyers pour une expérience de Chabbat plus chaleureuse. Inspiré par l'hospitalité d'Avraham Avinou.",
       platform: "Plateforme",
       account: "Compte",
+      legal: "Légal",
+      help: "Aide",
+      terms: "Conditions d'utilisation",
+      privacy: "Confidentialité",
+      cookies: "Cookies",
+      cookieSettings: "Paramètres des cookies",
       signUp: "S'inscrire",
       rights: "Ohel Avraham. Tous droits réservés.",
       builtWith: "Fait avec",
       love: "amour",
       forCommunity: "pour la communauté",
+    },
+    cookieBanner: {
+      title: "Cookies",
+      message:
+        "Nous utilisons des cookies strictement nécessaires au fonctionnement du site, ainsi que des cookies Google lorsque vous utilisez la connexion ou la carte. Nous n'utilisons pas de cookies publicitaires ou de mesure d'audience.",
+      learnMore: "Politique relative aux cookies",
+      acceptAll: "Tout accepter",
+      necessaryOnly: "Nécessaires uniquement",
     },
     contact: {
       title: "Contactez-nous",
@@ -1280,7 +1361,8 @@ export const translations = {
         "Mettez à jour vos informations pour accueillir ou rejoindre des repas.",
       heroTaglineHost: "Ouvre sa table aux invités pour Chabbat.",
       heroTaglineGuest: "À la recherche d'une table pour Chabbat.",
-      heroTaglineDual: "Accueille des invités et rejoint des tables pour Chabbat.",
+      heroTaglineDual:
+        "Accueille des invités et rejoint des tables pour Chabbat.",
       hostProfile: "Profil hôte",
       guestProfile: "Profil invité",
       verificationStatus: "Statut de vérification",
@@ -1410,6 +1492,8 @@ export const translations = {
       logoutSuccess: "התנתקת בהצלחה.",
       or: "או",
       home: "דף הבית",
+      skipToContent: "דלג לתוכן הראשי",
+      toggleTheme: "החלף ערכת נושא",
       back: "חזרה",
       notProvided: "לא סופק",
     },
@@ -1436,6 +1520,7 @@ export const translations = {
       selectLanguages: "בחר שפות",
       notes: "הערות",
       notesPlaceholder: "הערות להסברים נוספים",
+      country: "מדינה",
       searchCountry: "חיפוש מדינה...",
       noCountryFound: "לא נמצאה מדינה.",
       firstName: "שם פרטי",
@@ -1482,7 +1567,8 @@ export const translations = {
       signInToSeeHosts: "התחבר כדי לראות מארחים",
       signInDesc: "צור חשבון כדי לעיין במארחים הזמינים קרוב אליך.",
       completeToSeeHosts: "השלימו את ההרשמה כדי לחפש מארחים",
-      completeDesc: "השלימו את הפרופיל שלכם כדי לעיין במארחים הזמינים קרוב אליכם.",
+      completeDesc:
+        "השלימו את הפרופיל שלכם כדי לעיין במארחים הזמינים קרוב אליכם.",
       anonymousHost: "מארח מסביר פנים",
       signInToContact: "התחבר ליצירת קשר",
       hostsInCity: "מארח",
@@ -1648,24 +1734,48 @@ export const translations = {
       sectionLabel: "המלצות",
       sectionTitle: "סיפורים מהקהילה שלנו",
       lead: "שולחנות אמיתיים, אירוח אמיתי.",
+      readMore: "לקריאת ההמלצה המלאה",
+      dialogTitle: "ההמלצה המלאה",
       items: [
         {
-          name: "שרה ל.",
-          role: "אורחת",
+          name: "שרה",
+          role: "משפחה מארחת · קרית משה, ירושלים",
           quote:
-            "הייתי חדשה בעיר ולא הכרתי אף אחד. דרך אוהל אברהם, מצאתי משפחה שקיבלה אותי כאחת משלהם. זה שינה את השבת שלי לחלוטין.",
+            "הכרתי את אוהל אברהם דרך הרדיו, וכשהצטרפתי כמארחת הרגשתי שהארגון באמת פתח את שערי הכנסת האורחים לכולם. תמיד הייתה לי כתובת לכל שאלה, עם ליווי אישי וחם.",
+          fullQuote:
+            "הכרתי את אוהל אברהם דרך הרדיו, וכשהצטרפתי כמארחת הרגשתי שהארגון באמת פתח את שערי הכנסת האורחים לכולם. לקבל בבית אנשים שאינני מכירה היה דבר שדרש הדרכה וליווי, וכאן הרגשתי שיש לי כתובת לכל שאלה. מי שמוביל את הפרויקט, החפץ בעילום שמו, מגלה אחריות אישית ודאגה אמיתית לכך שכל אירוח יצא מוצלח — מהשיחות וההודעות, דרך ההכנה לקראת האירוח ועד שהוא יוצא לפועל. בכל פעם שהייתי זקוקה לעצה או לחיזוק, מצאתי אוזן קשבת ומעודדת שדאגה שהכול יהיה טוב ונעים — גם עבור האורחים וגם עבורי כמארחת. אני שמחה שזכיתי להיות חלק מהעשייה המיוחדת הזו, שמחברת בין אנשים ומאפשרת לכל אחד לקחת חלק במצוות הכנסת אורחים.",
         },
         {
-          name: "דוד ומרים ק.",
-          role: "מארחים",
+          name: "תמר, 29",
+          role: "אורחת · ירושלים",
           quote:
-            "יש לנו מקומות פנויים בשולחן שלנו כל שבוע. עכשיו המקומות האלה מלאים באנשים נפלאים שלא היינו פוגשים אחרת. זה מעשיר את השבת שלנו.",
+            "התארחתי אצל משפחה חב״דניקית מקסימה ברמת שלמה. אווירה טובה ומחזקת, יוזמה ברוכה שנעשית מכל הלב.",
+          fullQuote:
+            "התארחתי אצל משפחה חב״דניקית מקסימה ברמת שלמה. אווירה טובה ומחזקת, יוזמה ברוכה שנעשית מכל הלב.",
         },
         {
-          name: "יונתן ר.",
-          role: "אורח",
+          name: "שרה, 50",
+          role: "אורחת · תל אביב",
           quote:
-            "כסטודנט רחוק מהבית, השבת יכולה להרגיש בודדה. הפלטפורמה הזו נתנה לי קהילה. עכשיו אני מצפה לכל ליל שישי.",
+            "חוויתי חוויות רוחניות עם אווירה מרוממת של קדושה, עם מארחים נפלאים שנותנים הרגשה ביתית וחמה. מאכלים טעימים שמתובלים בדברי תורה. ממליצה בחום.",
+          fullQuote:
+            "חוויתי חוויות רוחניות עם אווירה מרוממת של קדושה, עם מארחים נפלאים שנותנים הרגשה ביתית וחמה. מאכלים טעימים שמתובלים בדברי תורה. ממליצה בחום.",
+        },
+        {
+          name: "תהילה, 38",
+          role: "אורחת · בית שמש",
+          quote:
+            "התארחתי אצל משפחה חסידית צעירה ותוססת בביתר. זוג פתוח ומקסים, אווירה טובה, שולחן שבת מכובד וילדים חכמים וחמודים. שבת מצוינת.",
+          fullQuote:
+            "התארחתי אצל משפחה חסידית צעירה ותוססת בביתר. זוג פתוח ומקסים, אווירה טובה, שולחן שבת מכובד וילדים חכמים וחמודים. שבת מצוינת.",
+        },
+        {
+          name: "גילת, 43",
+          role: "אורחת ומארחת · קרית היובל, ירושלים",
+          quote:
+            "האנשים שהכרתי באוהל אברהם מאירי פנים ומארחים בשמחה, מכל הלב. התארחתי אצלם לא מעט פעמים וזו הייתה חוויה טובה ונעימה, וגם יצא לי לארח ופגשתי אנשים טובים.",
+          fullQuote:
+            "האנשים שהכרתי באוהל אברהם מאירי פנים ומארחים בשמחה, מכל הלב. התארחתי אצלם לא מעט פעמים וזו הייתה חוויה טובה ונעימה, וגם יצא לי לארח ופגשתי אנשים טובים.",
         },
       ],
     },
@@ -1681,11 +1791,25 @@ export const translations = {
         "מחברים לבבות ובתים לחוויית שבת חמה יותר. בהשראת האירוח של אברהם אבינו.",
       platform: "פלטפורמה",
       account: "חשבון",
+      legal: "מידע משפטי",
+      help: "עזרה",
+      terms: "תנאי שימוש",
+      privacy: "פרטיות",
+      cookies: "עוגיות",
+      cookieSettings: "הגדרות עוגיות",
       signUp: "הרשמה",
       rights: "אוהל אברהם. כל הזכויות שמורות.",
       builtWith: "נבנה עם",
       love: "אהבה",
       forCommunity: "לקהילה",
+    },
+    cookieBanner: {
+      title: "עוגיות",
+      message:
+        "אנו משתמשים בעוגיות הכרחיות בלבד להפעלת האתר, וכן בעוגיות של Google בעת שימוש בהתחברות או במפה. איננו משתמשים בעוגיות פרסום או אנליטיקה.",
+      learnMore: "מדיניות העוגיות",
+      acceptAll: "אישור הכול",
+      necessaryOnly: "הכרחיות בלבד",
     },
     contact: {
       title: "צור קשר",
@@ -1745,11 +1869,11 @@ export const translations = {
       forgotPassword: "שכחת סיסמה?",
       forgotPasswordTitle: "איפוס הסיסמה שלך",
       forgotPasswordDesc:
-        "הזן את כתובת הדוא\"ל שלך ונשלח לך קישור לאיפוס הסיסמה.",
+        'הזן את כתובת הדוא"ל שלך ונשלח לך קישור לאיפוס הסיסמה.',
       sendResetLink: "שליחת קישור לאיפוס",
       resetLinkSentTitle: "בדוק את תיבת הדואר שלך",
       resetLinkSentDesc:
-        "אם קיים חשבון עבור דוא\"ל זה, תקבל בקרוב קישור לאיפוס הסיסמה.",
+        'אם קיים חשבון עבור דוא"ל זה, תקבל בקרוב קישור לאיפוס הסיסמה.',
       backToLogin: "חזרה לכניסה",
       resetPasswordTitle: "בחר סיסמה חדשה",
       resetPasswordDesc: "הזן סיסמה חדשה עבור חשבונך.",
@@ -1925,8 +2049,7 @@ export const translations = {
       bulkBlockSuccess: "חשבונות נחסמו.",
       bulkDeleteSuccess: "חשבונות נמחקו.",
       bulkDeleteConfirmTitle: "למחוק את הנבחרים?",
-      bulkDeleteConfirmDesc:
-        "חשבונות אלו יימחקו לצמיתות. פעולה זו בלתי הפיכה.",
+      bulkDeleteConfirmDesc: "חשבונות אלו יימחקו לצמיתות. פעולה זו בלתי הפיכה.",
     },
     blocked: {
       title: "חשבון מושעה",

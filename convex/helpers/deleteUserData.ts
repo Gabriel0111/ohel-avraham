@@ -45,5 +45,9 @@ export async function deleteUserData(ctx: MutationCtx, authUserId: string) {
     guest ? ctx.db.delete(guest._id) : Promise.resolve(),
   ]);
 
-  if (user) await ctx.db.delete(user._id);
+  if (user) {
+    // Drop the ingested/uploaded avatar file so it doesn't outlive the account.
+    if (user.imageStorageId) await ctx.storage.delete(user.imageStorageId);
+    await ctx.db.delete(user._id);
+  }
 }

@@ -18,7 +18,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Footer } from "../_components/footer";
 import { useT } from "@/lib/i18n/context";
 
 export default function ContactPage() {
@@ -56,7 +55,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main>
+    <div>
       <div className="py-10 sm:py-16">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 text-center">
@@ -141,8 +140,6 @@ export default function ContactPage() {
           </form>
         </div>
       </div>
-
-      <Footer />
-    </main>
+    </div>
   );
 }

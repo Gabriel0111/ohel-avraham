@@ -22,6 +22,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/context";
+import { useCoarsePointer } from "@/hooks/use-coarse-pointer";
 
 export const PhoneInput = ({
   className,
@@ -30,6 +31,9 @@ export const PhoneInput = ({
   return (
     <Input
       data-slot="phone-input"
+      type="tel"
+      inputMode="tel"
+      autoComplete="tel"
       className={cn(
         "-ms-px rounded-s-none shadow-none focus-visible:z-10",
         className,
@@ -56,6 +60,37 @@ export const CountrySelect = ({
 }: CountrySelectProps) => {
   const { t } = useT();
   const [open, setOpen] = useState(false);
+  const coarse = useCoarsePointer();
+
+  // Phones / tablets: the OS-native <select> picker instead of the combobox.
+  if (coarse === true) {
+    return (
+      <div className="relative w-[4.75rem] shrink-0">
+        <select
+          aria-label={t.form.country}
+          disabled={disabled}
+          value={selectedCountry}
+          onChange={(e) => onChange(e.target.value as RPNInput.Country)}
+          className={cn(
+            "h-9 w-full appearance-none overflow-hidden rounded-s-md rounded-e-none border border-e-0 border-input bg-background ps-2.5 pe-6 text-sm text-ellipsis whitespace-nowrap outline-none",
+            "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+            "disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
+          )}
+        >
+          {/* Calling code first so the clipped selected value stays useful;
+              the full country name follows for the OS picker list. */}
+          {countryList.map(({ value, label }) =>
+            value ? (
+              <option key={value} value={value}>
+                +{RPNInput.getCountryCallingCode(value)} {label}
+              </option>
+            ) : null,
+          )}
+        </select>
+        <ChevronsUpDown className="pointer-events-none absolute end-1.5 top-1/2 size-3.5 -translate-y-1/2 opacity-50" />
+      </div>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

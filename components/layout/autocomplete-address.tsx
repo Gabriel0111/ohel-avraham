@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { Loader2, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
+import { useFieldContext } from "@/components/ui/field";
 
 export interface PlaceData {
   address: string;
@@ -95,6 +96,7 @@ async function fetchPlaceDetails(placeId: string): Promise<{
 
 const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
   const { t } = useT();
+  const field = useFieldContext();
   const [predictions, setPredictions] = useState<PlaceSuggestion[]>([]);
   const [text, setText] = useState(defaultValue);
   const [resultsOpen, setResultsOpen] = useState(false);
@@ -140,9 +142,11 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
         shouldFilter={false}
       >
         <CommandInput
+          id={field?.controlId}
           placeholder={t.address.searchPlaceholder}
           value={text}
           onValueChange={handleValueChange}
+          aria-describedby={error && field ? `${field.controlId}-address-error` : undefined}
         />
         {resultsOpen && (
           <CommandList>
@@ -172,7 +176,15 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
           {t.address.loading}
         </div>
       )}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && (
+        <p
+          id={field ? `${field.controlId}-address-error` : undefined}
+          role="alert"
+          className="text-xs text-destructive"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 };

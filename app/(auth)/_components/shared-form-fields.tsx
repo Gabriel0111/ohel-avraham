@@ -8,7 +8,12 @@ import {
   FieldValues,
 } from "react-hook-form";
 import { useState } from "react";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+  useFieldContext,
+} from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +31,7 @@ import { ETHNICITIES } from "@/app/enums/ethnicity";
 import { LANGUAGES } from "@/app/enums/language";
 import { Textarea } from "@/components/ui/textarea";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
+import { useCoarsePointer } from "@/hooks/use-coarse-pointer";
 import flags from "react-phone-number-input/flags";
 import { Check } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -51,10 +57,41 @@ const DobInput = ({
   fieldState: ControllerFieldState;
 }) => {
   const { t } = useT();
+  const coarse = useCoarsePointer();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(
     field.value instanceof Date ? format(field.value, "dd/MM/yyyy") : "",
   );
+
+  // Phones / tablets: the OS-native date picker is what users expect.
+  if (coarse === true) {
+    const iso =
+      field.value instanceof Date ? format(field.value, "yyyy-MM-dd") : "";
+    return (
+      <Field>
+        <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
+        <Input
+          type="date"
+          value={iso}
+          min={format(DOB_MIN, "yyyy-MM-dd")}
+          max={format(new Date(), "yyyy-MM-dd")}
+          onBlur={field.onBlur}
+          aria-invalid={fieldState.invalid}
+          onChange={(e) => {
+            const parsed = e.target.value
+              ? parse(e.target.value, "yyyy-MM-dd", new Date())
+              : undefined;
+            field.onChange(
+              parsed && isValid(parsed) && parsed <= new Date() && parsed >= DOB_MIN
+                ? parsed
+                : undefined,
+            );
+          }}
+        />
+        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+      </Field>
+    );
+  }
 
   const handleTextChange = (raw: string) => {
     const masked = maskDate(raw);
@@ -214,7 +251,31 @@ export const LanguagesField = ({
         return (
           <Field>
             <FieldLabel>{t.form.languages}</FieldLabel>
-            <div className="flex flex-wrap gap-2">
+            <LanguageChips selected={selected} toggle={toggle} reduceMotion={reduceMotion} />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        );
+      }}
+    />
+  );
+};
+
+function LanguageChips({
+  selected,
+  toggle,
+  reduceMotion,
+}: {
+  selected: string[];
+  toggle: (value: string) => void;
+  reduceMotion: boolean | null;
+}) {
+  const field = useFieldContext();
+  return (
+            <div
+              role="group"
+              aria-labelledby={field?.labelId}
+              className="flex flex-wrap gap-2"
+            >
               {LANGUAGES.map((lang) => {
                 const Flag = flags[lang.country];
                 const isSelected = selected.includes(lang.value);
@@ -255,14 +316,9 @@ export const LanguagesField = ({
                   </button>
                 );
               })}
-            </div>
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-          </Field>
-        );
-      }}
-    />
+    </div>
   );
-};
+}
 
 export const NotesField = ({ control }: { control: Control<FieldValues> }) => {
   const { t } = useT();

@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFieldControl } from "@/components/ui/field";
+import { useCoarsePointer } from "@/hooks/use-coarse-pointer";
 
 export interface NativeSelectOption {
   value: string;
@@ -37,26 +39,6 @@ interface NativeSelectProps {
 }
 
 /**
- * True on coarse-pointer devices (phones / tablets), where the OS picker —
- * the wheel/list users expect — is the better control. Desktop (fine pointer)
- * gets the styled Radix dropdown instead. Starts `false` so server and first
- * client render agree (native is the SSR-safe default); a desktop briefly shows
- * the native control for one frame before switching, which avoids a hydration
- * mismatch.
- */
-function useCoarsePointer() {
-  const [coarse, setCoarse] = React.useState<boolean | null>(null);
-  React.useEffect(() => {
-    const mql = window.matchMedia("(pointer: coarse)");
-    const update = () => setCoarse(mql.matches);
-    update();
-    mql.addEventListener("change", update);
-    return () => mql.removeEventListener("change", update);
-  }, []);
-  return coarse;
-}
-
-/**
  * A select that adapts to the device: the OS-native `<select>` on touch
  * devices (iPhone / iPadOS / Android — the system picker) and the design
  * system's Radix dropdown on desktop. The public API is identical across both
@@ -78,6 +60,11 @@ export function NativeSelect({
 }: NativeSelectProps) {
   const coarse = useCoarsePointer();
 
+  // Inside a `Field`, inherit its id + (when invalid) aria-describedby.
+  const fieldProps = useFieldControl({ invalid });
+  const resolvedId = id ?? fieldProps.id;
+  const describedBy = fieldProps["aria-describedby"];
+
   // Desktop (fine pointer): the styled Radix dropdown.
   if (coarse === false) {
     return (
@@ -88,9 +75,10 @@ export function NativeSelect({
         name={name}
       >
         <SelectTrigger
-          id={id}
+          id={resolvedId}
           onBlur={onBlur}
           aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
           className={cn("w-full", className)}
         >
           {icon && (
@@ -127,13 +115,14 @@ export function NativeSelect({
         </span>
       )}
       <select
-        id={id}
+        id={resolvedId}
         name={name}
         value={value ?? ""}
         onChange={(e) => onValueChange(e.target.value)}
         onBlur={onBlur}
         disabled={disabled}
         aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
         data-placeholder={isEmpty || undefined}
         className={cn(
           "flex h-9 w-full cursor-pointer appearance-none items-center rounded-md border border-input bg-background py-2 text-sm shadow-xs outline-none transition-[color,box-shadow]",

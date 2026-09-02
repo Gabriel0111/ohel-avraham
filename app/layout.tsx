@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { LanguageProvider } from "@/lib/i18n/context";
 import { LANG_COOKIE, isLanguage } from "@/lib/i18n/lang";
 import { AuthSync } from "@/components/auth-sync";
+import { CookieBanner } from "@/components/cookie-consent/cookie-banner";
+import { SkipLink } from "@/components/layout/skip-link";
 import { getToken } from "@/lib/auth-server";
 import { cookies } from "next/headers";
 import { translations, type Language } from "@/lib/i18n/translations";
@@ -118,13 +120,15 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider initialLang={lang}>
-            <main className="mx-auto w-full">
+            <div className="mx-auto w-full">
               <ConvexClientProvider initialToken={initialToken}>
+                <SkipLink />
                 <AuthSync />
                 {children}
                 <Toaster richColors closeButton />
+                <CookieBanner />
               </ConvexClientProvider>
-            </main>
+            </div>
           </LanguageProvider>
         </ThemeProvider>
       </body>

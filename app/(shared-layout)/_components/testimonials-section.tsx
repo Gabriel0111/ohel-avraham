@@ -5,6 +5,14 @@ import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { Quote, Star } from "lucide-react";
 import { useT } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { SectionIntro } from "./section-intro";
 
 function usePrefersReducedMotion() {
@@ -58,6 +66,40 @@ function Byline({ name, role, large }: { name: string; role: string; large?: boo
   );
 }
 
+type Item = {
+  name: string;
+  role: string;
+  quote: string;
+  fullQuote: string;
+};
+
+function ReadMore({ item }: { item: Item }) {
+  const { t } = useT();
+  if (item.fullQuote === item.quote) return null;
+  return (
+    <Dialog>
+      <DialogTrigger className="self-start text-sm font-medium text-primary underline-offset-4 hover:underline">
+        {t.testimonials.readMore}
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{t.testimonials.dialogTitle}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {item.name} — {item.role}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <Stars />
+          <p className="text-[15px] leading-relaxed text-foreground text-pretty">
+            {item.fullQuote}
+          </p>
+          <Byline name={item.name} role={item.role} />
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function TestimonialsSection() {
   const { ref, isVisible } = useScrollAnimation(0.1);
   const reduce = usePrefersReducedMotion();
@@ -65,6 +107,8 @@ export function TestimonialsSection() {
 
   const items = t.testimonials.items;
   const [featured, ...rest] = items;
+  const stacked = rest.slice(0, 2);
+  const trailing = rest.slice(2);
 
   // Reveal that enhances an already-visible default: crossfade-only when the
   // user prefers reduced motion, otherwise a short staggered rise.
@@ -100,6 +144,7 @@ export function TestimonialsSection() {
             <p className="relative text-xl md:text-2xl font-medium leading-relaxed text-foreground text-pretty">
               {featured.quote}
             </p>
+            <ReadMore item={featured} />
             <div className="mt-auto pt-2">
               <Byline name={featured.name} role={featured.role} large />
             </div>
@@ -108,7 +153,7 @@ export function TestimonialsSection() {
 
         {/* Supporting testimonials — stacked, matched to the featured height */}
         <div className="lg:col-span-5 flex flex-col gap-5">
-          {rest.map((item, i) => (
+          {stacked.map((item, i) => (
             <article
               key={i}
               className="flex-1 flex flex-col gap-4 p-6 rounded-2xl border border-border bg-card transition-colors duration-300 hover:border-primary/25"
@@ -121,9 +166,32 @@ export function TestimonialsSection() {
               <p className="text-[15px] leading-relaxed text-foreground text-pretty">
                 {item.quote}
               </p>
+              <ReadMore item={item} />
             </article>
           ))}
         </div>
+
+        {/* Remaining testimonials — full-width two-column grid below */}
+        {trailing.length > 0 && (
+          <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-5">
+            {trailing.map((item, i) => (
+              <article
+                key={i}
+                className="flex flex-col gap-4 p-6 rounded-2xl border border-border bg-card transition-colors duration-300 hover:border-primary/25"
+                style={reveal(i + stacked.length + 1)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <Byline name={item.name} role={item.role} />
+                  <Stars className="shrink-0" />
+                </div>
+                <p className="text-[15px] leading-relaxed text-foreground text-pretty">
+                  {item.quote}
+                </p>
+                <ReadMore item={item} />
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
