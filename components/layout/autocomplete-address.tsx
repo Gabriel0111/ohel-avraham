@@ -138,7 +138,7 @@ const AutocompleteAddress = ({ defaultValue, onPlaceSelect }: Props) => {
   return (
     <div className="space-y-1.5">
       <Command
-        className="rounded-lg border border-input bg-background dark:bg-input/30"
+        className="rounded-lg border border-input bg-background transition-[color,box-shadow] hover:border-ring/60 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50 dark:bg-input/30"
         shouldFilter={false}
       >
         <CommandInput

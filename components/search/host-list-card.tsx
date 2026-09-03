@@ -13,6 +13,7 @@ import { LanguageFlag } from "@/components/ui/language-flags";
 import { PreferenceBadge } from "@/components/ui/preference-toggle";
 import { getLanguage } from "@/app/enums/language";
 import { useT } from "@/lib/i18n/context";
+import { stripHouseNumber } from "@/lib/address";
 
 export interface PublicHost {
   _id: string;
@@ -58,7 +59,7 @@ export function HostListCard({
       : undefined;
   const locality = host.neighborhood
     ? `${host.neighborhood}${host.city ? ` · ${host.city}` : ""}`
-    : host.city || host.address;
+    : host.city || stripHouseNumber(host.address);
   // Whole address kept on a single line, mid-dot separated. The first segment
   // is emphasized; the rest is tinted down to read as secondary location.
   const addressLine = [street, locality].filter(Boolean).join(" · ");

@@ -21,7 +21,6 @@ import {
 } from "@/app/(auth)/_components/phone-number-comps";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { PreferenceToggle } from "@/components/ui/preference-toggle";
 import { KASHROUT } from "@/app/enums/kashrout";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
@@ -30,14 +29,20 @@ import { api } from "@/convex/_generated/api";
 import AutocompleteAddress from "@/components/layout/autocomplete-address";
 import { useEnumLabel, useErrorMessage, useT } from "@/lib/i18n/context";
 import { Home, Accessibility, Music, BookOpen } from "lucide-react";
-import { DobField, LanguagesField, NotesField, SectorEthnicityFields } from "@/app/(auth)/_components/shared-form-fields";
+import {
+  DobField,
+  LanguagesField,
+  NotesField,
+  SectorEthnicityFields,
+  ToggleChip,
+} from "@/app/(auth)/_components/shared-form-fields";
 import { RegistrationSuccess } from "@/app/(auth)/_components/registration-success";
 import { setJustRegistered } from "@/lib/registration-success";
 
 const HostForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
-  const { t } = useT();
+  const { t, lang } = useT();
   const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
 
@@ -47,7 +52,9 @@ const HostForm = () => {
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: hostSchemaDV,
+    // Pre-select the language the user is currently browsing in as a spoken
+    // language — they can add or remove others.
+    defaultValues: { ...hostSchemaDV, languages: [lang] },
   });
 
   const handleSubmit = (values: HostType) => {
@@ -74,7 +81,6 @@ const HostForm = () => {
     <form onSubmit={form.handleSubmit(handleSubmit)}>
       <FieldGroup>
         <div className="flex flex-col gap-5 w-full">
-
           {/* Welcome header */}
           <div className="flex flex-col items-center gap-3 text-center py-2">
             <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center ring-4 ring-primary/5">
@@ -104,6 +110,7 @@ const HostForm = () => {
                   defaultCountry="IL"
                   className="flex rounded-md shadow-xs"
                   international
+                  limitMaxLength
                   flagComponent={FlagComponent}
                   countrySelectComponent={CountrySelect}
                   inputComponent={PhoneInput}
@@ -128,7 +135,9 @@ const HostForm = () => {
                 <AutocompleteAddress
                   defaultValue={field.value}
                   onPlaceSelect={(place) => {
-                    form.setValue("address", place.address, { shouldValidate: true });
+                    form.setValue("address", place.address, {
+                      shouldValidate: true,
+                    });
                     form.setValue("lat", place.lat, { shouldValidate: true });
                     form.setValue("lng", place.lng, { shouldValidate: true });
                   }}
@@ -141,20 +150,26 @@ const HostForm = () => {
           />
 
           {/* Floor + Disability */}
-          <div className="flex gap-4 items-end">
+          <div className="flex gap-3 sm:gap-4 items-end">
             <Controller
               name="floor"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field className="w-28 shrink-0">
+                <Field className="w-20 sm:w-28 shrink-0">
                   <FieldLabel>{t.form.floor}</FieldLabel>
                   <Input
-                    type="number"
+                    autoComplete="off"
+                    aria-required
+                    type="text"
+                    inputMode="numeric"
                     name={field.name}
                     ref={field.ref}
                     onBlur={field.onBlur}
-                    value={field.value as number}
-                    onChange={(e) => field.onChange(isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
+                    value={(field.value ?? "") as string | number}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^-?\d{0,3}$/.test(v)) field.onChange(v);
+                    }}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -167,13 +182,15 @@ const HostForm = () => {
               name="hasDisabilityAccess"
               control={form.control}
               render={({ field }) => (
-                <div className="flex flex-1 h-9 items-center justify-between rounded-lg border border-input bg-muted/30 px-4">
+                <div className="flex flex-1 min-w-0 h-9 items-center justify-between gap-2 rounded-lg border border-input bg-muted/30 px-3 sm:px-4">
                   <Label
                     htmlFor="disability-switch"
-                    className="text-sm cursor-pointer leading-tight"
+                    className="flex min-w-0 items-center gap-1.5 text-sm cursor-pointer leading-tight whitespace-nowrap"
                   >
-                    <Accessibility className="size-3.5 inline mr-1.5 text-muted-foreground" />
-                    {t.hostProfile.stepFreeAccess}
+                    <Accessibility className="size-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">
+                      {t.hostProfile.stepFreeAccess}
+                    </span>
                   </Label>
                   <Switch
                     id="disability-switch"
@@ -213,20 +230,19 @@ const HostForm = () => {
             )}
           />
 
-          {/* Hospitality preferences — icon toggles, tooltip carries the title */}
+          {/* Hospitality preferences — pill toggles like the language chips */}
           <Field>
             <FieldLabel>{t.hostProfile.preferences}</FieldLabel>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Controller
                 name="likesSinging"
                 control={form.control}
                 render={({ field }) => (
-                  <PreferenceToggle
+                  <ToggleChip
                     icon={Music}
                     label={t.form.likesSinging}
-                    color="rose"
                     active={!!field.value}
-                    onChange={field.onChange}
+                    onClick={() => field.onChange(!field.value)}
                   />
                 )}
               />
@@ -234,12 +250,11 @@ const HostForm = () => {
                 name="likesDivreiTorah"
                 control={form.control}
                 render={({ field }) => (
-                  <PreferenceToggle
+                  <ToggleChip
                     icon={BookOpen}
                     label={t.form.likesDivreiTorah}
-                    color="blue"
                     active={!!field.value}
-                    onChange={field.onChange}
+                    onClick={() => field.onChange(!field.value)}
                   />
                 )}
               />
@@ -252,7 +267,12 @@ const HostForm = () => {
           {/* Notes */}
           <NotesField control={form.control as never} />
 
-          <Button type="submit" className="w-full" size="lg" disabled={isRegistering}>
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            disabled={isRegistering}
+          >
             {isRegistering && <Spinner />}
             {t.common.continue}
           </Button>

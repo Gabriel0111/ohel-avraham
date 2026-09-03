@@ -65,7 +65,7 @@ export const CountrySelect = ({
   // Phones / tablets: the OS-native <select> picker instead of the combobox.
   if (coarse === true) {
     return (
-      <div className="relative w-[4.75rem] shrink-0">
+      <div className="relative w-[5.75rem] shrink-0">
         <select
           aria-label={t.form.country}
           disabled={disabled}
@@ -77,12 +77,12 @@ export const CountrySelect = ({
             "disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
           )}
         >
-          {/* Calling code first so the clipped selected value stays useful;
-              the full country name follows for the OS picker list. */}
-          {countryList.map(({ value, label }) =>
+          {/* Only the calling code — the trigger is too narrow for a country
+              name and the flag already identifies the country. */}
+          {countryList.map(({ value }) =>
             value ? (
               <option key={value} value={value}>
-                +{RPNInput.getCountryCallingCode(value)} {label}
+                +{RPNInput.getCountryCallingCode(value)}
               </option>
             ) : null,
           )}

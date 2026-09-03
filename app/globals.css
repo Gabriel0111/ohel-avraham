@@ -121,6 +121,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Tell the browser which palette native controls (date pickers, <select>
+     menus, scrollbars, form field chrome) should render in, so they follow
+     the app theme instead of the OS setting. */
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-plus-jakarta), sans-serif;

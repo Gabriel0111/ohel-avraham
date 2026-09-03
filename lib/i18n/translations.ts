@@ -86,6 +86,7 @@ export const translations = {
       phoneInvalid: "Please enter a valid phone number.",
       addressInvalid: "Please enter a valid address.",
       floorInvalid: "Please enter a valid floor.",
+      floorRequired: "Please enter a floor.",
       disabilityRequired: "Please specify disability access.",
       notesTooLong: "Notes can contain up to 1000 characters.",
       emailInvalid: "Please enter a valid email address.",
@@ -95,7 +96,7 @@ export const translations = {
       passwordsNoMatch: "Passwords do not match.",
     },
     address: {
-      searchPlaceholder: "e.g. 12 Bayit Vagan, Jerusalem...",
+      searchPlaceholder: "12 Bayit Vagan, Jerusalem",
       loading: "Loading address details...",
       streetNumberRequired:
         "Please select an address that includes a street number.",
@@ -802,6 +803,7 @@ export const translations = {
       phoneInvalid: "Veuillez saisir un numéro de téléphone valide.",
       addressInvalid: "Veuillez saisir une adresse valide.",
       floorInvalid: "Veuillez saisir un étage valide.",
+      floorRequired: "Veuillez saisir un étage.",
       disabilityRequired: "Veuillez préciser l'accès handicapé.",
       notesTooLong: "Les notes peuvent contenir jusqu'à 1000 caractères.",
       emailInvalid: "Veuillez saisir une adresse e-mail valide.",
@@ -811,7 +813,7 @@ export const translations = {
       passwordsNoMatch: "Les mots de passe ne correspondent pas.",
     },
     address: {
-      searchPlaceholder: "Ex : 12 Bayit Vagan, Jérusalem...",
+      searchPlaceholder: "12 Bayit Vagan, Jérusalem",
       loading: "Chargement des détails de l'adresse...",
       streetNumberRequired:
         "Veuillez sélectionner une adresse incluant un numéro de rue.",
@@ -1542,6 +1544,7 @@ export const translations = {
       phoneInvalid: "אנא הזן מספר טלפון תקין.",
       addressInvalid: "אנא הזן כתובת תקינה.",
       floorInvalid: "אנא הזן קומה תקינה.",
+      floorRequired: "אנא הזן קומה.",
       disabilityRequired: "אנא ציין נגישות לנכים.",
       notesTooLong: "ההערות יכולות להכיל עד 1000 תווים.",
       emailInvalid: "אנא הזן כתובת אימייל תקינה.",
@@ -1551,7 +1554,7 @@ export const translations = {
       passwordsNoMatch: "הסיסמאות אינן תואמות.",
     },
     address: {
-      searchPlaceholder: "לדוגמה: בית וגן 12, ירושלים...",
+      searchPlaceholder: "בית וגן 12, ירושלים",
       loading: "טוען פרטי כתובת...",
       streetNumberRequired: "אנא בחר כתובת הכוללת מספר רחוב.",
       fetchError: "שגיאה בטעינת פרטי הכתובת. נסה שוב.",

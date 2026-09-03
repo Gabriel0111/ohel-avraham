@@ -88,7 +88,7 @@ const OG_LOCALES: Record<Language, string> = {
 async function readLangCookie(): Promise<Language> {
   const cookieStore = await cookies();
   const value = cookieStore.get(LANG_COOKIE)?.value;
-  return isLanguage(value) ? value : "en";
+  return isLanguage(value) ? value : "he";
 }
 
 export default async function RootLayout({

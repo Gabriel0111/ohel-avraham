@@ -11,6 +11,7 @@ import {
 import { LanguageFlag } from "@/components/ui/language-flags";
 import { getLanguage } from "@/app/enums/language";
 import { useT } from "@/lib/i18n/context";
+import { stripHouseNumber } from "@/lib/address";
 
 // Host-facing guest record (see convex/guests.ts:searchPublicGuests). Full
 // profile — only signed-in hosts ever reach this.
@@ -43,6 +44,7 @@ export function GuestListCard({
   const { t } = useT();
 
   const langs = guest.languages?.filter((code) => getLanguage(code)) ?? [];
+  const region = stripHouseNumber(guest.region) ?? guest.region;
 
   return (
     <button
@@ -81,7 +83,7 @@ export function GuestListCard({
           <div className="mt-1 min-w-0 leading-snug">
             <p className="flex items-center gap-1 truncate text-xs font-medium text-muted-foreground">
               <MapPin className="size-3 shrink-0" />
-              <span className="truncate">{guest.region}</span>
+              <span className="truncate">{region}</span>
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-2">

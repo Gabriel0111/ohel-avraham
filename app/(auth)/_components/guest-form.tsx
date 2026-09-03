@@ -27,7 +27,7 @@ import { setJustRegistered } from "@/lib/registration-success";
 const GuestForm = () => {
   const [isRegistering, startRegistering] = useTransition();
   const [registered, setRegistered] = useState(false);
-  const { t } = useT();
+  const { t, lang } = useT();
   const el = useEnumLabel();
   const getErrorMessage = useErrorMessage();
 
@@ -37,7 +37,9 @@ const GuestForm = () => {
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: guestSchemaDV,
+    // Pre-select the language the user is currently browsing in as a spoken
+    // language — they can add or remove others.
+    defaultValues: { ...guestSchemaDV, languages: [lang] },
   });
 
   const handleSubmit = (values: GuestType) => {

@@ -28,14 +28,14 @@ interface LanguageContextType {
 }
 
 const LanguageContext = createContext<LanguageContextType>({
-  lang: "en",
+  lang: "he",
   setLang: () => {},
-  t: translations.en,
+  t: translations.he,
 });
 
 export function LanguageProvider({
   children,
-  initialLang = "en",
+  initialLang = "he",
 }: {
   children: ReactNode;
   initialLang?: Language;

@@ -33,8 +33,57 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEnumLabel, useT } from "@/lib/i18n/context";
 import { useCoarsePointer } from "@/hooks/use-coarse-pointer";
 import flags from "react-phone-number-input/flags";
-import { Check } from "lucide-react";
+import { Check, type LucideIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+
+/**
+ * Pill-shaped toggle matching the language selector chips: border + tint when
+ * active, with a check that animates in. Used for boolean preference fields.
+ */
+export function ToggleChip({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon?: LucideIcon;
+  label: string;
+}) {
+  const reduceMotion = useReducedMotion();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        active
+          ? "border-primary/50 bg-primary/10 text-foreground"
+          : "border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+      )}
+    >
+      {Icon && <Icon className="size-3.5 shrink-0" />}
+      {label}
+      <AnimatePresence initial={false}>
+        {active && (
+          <motion.span
+            initial={
+              reduceMotion ? false : { width: 0, opacity: 0, marginLeft: -8 }
+            }
+            animate={{ width: "auto", opacity: 1, marginLeft: 0 }}
+            exit={{ width: 0, opacity: 0, marginLeft: -8 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="flex items-center overflow-hidden"
+          >
+            <Check className="size-3.5 shrink-0 text-primary" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </button>
+  );
+}
 
 const DOB_MIN = new Date("1924-01-01");
 
@@ -72,6 +121,9 @@ const DobInput = ({
         <FieldLabel>{t.form.dateOfBirth}</FieldLabel>
         <Input
           type="date"
+          // iOS/WebKit give date inputs an intrinsic width that overflows the
+          // field row; clamp them to the same box as every other input.
+          className="block w-full min-w-0 appearance-none"
           value={iso}
           min={format(DOB_MIN, "yyyy-MM-dd")}
           max={format(new Date(), "yyyy-MM-dd")}
@@ -270,18 +322,30 @@ function LanguageChips({
   reduceMotion: boolean | null;
 }) {
   const field = useFieldContext();
+  // Selected chips float to the front (in the order they were picked); the
+  // rest keep their canonical order.
+  const ordered = [...LANGUAGES].sort((a, b) => {
+    const ai = selected.indexOf(a.value);
+    const bi = selected.indexOf(b.value);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
   return (
             <div
               role="group"
               aria-labelledby={field?.labelId}
               className="flex flex-wrap gap-2"
             >
-              {LANGUAGES.map((lang) => {
+              {ordered.map((lang) => {
                 const Flag = flags[lang.country];
                 const isSelected = selected.includes(lang.value);
                 return (
-                  <button
+                  <motion.button
                     key={lang.value}
+                    layout={reduceMotion ? false : "position"}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
                     type="button"
                     onClick={() => toggle(lang.value)}
                     aria-pressed={isSelected}
@@ -313,7 +377,7 @@ function LanguageChips({
                         </motion.span>
                       )}
                     </AnimatePresence>
-                  </button>
+                  </motion.button>
                 );
               })}
     </div>

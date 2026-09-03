@@ -15,7 +15,14 @@ export const buildHostSchema = (m: ValidationMessages) =>
     address: z.string({ message: m.addressInvalid }).min(5, m.addressInvalid),
     lat: z.number().optional(),
     lng: z.number().optional(),
-    floor: z.coerce.number(m.floorInvalid).int(m.floorInvalid).min(-5, m.floorInvalid).max(100, m.floorInvalid),
+    floor: z.preprocess(
+      (v) => (v === "" || v == null ? undefined : v),
+      z.coerce
+        .number(m.floorRequired)
+        .int(m.floorInvalid)
+        .min(-5, m.floorInvalid)
+        .max(100, m.floorInvalid),
+    ),
 
     hasDisabilityAccess: z.boolean({ message: m.disabilityRequired }),
 
@@ -39,7 +46,7 @@ export const hostSchemaDV: HostType = {
 
   phoneNumber: "",
   address: "",
-  floor: 0,
+  floor: "" as unknown as number,
 
   hasDisabilityAccess: false,
 
